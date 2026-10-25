@@ -1,0 +1,18 @@
+{
+  "id": "io.puretv",
+  "version": "2.0.0",
+  "vendor": "PureTV",
+  "type": "web",
+  "main": "index.html",
+  "title": "PureTV",
+  "icon": "icon.png",
+  "largeIcon": "largeIcon.png",
+  "iconColor": "#FF7A9E",
+  "resolution": "1920x1080",
+  "handlesRelaunch": true,
+  "disableBackHistoryAPI": true,
+  "requiredPermissions": [
+    "applications",
+    "applications.launcher"
+  ]
+}

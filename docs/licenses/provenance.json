@@ -1,0 +1,52 @@
+{
+  "launcher": {
+    "url": "https://github.com/simbasjungles/free-my-tv",
+    "base_commit": "62e883b3179c8cafb7a2b09960eabfe7eea6ef1c",
+    "license": "MIT"
+  },
+  "receiver": {
+    "url": "https://github.com/jqssun/android-airplay-server",
+    "base_tag": "v0.0.36",
+    "base_commit": "a46cca0a6a1274e9e33c0e750f0f1c1eb1d881ea",
+    "license": "GPL-3.0",
+    "distribution": "separate optional application"
+  },
+  "product": "PureTV",
+  "version": "v2",
+  "scope": "Android TV / Google TV native launcher; LG webOS and Samsung Tizen web applications",
+  "web_platforms": {
+    "repository": "https://github.com/simbasjungles/free-my-tv",
+    "head_commit": "57ea46051fc9dc3201da425f858ef2768f1cc1f2",
+    "reviewed_on": "2026-10-25",
+    "files": {
+      "tizen/build.py": "4fc4f4d41ebf07fe2f2ae715ca540b5c266cf9af",
+      "tizen/config.xml": "d4a7f67f48fc42c3138a93e7087826375a425473",
+      "tizen/install.py": "1f839dae5f5cf56a7fb1d2eb132b03b5565f6730",
+      "tools/translate.py": "84bb6b03e0d996d158bb38bb9a70dde24f39e619",
+      "tools/webapp.py": "309cb733341ececb1b465412ccec4a752a1ba067",
+      "web/data.js": "6e129d631ace8cc33c4d92c862dbb8149058938b",
+      "web/home.css": "be78eba2abe78471e6aa79817cef969656bac062",
+      "web/home.js": "f19bd0ef4db2b5dbe56301ab5b023b6ff881bd26",
+      "web/index.html": "8a696e4826d81acee31411a3b17c52d3c6449882",
+      "web/strings.js": "1ef6b4a12d3f9e20af55b572115250a24fd1a783",
+      "web/tv.js": "c1b7e7cbe9e9008794656eafd32bf3c50b83012e",
+      "web/zones.js": "45357f7168736cd4e00da9bd6f7d480e00b6a512",
+      "webos/appinfo.json": "7db05adfeb86019e615f057255e702afb5eccd8e",
+      "webos/build.py": "425deb028f9f9158677a0cc8332233fdf351e8ae",
+      "webos/install.py": "2d1d1ddc7a4dd5acdf130ce904a6a0f656c9eb77",
+      "web/icons/deezer.svg": "1c46ec1db054a9b54fcf199b0450ba9a36d7eea8",
+      "web/icons/fox.svg": "4b9d72ff8125c4d28deeed661aa014e1d5183d7b",
+      "web/icons/googleplay.svg": "59784ef0e90f5376efbda435b00b63f9ee6c8edc",
+      "web/icons/jellyfin.svg": "7d4695be101cb8c20c1bad63e72f5390024abf42",
+      "web/icons/max.svg": "3e93506193cd8af41e025daee0af6f2dac3209dc",
+      "web/icons/netflix.svg": "3230cf0892300409b8f46e738e9af5468dcc08e6",
+      "web/icons/prime.png": "899e402fc79da68ade049c3dde540d6e2d844fd1",
+      "web/icons/redbull.svg": "1bf8b3e94755083f54e190aebc9fd39d67a999e8",
+      "web/icons/spotify.svg": "4b76670e05383998657cbd1dde1547577a338c86",
+      "web/icons/steam.svg": "029d9f982b3c31ff10bede35ccf002a7689b403c",
+      "web/icons/ted.svg": "811550aacd678acac31e9167ad523e6390035391",
+      "web/icons/youtube.png": "7a701bfe46b8fedd34e5185e2ca8bcecf14b399e",
+      "web/icons/youtubekids.svg": "915e08bad15b176836e67ad47518bcf8b950ff5b"
+    }
+  }
+}

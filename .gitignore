@@ -1,0 +1,32 @@
+# Local configuration, signing and device credentials
+config.properties
+local.properties
+.env
+.env.*
+!.env.example
+private/
+*.keystore
+*.jks
+*.pem
+*.key
+*.p12
+*.idsig
+*adb-key*
+# Generated binaries and measurements
+out/
+__pycache__/
+*.pyc
+*.apk
+*.aab
+*.log
+*-private.*
+# Editor/OS files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Other TV packages and local translation cache
+*.ipk
+*.wgt
+.i18n-cache.json

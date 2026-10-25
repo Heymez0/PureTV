@@ -1,0 +1,13 @@
+{
+  "base_url": "https://github.com/jqssun/android-airplay-server",
+  "base_commit": "a46cca0a6a1274e9e33c0e750f0f1c1eb1d881ea",
+  "version": "0.0.36-puretv.1",
+  "package": "io.puretv.airplay",
+  "abi": "armeabi-v7a",
+  "source_asset": "PureTV-AirPlay-Source.zip",
+  "full_native_rebuild_verified": false,
+  "status": "Interface build, matching PureTV certificates and unchanged ARMv7 library checks passed; physical new-identity QA pending",
+  "source_sha256": "13748331dad7760861c69bd0b59d559e3b8f191dfe686e5b329bee89f9ea7375",
+  "receiver_apk_sha256": "24d252a5533c2b75845be9cbee5cf21cd4d54d2bd45a0141ad7400684a1fab2b",
+  "physical_new_identity_tested": false
+}

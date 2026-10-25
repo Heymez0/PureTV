@@ -1,0 +1,681 @@
+diff --git a/app/build-native.gradle.kts b/app/build-native.gradle.kts
+new file mode 100644
+--- /dev/null
++++ b/app/build-native.gradle.kts
+@@ -0,0 +1,140 @@
++plugins {
++    alias(libs.plugins.android.application)
++    alias(libs.plugins.kotlin.compose)
++    alias(libs.plugins.ksp)
++    alias(libs.plugins.hilt)
++}
++
++import java.util.Properties
++
++val localProps = Properties().apply {
++    rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use(::load)
++}
++
++val allAbis = listOf("arm64-v8a", "armeabi-v7a", "x86_64")
++
++android {
++    namespace = "io.github.jqssun.airplay"
++    compileSdk = 37
++    ndkVersion = "27.0.12077973"
++
++    if (localProps.containsKey("storeFile")) {
++        signingConfigs {
++            create("release") {
++                storeFile = file(localProps.getProperty("storeFile"))
++                storePassword = localProps.getProperty("storePassword")
++                keyAlias = localProps.getProperty("keyAlias")
++                keyPassword = localProps.getProperty("keyPassword")
++            }
++        }
++    }
++
++    defaultConfig {
++        applicationId = "io.puretv.airplay"
++        minSdk = 23
++        targetSdk = 37
++        versionCode = 36
++        versionName = "0.0.36-puretv.1"
++
++        externalNativeBuild {
++            cmake {
++                arguments += "-DANDROID_STL=c++_shared"
++                arguments += "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON"
++            }
++        }
++    }
++
++    externalNativeBuild {
++        cmake {
++            path = file("src/main/cpp/CMakeLists.txt")
++        }
++    }
++
++    buildTypes {
++        debug {
++            ndk { abiFilters += allAbis }
++        }
++        release {
++            isMinifyEnabled = true
++            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
++            signingConfigs.findByName("release")?.let { signingConfig = it }
++            ndk { abiFilters += allAbis }
++        }
++        // debuggable build with HWASan (arm64) + UBSan in native code
++        create("sanitize") {
++            initWith(getByName("debug"))
++            matchingFallbacks += "debug"
++            ndk {
++                abiFilters.clear()
++                abiFilters += "arm64-v8a"
++            }
++            externalNativeBuild {
++                cmake { arguments += "-DSANITIZE=ON" }
++            }
++        }
++    }
++
++    dependenciesInfo {
++        includeInApk = false
++        includeInBundle = false
++    }
++
++    compileOptions {
++        sourceCompatibility = JavaVersion.VERSION_17
++        targetCompatibility = JavaVersion.VERSION_17
++    }
++
++    buildFeatures {
++        compose = true
++        prefab = true
++    }
++}
++
++tasks.register("applyUxplayPatches") {
++    doLast {
++        fun git(vararg args: String): String {
++            val proc = ProcessBuilder("git", "-C", "$projectDir/src/main/cpp/third_party/UxPlay", *args)
++                .redirectErrorStream(true).start()
++            val out = proc.inputStream.bufferedReader().readText()
++            check(proc.waitFor() == 0) { "git ${args.joinToString(" ")} failed:\n$out" }
++            return out
++        }
++        val patches = file("src/main/cpp/patches/UxPlay").listFiles { f -> f.extension == "patch" }!!.sorted()
++        val touched = patches.flatMap { git("apply", "--numstat", it.path).trim().lines() }
++            .map { it.substringAfterLast("\t") }.distinct()
++        git("checkout", "--", *touched.toTypedArray())
++        patches.forEach { git("apply", "--unidiff-zero", it.path) }
++    }
++}
++
++tasks.configureEach {
++    if (name.startsWith("configureCMake")) dependsOn("applyUxplayPatches")
++}
++
++dependencies {
++    implementation(libs.androidx.core.ktx)
++    implementation(libs.androidx.activity.compose)
++    implementation(libs.androidx.lifecycle.runtime)
++    implementation(libs.androidx.lifecycle.service)
++    implementation(libs.androidx.lifecycle.viewmodel)
++    implementation(libs.androidx.datastore.prefs)
++    implementation(libs.androidx.media)
++    implementation(libs.media3.exoplayer)
++    implementation(libs.media3.exoplayer.hls)
++    implementation(libs.media3.ui.compose.material3)
++    implementation(libs.media3.transformer)
++    implementation(libs.kotlinx.coroutines)
++    implementation(libs.oboe)
++
++    implementation(platform(libs.compose.bom))
++    implementation(libs.compose.ui)
++    implementation(libs.compose.ui.graphics)
++    implementation(libs.compose.ui.tooling.preview)
++    implementation(libs.compose.material3)
++    implementation(libs.compose.material.icons)
++    debugImplementation(libs.compose.ui.tooling)
++
++    implementation(libs.hilt.android)
++    ksp(libs.hilt.compiler)
++    implementation(libs.hilt.navigation.compose)
++}
+diff --git a/app/build.gradle.kts b/app/build.gradle.kts
+--- a/app/build.gradle.kts
++++ b/app/build.gradle.kts
+@@ -11,12 +11,12 @@
+     rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use(::load)
+ }
+ 
+-val allAbis = listOf("arm64-v8a", "armeabi-v7a", "x86_64")
++// This small UI fork is built specifically for the ARMv7 Mi Stick.
++val allAbis = listOf("armeabi-v7a")
+ 
+ android {
+     namespace = "io.github.jqssun.airplay"
+     compileSdk = 37
+-    ndkVersion = "27.0.12077973"
+ 
+     if (localProps.containsKey("storeFile")) {
+         signingConfigs {
+@@ -30,25 +30,16 @@
+     }
+ 
+     defaultConfig {
+-        applicationId = "io.github.jqssun.airplay"
++        applicationId = "io.puretv.airplay"
+         minSdk = 23
+         targetSdk = 37
+         versionCode = 36
+-        versionName = "0.0.36"
++        versionName = "0.0.36-puretv.1"
+ 
+-        externalNativeBuild {
+-            cmake {
+-                arguments += "-DANDROID_STL=c++_shared"
+-                arguments += "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON"
+-            }
+-        }
++
+     }
+ 
+-    externalNativeBuild {
+-        cmake {
+-            path = file("src/main/cpp/CMakeLists.txt")
+-        }
+-    }
++
+ 
+     buildTypes {
+         debug {
+@@ -68,9 +59,7 @@
+                 abiFilters.clear()
+                 abiFilters += "arm64-v8a"
+             }
+-            externalNativeBuild {
+-                cmake { arguments += "-DSANITIZE=ON" }
+-            }
++
+         }
+     }
+ 
+@@ -88,27 +77,6 @@
+         compose = true
+         prefab = true
+     }
+-}
+-
+-tasks.register("applyUxplayPatches") {
+-    doLast {
+-        fun git(vararg args: String): String {
+-            val proc = ProcessBuilder("git", "-C", "$projectDir/src/main/cpp/third_party/UxPlay", *args)
+-                .redirectErrorStream(true).start()
+-            val out = proc.inputStream.bufferedReader().readText()
+-            check(proc.waitFor() == 0) { "git ${args.joinToString(" ")} failed:\n$out" }
+-            return out
+-        }
+-        val patches = file("src/main/cpp/patches/UxPlay").listFiles { f -> f.extension == "patch" }!!.sorted()
+-        val touched = patches.flatMap { git("apply", "--numstat", it.path).trim().lines() }
+-            .map { it.substringAfterLast("\t") }.distinct()
+-        git("checkout", "--", *touched.toTypedArray())
+-        patches.forEach { git("apply", "--unidiff-zero", it.path) }
+-    }
+-}
+-
+-tasks.configureEach {
+-    if (name.startsWith("configureCMake")) dependsOn("applyUxplayPatches")
+ }
+ 
+ dependencies {
+diff --git a/app/src/main/AndroidManifest.xml b/app/src/main/AndroidManifest.xml
+--- a/app/src/main/AndroidManifest.xml
++++ b/app/src/main/AndroidManifest.xml
+@@ -13,6 +13,8 @@
+     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
++
++    <permission android:name="io.puretv.airplay.permission.CONTROL" android:protectionLevel="signature" />
+ 
+     <uses-feature android:name="android.software.leanback" android:required="false" />
+     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
+@@ -51,6 +53,9 @@
+             android:foregroundServiceType="connectedDevice|mediaPlayback"
+             android:exported="false" />
+ 
++        <receiver android:name=".LauncherControlReceiver" android:exported="true"
++            android:permission="io.puretv.airplay.permission.CONTROL" />
++
+         <receiver
+             android:name=".BootReceiver"
+             android:enabled="true"
+diff --git a/app/src/main/kotlin/io/github/jqssun/airplay/BootReceiver.kt b/app/src/main/kotlin/io/github/jqssun/airplay/BootReceiver.kt
+--- a/app/src/main/kotlin/io/github/jqssun/airplay/BootReceiver.kt
++++ b/app/src/main/kotlin/io/github/jqssun/airplay/BootReceiver.kt
+@@ -12,7 +12,7 @@
+             intent.action != "android.intent.action.QUICKBOOT_POWERON") return
+ 
+         val prefs = context.getSharedPreferences(Prefs.NAME, Context.MODE_PRIVATE)
+-        if (!prefs[Prefs.BOOT_AUTO_START]) return
++        if (!prefs[Prefs.BOOT_AUTO_START] || LauncherControl.disabled(context)) return
+ 
+         val serviceIntent = Intent(context, AirPlayService::class.java)
+             .setAction(AirPlayService.ACTION_START_SERVER)
+diff --git a/app/src/main/kotlin/io/github/jqssun/airplay/LauncherControlReceiver.kt b/app/src/main/kotlin/io/github/jqssun/airplay/LauncherControlReceiver.kt
+new file mode 100644
+--- /dev/null
++++ b/app/src/main/kotlin/io/github/jqssun/airplay/LauncherControlReceiver.kt
+@@ -0,0 +1,54 @@
++package io.github.jqssun.airplay
++
++import android.app.Activity
++import android.content.BroadcastReceiver
++import android.content.Context
++import android.content.Intent
++import androidx.core.content.ContextCompat
++import io.github.jqssun.airplay.service.AirPlayService
++import org.json.JSONObject
++
++/** Explicit, signature-protected commands. Never accepts preferences, URLs or shell text. */
++class LauncherControlReceiver : BroadcastReceiver() {
++    override fun onReceive(context: Context, intent: Intent) {
++        val action = intent.action
++        if (action != QUERY && action != START && action != STOP) return
++        var state: String? = null
++        try {
++            when (action) {
++                START -> {
++                    LauncherControl.setDisabled(context, false)
++                    ContextCompat.startForegroundService(context,
++                        Intent(context, AirPlayService::class.java).setAction(AirPlayService.ACTION_START_SERVER))
++                    state = "starting"
++                }
++                STOP -> {
++                    LauncherControl.setDisabled(context, true)
++                    AirPlayService.launcherInstance?.stopServer()
++                }
++            }
++            val service = AirPlayService.launcherInstance
++            val actual = service?.serverState?.value?.name?.lowercase() ?: "stopped"
++            setResult(Activity.RESULT_OK, JSONObject().put("state", if (actual == "running") actual else state ?: actual)
++                .put("connections", service?.connectionCount?.value ?: 0)
++                .put("disabled", LauncherControl.disabled(context)).toString(), null)
++        } catch (_: RuntimeException) {
++            setResult(Activity.RESULT_CANCELED, "{\"state\":\"error\"}", null)
++        }
++    }
++
++    companion object {
++        const val QUERY = "io.puretv.airplay.control.QUERY"
++        const val START = "io.puretv.airplay.control.START"
++        const val STOP = "io.puretv.airplay.control.STOP"
++    }
++}
++
++/** An explicit stop stays stopped across opening the UI and reboot, without editing receiver preferences. */
++object LauncherControl {
++    fun disabled(context: Context) = context.getSharedPreferences("launcher_control", Context.MODE_PRIVATE)
++        .getBoolean("disabled", false)
++    fun setDisabled(context: Context, value: Boolean) {
++        context.getSharedPreferences("launcher_control", Context.MODE_PRIVATE).edit().putBoolean("disabled", value).commit()
++    }
++}
+diff --git a/app/src/main/kotlin/io/github/jqssun/airplay/MainActivity.kt b/app/src/main/kotlin/io/github/jqssun/airplay/MainActivity.kt
+--- a/app/src/main/kotlin/io/github/jqssun/airplay/MainActivity.kt
++++ b/app/src/main/kotlin/io/github/jqssun/airplay/MainActivity.kt
+@@ -75,6 +75,12 @@
+ 
+         bindService(Intent(this, AirPlayService::class.java), connection, BIND_AUTO_CREATE)
+ 
++        // Optional local UI colors from the launcher. They do not affect receiver settings or transport.
++        val style = getSharedPreferences("puretv_style", MODE_PRIVATE)
++        val skyTop = intent.getIntExtra("puretv_sky_top", style.getInt("top", 0xFF302A23.toInt())) or 0xFF000000.toInt()
++        val skyBottom = intent.getIntExtra("puretv_sky_bottom", style.getInt("bottom", 0xFF111113.toInt())) or 0xFF000000.toInt()
++        style.edit().putInt("top", skyTop).putInt("bottom", skyBottom).apply()
++
+         lifecycleScope.launch {
+             repeatOnLifecycle(Lifecycle.State.STARTED) {
+                 while (true) {
+@@ -109,7 +115,7 @@
+         }
+ 
+         setContent {
+-            AirPlayTheme {
++            AirPlayTheme(skyTop, skyBottom) {
+                 MainScreen(
+                     viewModel = viewModel,
+                     isInPip = isInPip.value,
+@@ -126,6 +132,7 @@
+         ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
+ 
+     private fun _autoStart() {
++        if (LauncherControl.disabled(this)) return
+         val svc = service ?: return
+         if (viewModel.pref(Prefs.AUTO_START).value && svc.serverState.value == AirPlayService.ServerState.STOPPED && hasLocalNetwork()) {
+             viewModel.startServer()
+diff --git a/app/src/main/kotlin/io/github/jqssun/airplay/service/AirPlayService.kt b/app/src/main/kotlin/io/github/jqssun/airplay/service/AirPlayService.kt
+--- a/app/src/main/kotlin/io/github/jqssun/airplay/service/AirPlayService.kt
++++ b/app/src/main/kotlin/io/github/jqssun/airplay/service/AirPlayService.kt
+@@ -217,6 +217,7 @@
+ 
+     override fun onCreate() {
+         super.onCreate()
++        launcherInstance = this
+         createNotificationChannel()
+         dacpController = DacpController(this)
+         dacpPlayer = DacpPlayer(
+@@ -357,6 +358,7 @@
+     }
+ 
+     fun startServer() {
++        io.github.jqssun.airplay.LauncherControl.setDisabled(this, false)
+         _startServer(ensureServiceStarted = true)
+     }
+ 
+@@ -624,6 +626,7 @@
+     }
+ 
+     override fun onDestroy() {
++        if (launcherInstance === this) launcherInstance = null
+         stopServer()
+         dacpPlayer.release()
+         mediaReceiver?.let {
+@@ -1177,6 +1180,8 @@
+     }
+ 
+     companion object {
++        @Volatile var launcherInstance: AirPlayService? = null
++            private set
+         private const val TAG = "AirPlayService"
+         private const val CLIENT_VOL_EPS = 0.033f
+         private const val CLIENT_VOL_MAX_STEPS = 32
+diff --git a/app/src/main/kotlin/io/github/jqssun/airplay/ui/MainScreen.kt b/app/src/main/kotlin/io/github/jqssun/airplay/ui/MainScreen.kt
+--- a/app/src/main/kotlin/io/github/jqssun/airplay/ui/MainScreen.kt
++++ b/app/src/main/kotlin/io/github/jqssun/airplay/ui/MainScreen.kt
+@@ -49,6 +49,7 @@
+ import androidx.core.view.WindowInsetsCompat
+ import androidx.core.view.WindowInsetsControllerCompat
+ import io.github.jqssun.airplay.Prefs
++import io.github.jqssun.airplay.ui.theme.LocalTvBackdrop
+ import io.github.jqssun.airplay.R
+ import io.github.jqssun.airplay.service.AirPlayService.ServerState
+ import io.github.jqssun.airplay.ui.gestures.BrightnessState
+@@ -515,6 +516,38 @@
+             onExitFullscreen = { fullscreen = false },
+             onPip = onPip
+         )
++    } else if (isTv()) {
++        Row(Modifier.fillMaxSize().background(LocalTvBackdrop.current).padding(40.dp)) {
++            Column(Modifier.weight(0.34f).fillMaxHeight().padding(end = 36.dp),
++                verticalArrangement = Arrangement.Center) {
++                Icon(Icons.Default.Cast, contentDescription = null, modifier = Modifier.size(72.dp),
++                    tint = MaterialTheme.colorScheme.onBackground)
++                Spacer(Modifier.height(22.dp))
++                Text("AirPlay", style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.SemiBold,
++                    color = MaterialTheme.colorScheme.onBackground)
++                Spacer(Modifier.height(30.dp))
++                Tab.entries.forEach { t ->
++                    var focused by remember { mutableStateOf(false) }
++                    val highlighted = focused || tab == t
++                    Surface(shape = RoundedCornerShape(18.dp),
++                        color = if (highlighted) MaterialTheme.colorScheme.primary else Color.Transparent,
++                        contentColor = if (highlighted) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onBackground,
++                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
++                            .onFocusChanged { focused = it.hasFocus }.clickable { tab = t }) {
++                        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
++                            Icon(t.icon, contentDescription = null, modifier = Modifier.size(24.dp))
++                            Spacer(Modifier.width(14.dp))
++                            Text(stringResource(t.labelRes), style = MaterialTheme.typography.titleMedium)
++                        }
++                    }
++                }
++            }
++            Surface(modifier = Modifier.weight(0.66f).fillMaxHeight(),
++                shape = RoundedCornerShape(24.dp), color = MaterialTheme.colorScheme.surface) {
++                TabContent(tab, viewModel, video, onFullscreen = { fullscreen = true },
++                    onPip = onPip, onLocalNetwork = onLocalNetwork, showAudioMode = audioOnly)
++            }
++        }
+     } else {
+         Scaffold(
+             bottomBar = {
+diff --git a/app/src/main/kotlin/io/github/jqssun/airplay/ui/theme/Theme.kt b/app/src/main/kotlin/io/github/jqssun/airplay/ui/theme/Theme.kt
+--- a/app/src/main/kotlin/io/github/jqssun/airplay/ui/theme/Theme.kt
++++ b/app/src/main/kotlin/io/github/jqssun/airplay/ui/theme/Theme.kt
+@@ -1,28 +1,42 @@
+ package io.github.jqssun.airplay.ui.theme
+ 
+-import android.os.Build
+-import androidx.compose.foundation.isSystemInDarkTheme
+ import androidx.compose.material3.MaterialTheme
+ import androidx.compose.material3.darkColorScheme
+-import androidx.compose.material3.dynamicDarkColorScheme
+-import androidx.compose.material3.dynamicLightColorScheme
+-import androidx.compose.material3.lightColorScheme
++import androidx.compose.foundation.shape.RoundedCornerShape
++import androidx.compose.material3.Shapes
+ import androidx.compose.runtime.Composable
+-import androidx.compose.ui.platform.LocalContext
++import androidx.compose.runtime.CompositionLocalProvider
++import androidx.compose.runtime.staticCompositionLocalOf
++import androidx.compose.runtime.remember
++import androidx.compose.ui.graphics.Brush
++import androidx.compose.ui.graphics.Color
++import androidx.compose.ui.unit.dp
++
++// Static colors and shapes match the launcher's settings, without blur or animated backgrounds.
++private val TvColors = darkColorScheme(
++    primary = Color(0xFFF5F5F7), onPrimary = Color(0xFF1C1C1E),
++    primaryContainer = Color(0xFF303033), onPrimaryContainer = Color(0xFFF5F5F7),
++    secondary = Color(0xFFB9B9BD), onSecondary = Color(0xFF1C1C1E),
++    secondaryContainer = Color(0xFF303033), onSecondaryContainer = Color.White,
++    tertiary = Color(0xFFB9B9BD),
++    background = Color(0xFF151517), onBackground = Color(0xFFF5F5F7),
++    surface = Color(0xFF171719), onSurface = Color(0xFFF5F5F7),
++    surfaceVariant = Color(0xFF242426), onSurfaceVariant = Color(0xFFB6B6BB),
++    surfaceContainer = Color(0xFF202022), surfaceContainerLow = Color(0xFF1A1A1C),
++    surfaceContainerHigh = Color(0xFF29292C), surfaceContainerHighest = Color(0xFF303033),
++    outline = Color(0xFF77777C), outlineVariant = Color(0xFF3B3B3E)
++)
++
++val LocalTvBackdrop = staticCompositionLocalOf<Brush> {
++    Brush.verticalGradient(listOf(Color(0xFF302A23), Color(0xFF111113)))
++}
+ 
+ @Composable
+-fun AirPlayTheme(
+-    darkTheme: Boolean = isSystemInDarkTheme(),
+-    content: @Composable () -> Unit
+-) {
+-    val colorScheme = when {
+-        Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+-            val ctx = LocalContext.current
+-            if (darkTheme) dynamicDarkColorScheme(ctx) else dynamicLightColorScheme(ctx)
+-        }
+-        darkTheme -> darkColorScheme()
+-        else -> lightColorScheme()
++fun AirPlayTheme(top: Int, bottom: Int, content: @Composable () -> Unit) {
++    val backdrop = remember(top, bottom) { Brush.verticalGradient(listOf(Color(top), Color(bottom))) }
++    MaterialTheme(colorScheme = TvColors, shapes = Shapes(
++        small = RoundedCornerShape(12.dp), medium = RoundedCornerShape(18.dp),
++        large = RoundedCornerShape(24.dp))) {
++        CompositionLocalProvider(LocalTvBackdrop provides backdrop, content = content)
+     }
+-
+-    MaterialTheme(colorScheme = colorScheme, content = content)
+ }
+diff --git a/app/src/main/res/values/strings.xml b/app/src/main/res/values/strings.xml
+--- a/app/src/main/res/values/strings.xml
++++ b/app/src/main/res/values/strings.xml
+@@ -1,6 +1,6 @@
+ <?xml version="1.0" encoding="utf-8"?>
+ <resources>
+-    <string name="app_name">AirPlay Server</string>
++    <string name="app_name">AirPlay</string>
+ 
+     <!-- Notification -->
+     <string name="notification_channel">AirPlay Service</string>
+diff --git a/app/src/main/res/values-tr/strings.xml b/app/src/main/res/values-tr/strings.xml
+new file mode 100644
+--- /dev/null
++++ b/app/src/main/res/values-tr/strings.xml
+@@ -0,0 +1,155 @@
++<?xml version='1.0' encoding='utf-8'?>
++<resources>
++  <string name="app_name">AirPlay</string>
++  <string name="notification_channel">AirPlay hizmeti</string>
++  <string name="notification_title">AirPlay alıcısı çalışıyor</string>
++  <string name="notification_text">AirPlay bağlantıları bekleniyor</string>
++  <string name="notification_pin_title">AirPlay PIN gerekiyor</string>
++  <string name="notification_pin_text">PIN: %1$s</string>
++  <string name="stop_service">Durdur</string>
++  <string name="tab_overview">Genel görünüm</string>
++  <string name="tab_logs">Günlükler</string>
++  <string name="tab_settings">Ayarlar</string>
++  <string name="server_stopped">Alıcı durduruldu</string>
++  <string name="waiting_for_connection">Bağlantı bekleniyor…</string>
++  <string name="waiting_for_playback">Gönderen cihazda oynatmayı başlatın…</string>
++  <string name="error_starting_server">Alıcı başlatılamadı</string>
++  <string name="connected_count">%d cihaz bağlı</string>
++  <string name="error_label">Hata</string>
++  <string name="stopped_label">Durduruldu</string>
++  <string name="btn_start">Başlat</string>
++  <string name="btn_stop">Durdur</string>
++  <string name="btn_allow">İzin ver</string>
++  <string name="btn_open_settings">Ayarları aç</string>
++  <string name="local_network_label">Yerel ağ izni gerekiyor</string>
++  <string name="local_network_desc">Apple cihazlarının bu alıcıyı bulması ve bağlanması için yerel ağ erişimine izin verin.</string>
++  <string name="unknown_track">Bilinmiyor</string>
++  <string name="cd_pip">Resim içinde resim</string>
++  <string name="cd_fullscreen">Tam ekran</string>
++  <string name="cd_exit_fullscreen">Tam ekrandan çık</string>
++  <string name="cd_cover_art">Albüm kapağı</string>
++  <string name="cd_play_pause">Oynat / Duraklat</string>
++  <string name="cd_rewind">Geri sar</string>
++  <string name="cd_fast_forward">İleri sar</string>
++  <string name="volume_server">Alıcı ses düzeyi</string>
++  <string name="volume_client">Gönderen ses düzeyi</string>
++  <string name="cd_download">Videoyu indir</string>
++  <string name="cd_cancel_download">İndirmeyi iptal et</string>
++  <string name="download_saved">%1$s konumuna kaydedildi</string>
++  <string name="download_failed">İndirme başarısız</string>
++  <string name="gesture_seek_seconds">%1$d saniye</string>
++  <string name="seconds_short">%1$d sn</string>
++  <string name="select_playback_speed">Oynatma hızı</string>
++  <string name="cd_reset_speed">Hızı sıfırla</string>
++  <string name="skip_silence">Sessizliği atla</string>
++  <string name="cd_back">Geri</string>
++  <string name="cd_copy_url">Video adresini kopyala</string>
++  <string name="cd_rotate">Ekranı döndür</string>
++  <string name="cd_lock_controls">Kontrolleri kilitle</string>
++  <string name="cd_unlock_controls">Kontrol kilidini aç</string>
++  <string name="scale_best_fit">Ekrana sığdır</string>
++  <string name="scale_stretch">Esnet</string>
++  <string name="scale_crop">Kırp</string>
++  <string name="dialog_pin_title">AirPlay PIN</string>
++  <string name="btn_export">Dışa aktar</string>
++  <string name="btn_clear">Temizle</string>
++  <string name="export_logs_chooser_title">Günlükleri dışa aktar</string>
++  <string name="section_server">Alıcı</string>
++  <string name="section_connection">Bağlantı</string>
++  <string name="section_display">Görünüm</string>
++  <string name="section_decode">Kod çözme</string>
++  <string name="section_developer">Geliştirici</string>
++  <string name="setting_server_name">Alıcı adı</string>
++  <string name="setting_server_port">Alıcı bağlantı noktası</string>
++  <string name="setting_auto_start">Uygulama açılınca başlat</string>
++  <string name="setting_auto_start_desc">Uygulama açıldığında AirPlay alıcısını başlatır.</string>
++  <string name="setting_boot_auto_start">Cihaz açılınca başlat</string>
++  <string name="setting_boot_auto_start_desc">Mi Stick açıldığında AirPlay alıcısını başlatır.</string>
++  <string name="setting_run_in_background">Arka planda çalış</string>
++  <string name="setting_run_in_background_desc">Uygulamadan çıkıldığında alıcı çalışmaya devam eder.</string>
++  <string name="setting_require_pin">PIN iste (Beta)</string>
++  <string name="setting_require_pin_desc">Her yeni bağlantı için dört haneli PIN ister.</string>
++  <string name="setting_allow_new_conn">Yeni bağlantılara izin ver</string>
++  <string name="setting_allow_new_conn_desc">Yeni cihaz bağlandığında mevcut gönderenin bağlantısını keser.</string>
++  <string name="setting_idle_preview">Boştayken video yüzeyi</string>
++  <string name="setting_idle_preview_desc">Bağlantı beklenirken video yüzeyini gösterir.</string>
++  <string name="setting_auto_fullscreen">Otomatik tam ekran</string>
++  <string name="setting_auto_fullscreen_desc">Gönderen bağlandığında tam ekrana geçer.</string>
++  <string name="setting_keep_screen_on">Ekranı açık tut</string>
++  <string name="setting_keep_screen_on_desc">Gönderen bağlıyken uykuya geçmeyi önler.</string>
++  <string name="setting_advertise_video">AirPlay video desteği</string>
++  <string name="setting_advertise_video_desc">Kapalıyken videolar yalnızca ses olarak aktarılır.</string>
++  <string name="setting_advertise_mirroring">Ekran yansıtma desteği</string>
++  <string name="setting_advertise_mirroring_desc">Kapalıyken alıcı ekran yansıtma listesinde görünmez.</string>
++  <string name="setting_advertise_audio">AirPlay ses desteği</string>
++  <string name="setting_advertise_audio_desc">Kapalıyken yalnızca ekran yansıtma kullanılabilir; müzik uygulamalarında görünmez.</string>
++  <string name="setting_alac">ALAC kodeğini duyur</string>
++  <string name="setting_alac_desc">Müzik aktarımı için mDNS kaydına ALAC desteği ekler.</string>
++  <string name="setting_aac">AAC kodeğini duyur</string>
++  <string name="setting_aac_desc">Ekran yansıtma sesi için AAC-ELD / AAC-LC desteği ekler.</string>
++  <string name="setting_launch_on_connect">Bağlanıldığında uygulamayı aç</string>
++  <string name="setting_launch_on_connect_desc">Gönderen bağlandığında alıcı ekranını gösterir.</string>
++  <string name="setting_launch_on_connect_no_permission">Diğer uygulamaların üzerinde gösterme iznini açın.</string>
++  <string name="setting_discovery">Keşif ağı</string>
++  <string name="setting_discovery_all_desc">Kullanılabilir tüm arayüzlerde NsdManager ile duyurur.</string>
++  <string name="setting_discovery_usb_desc">Yalnızca USB internet paylaşımında özel mDNS yanıtlayıcısıyla duyurur.</string>
++  <string name="chip_all_networks">Tüm ağlar</string>
++  <string name="chip_usb_only">Yalnızca USB</string>
++  <string name="setting_resolution">Çözünürlük</string>
++  <string name="setting_resolution_desc">Gönderen cihazlara duyurulan video çözünürlüğü</string>
++  <string name="setting_resolution_width">Genişlik</string>
++  <string name="setting_resolution_height">Yükseklik</string>
++  <string name="setting_max_fps">En yüksek FPS</string>
++  <string name="setting_max_fps_desc">Gönderen cihazlara duyurulan en yüksek kare hızı</string>
++  <string name="setting_overscanned">Taşmalı görüntü</string>
++  <string name="setting_overscanned_desc">Taşmalı tam ekranlar için piksel sınırı ekler.</string>
++  <string name="chip_custom">Özel</string>
++  <string name="chip_device_portrait">Dikey</string>
++  <string name="chip_device_landscape">Yatay</string>
++  <string name="setting_h265_desc">Otomatik seçenek yalnızca çalıştığı bilinen H.265 çözücüleri kullanır.</string>
++  <string name="setting_enforce_sdr_desc">Videoyu sınırlı SDR olarak işaretler. HDR kaynakların geçişi için kapatın.</string>
++  <string name="setting_sw_alac">Yazılımsal ALAC çözücü kullan</string>
++  <string name="setting_sw_alac_desc">Sistem çözücüsü yerine yazılımsal ALAC kullanır; gecikmeyi etkileyebilir.</string>
++  <string name="setting_sw_aac">Yazılımsal AAC çözücü kullan</string>
++  <string name="setting_sw_aac_desc">Sistem çözücüsü yerine yazılımsal AAC kullanır; gecikmeyi etkileyebilir.</string>
++  <string name="setting_sync_client_volume">Gönderen sesini eşitle</string>
++  <string name="setting_sync_client_volume_desc">Alıcı ses düzeyini gönderen cihazla otomatik eşitler.</string>
++  <string name="setting_developer_options">Geliştirici seçenekleri</string>
++  <string name="setting_developer_options_desc">İleri düzey seçenekleri gösterir.</string>
++  <string name="setting_key_allow_frame_drop_desc">Android 10 ve üzerinde çözücünün gerektiğinde kare atlamasına izin verir.</string>
++  <string name="setting_realtime_decoder_priority_desc">Ses çözücü için gerçek zamanlı zamanlama ister.</string>
++  <string name="setting_operating_rate_desc">Çözücüden en yüksek çalışma hızını ister.</string>
++  <string name="chip_auto">Otomatik</string>
++  <string name="chip_on">Açık</string>
++  <string name="chip_off">Kapalı</string>
++  <string name="setting_low_latency">Düşük gecikme</string>
++  <string name="setting_low_latency_desc">Daha fazla işlemci ve enerji kullanarak ses gecikmesini azaltır.</string>
++  <string name="setting_scheduled_output_buffer_release">Eşzamanlı kare sunumu</string>
++  <string name="setting_scheduled_output_buffer_release_desc">Çözülen kareleri sunum zamanına uyan VSYNC ile gösterir.</string>
++  <string name="setting_audio_delay">Ses gecikmesini belirle</string>
++  <string name="setting_audio_delay_desc">Gönderene bildirilen ses gecikmesini değiştirir.</string>
++  <string name="setting_audio_auto_buffer">Otomatik ses arabelleği</string>
++  <string name="setting_audio_auto_buffer_desc">Ağ ve cihaz performansına göre ses arabelleğini ayarlar. Kaydırıcı, emilebilen dalgalanma miktarını belirler.</string>
++  <string name="setting_audio_cushion_ms">Yazılımsal ses arabelleği (ms)</string>
++  <string name="setting_audio_cushion_ms_desc">Kısa süre gecikmeyi azaltır; uzun süre kesilmeleri azaltır.</string>
++  <string name="setting_oboe_buffer_frames">Donanım çıkış arabelleği (kare)</string>
++  <string name="setting_oboe_buffer_frames_desc">İşlemci zamanlama dalgalanmaları için uygulama ile ses cihazı arasındaki arabellek. Otomatik boyut için 0 bırakın.</string>
++  <string name="setting_debug_overlay">Tanılama katmanını göster</string>
++  <string name="setting_debug_overlay_desc">Video üzerinde kodek, FPS, bit hızı, dalgalanma ve kare istatistiklerini gösterir.</string>
++  <string name="setting_benchmark_log">Tanılama günlüğü</string>
++  <string name="setting_benchmark_log_desc">Aktarım istatistiklerini logcat günlüğüne yazar.</string>
++  <string name="debug_section_video">Görüntü</string>
++  <string name="debug_section_audio">Ses</string>
++  <string name="debug_section_network">Ağ</string>
++  <string name="debug_clients">Gönderen: %1$d</string>
++  <string name="debug_audio">%1$s  Alıcı: %2$d%%  Gönderen: %3$d%%</string>
++  <string name="debug_frames_drops">Kare: %1$d  Atlanan: %2$d</string>
++  <string name="debug_audio_decode">Kod çözme: %1$s</string>
++  <string-array name="audio_adaptive_step_names">
++    <item>En düşük gecikme</item>
++    <item>Düşük gecikme</item>
++    <item>Dengeli</item>
++    <item>Daha kararlı</item>
++    <item>En kararlı</item>
++  </string-array>
++</resources>
+\ No newline at end of file

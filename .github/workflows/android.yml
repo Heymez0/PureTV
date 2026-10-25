@@ -1,0 +1,51 @@
+name: PureTV builds and platform regressions
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install SDK components
+        run: sdkmanager "platforms;android-34" "build-tools;34.0.0"
+      - name: PureTV identity and licence audit
+        run: python3 tools/audit_branding.py
+      - name: Public source audit
+        run: python3 tools/audit_public.py
+      - name: Empty-key unsigned build
+        run: python3 build.py --config config.example.properties
+      - name: JVM regressions and config validation
+        run: python3 tools/tests/run.py
+
+  web-platforms:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: PureTV identity and licence audit
+        run: python3 tools/audit_branding.py
+      - name: Public source audit
+        run: python3 tools/audit_public.py
+      - name: Generic IPK and unsigned WGT inspection
+        run: python3 tools/tests/test_web_packages.py
+      - name: Offline web platform API regressions
+        run: node tools/tests/web_regression.js
+      - name: JavaScript syntax
+        run: for source in web/*.js; do node --check "$source"; done
