@@ -4,8 +4,8 @@
 
 ## Android TV / Google TV
 
-Use the signed [PureTV.apk download](https://github.com/Heymez0/PureTV/releases/download/v1.0.0-preview/PureTV.apk)
-from the [v1 preview release](https://github.com/Heymez0/PureTV/releases/tag/v1.0.0-preview). Requires Android 9+.
+Use the signed [PureTV.apk download](https://github.com/Heymez0/PureTV/releases/download/v1.0.0-preview.1/PureTV.apk)
+from the [v1 preview release](https://github.com/Heymez0/PureTV/releases/tag/v1.0.0-preview.1). Requires Android 9+.
 Sign in with repository access while the project is private. Download **PureTV.apk**; the automatic Source code ZIP
 contains source files for developers.
 
