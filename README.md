@@ -77,7 +77,7 @@ The header banner is an illustration. [Capture details](docs/media/README.md).
 
 ## Install
 
-**Android TV / Google TV:** [Download PureTV.apk](https://github.com/Heymez0/PureTV/releases/download/v1.0.0-preview.1/PureTV.apk) · [Release and SHA256 checksum](https://github.com/Heymez0/PureTV/releases/tag/v1.0.0-preview.1)
+**Android TV / Google TV:** [Download PureTV.apk](https://github.com/Heymez0/PureTV/releases/download/v1/PureTV.apk) · [Release and SHA256 checksum](https://github.com/Heymez0/PureTV/releases/tag/v1)
 
 The signed v1 preview APK is for **Android 9 or newer**. Download it on your computer, copy it to a USB drive or
 transfer it to the TV, then open it with the TV file manager. Follow PureTV's welcome guide after installation.
