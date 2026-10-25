@@ -21,8 +21,10 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - name: Install SDK components
-        run: sdkmanager "platforms;android-34" "build-tools;34.0.0"
+      - name: Verify preinstalled Android SDK
+        run: |
+          test -f "$ANDROID_HOME/platforms/android-34/android.jar"
+          test -x "$ANDROID_HOME/build-tools/34.0.0/aapt2"
       - name: PureTV identity and licence audit
         run: python3 tools/audit_branding.py
       - name: Public source audit
