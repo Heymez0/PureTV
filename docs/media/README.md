@@ -9,7 +9,7 @@ copied without image edits. Select an image in the README to open its original f
 The Home Screens section contains:
 
 - `recommendations-en.png`: Recent + recommended home, featured first at full width.
-- `home-en.png`: clock-only home, weather and the app shelf, displayed below at half width.
+- `home-en.png`: clock-only home, weather and the app shelf, displayed below at full width.
 
 The Features row contains, in order:
 

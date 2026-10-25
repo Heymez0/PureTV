@@ -50,7 +50,7 @@ Real English-interface screenshots from PureTV v2 on a Xiaomi Mi Stick running A
 </p>
 
 <p align="center">
-  <a href="docs/media/home-en.png"><img src="docs/media/home-en.png" width="50%" alt="Clock home page with weather and the app shelf"></a>
+  <a href="docs/media/home-en.png"><img src="docs/media/home-en.png" width="100%" alt="Clock home page with weather and the app shelf"></a>
   <br><strong>Clock home page</strong>
 </p>
 
