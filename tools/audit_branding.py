@@ -13,6 +13,7 @@ LEGAL = {
     "docs/licenses/LICENSE-launcher-MIT.txt", "app/assets/licenses/NOTICE.md",
     "app/assets/licenses/third_party/LICENSE-launcher-MIT.txt",
 }
+LOCALIZED_DOCS = {"docs/README.tr.md"}
 SKIP = {".git", "out", "__pycache__"}
 
 
@@ -32,7 +33,7 @@ def check(root=ROOT):
             continue
         if OBSOLETE.search(text):
             issues.append(rel.as_posix() + ": obsolete runtime/product reference")
-        if path.suffix in {".md", ".svg"} and re.search(r"[\u00c7\u00e7\u011e\u011f\u0130\u0131\u00d6\u00f6\u015e\u015f\u00dc\u00fc]", text):
+        if rel.as_posix() not in LOCALIZED_DOCS and path.suffix in {".md", ".svg"} and re.search(r"[\u00c7\u00e7\u011e\u011f\u0130\u0131\u00d6\u00f6\u015e\u015f\u00dc\u00fc]", text):
             issues.append(rel.as_posix() + ": untranslated presentation text")
     try:
         manifest = ET.parse(root / "app/AndroidManifest.xml").getroot()
