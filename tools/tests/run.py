@@ -8,7 +8,7 @@ import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from tools.build_android import ROOT, argument_file, java_tools
 
-TESTS = ["V2Regression", "PosterCacheRegression", "PosterPlanRegression", "WelcomeRegression", "TvModeRegression", "LocaleFormatsRegression"]
+TESTS = ["V1Regression", "PerformanceRegression", "PosterCacheRegression", "PosterPlanRegression", "WelcomeRegression", "TvModeRegression", "LocaleFormatsRegression"]
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
@@ -30,6 +30,7 @@ def main():
         subprocess.run([jdk["java"], "-cp", str(output) + os.pathsep + str(ROOT / "out/classes"), "io.puretv." + name], check=True)
     subprocess.run([sys.executable, str(ROOT / "tools/tests/test_build_config.py")], check=True)
     subprocess.run([sys.executable, str(ROOT / "tools/tests/test_i18n.py")], check=True)
+    subprocess.run([sys.executable, str(ROOT / "tools/tests/test_licences.py")], check=True)
 
 if __name__ == "__main__":
     main()

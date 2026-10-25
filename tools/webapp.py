@@ -102,6 +102,10 @@ def files(config, made_by):
     for name in ('LICENSE', 'NOTICE.md'):
         with open(os.path.join(ROOT, 'app', 'assets', 'licenses', name), 'rb') as f:
             out[name] = f.read()
+    with open(os.path.join(ROOT, 'docs', 'licenses', 'LICENSE-simple-icons-CC0.txt'), 'rb') as f:
+        out['third_party/LICENSE-simple-icons-CC0.txt'] = f.read()
+    with open(os.path.join(ROOT, 'app', 'assets', 'licenses', 'tmdb-logo.png'), 'rb') as f:
+        out['tmdb-logo.png'] = f.read()
     for name in ('InterVariable.ttf', 'OFL.txt'):
         with open(os.path.join(ROOT, 'app', 'assets', 'fonts', name), 'rb') as f:
             out['fonts/' + name] = f.read()

@@ -577,6 +577,8 @@
     var sun = el('div', 'sun', card);
     if (w.sunrise) { var a = el('span', '', sun); sym('sunrise', a); a.appendChild(document.createTextNode(trf('Sunrise {time}', {time: Data.time(w.sunrise)}))); }
     if (w.sunset) { var b = el('span', '', sun); sym('sunset', b); b.appendChild(document.createTextNode(trf('Sunset {time}', {time: Data.time(w.sunset)}))); }
+    var credit = el('a', 'weather-credit', card, 'Weather: Open-Meteo · CC BY 4.0');
+    credit.href = 'credits.html';
   }
 
   function openDrawer() {
@@ -648,6 +650,7 @@
     ];
     rows.push({label: tr('Shelf'), value: '›', step: function (d) { if (d >= 0) openShelfEdit(); }});
     rows.push({label: tr('TV Settings'), value: '›', step: function (d) { if (d >= 0) tvSettings(); }});
+    rows.push({label: tr('Licences'), value: '›', step: function (d) { if (d >= 0) window.location.href = 'credits.html'; }});
     return rows;
   }
 

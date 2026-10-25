@@ -106,8 +106,7 @@ public class SettingsActivity extends Activity {
                 rows.add(action("Language",()->editor("language")));
                 rows.add(new SettingsPage.Row(tr("Version"),null,false));
                 rows.add(action("Status and notices",()->editor("status")));
-                rows.add(action("Licences",()->new android.app.AlertDialog.Builder(this).setTitle(tr("Licences"))
-                    .setMessage("Launcher: MIT\nAirPlay: GPL-3.0\n\n"+tr("Source code and licences are included in the update package.")).setPositiveButton("OK",null).show()));
+                rows.add(action("Licences",()->Credits.show(this)));
                 rows.add(action("Setup guide",()->WelcomeActivity.open(this)));
         }
         SettingsPage.Data nextData=new SettingsPage.Data(categories()[category],tr("Make yourself at home"),"settings",rows.toArray(new SettingsPage.Row[0]));

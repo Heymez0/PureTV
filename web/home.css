@@ -579,3 +579,5 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 #saver .clock .title { color: #9B9BA1; }
 
 #saver .clock { padding: 0; border-radius: 0; background: none; box-shadow: none; color: #B8B8BE; }
+/* Attribution stays quiet and moves with the cached weather card. */
+.weather-credit { position: absolute; right: 30px; bottom: 10px; font-size: 15px; color: inherit; opacity: .7; }

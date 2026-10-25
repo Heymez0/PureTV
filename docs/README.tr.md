@@ -4,7 +4,7 @@
 
 **Uygulamalarınıza odaklanan sade bir TV ana ekranı.**
 
-[English / ana sayfa](../README.md) · [APK indir](https://github.com/Heymez0/PureTV/releases/download/v2.0.0-preview/PureTV.apk) · [Ayrıntılı kurulum](INSTALL.md) · [Kaynak derleme](DEVELOPMENT.md)
+[English / ana sayfa](../README.md) · [APK indir](https://github.com/Heymez0/PureTV/releases/download/v1.0.0-preview/PureTV.apk) · [Ayrıntılı kurulum](INSTALL.md) · [Kaynak derleme](DEVELOPMENT.md)
 
 PureTV; Android TV, Google TV ve Android kutu/stick cihazlar için hafif bir başlatıcıdır.
 LG webOS ve Samsung Tizen için ayrı web sürümleri bulunur. **Gerçek cihaz referansı Android TV 9 kullanan Mi Stick'tir.**
@@ -48,9 +48,9 @@ Depo şu anda gizlidir. Kaynağa ve indirmelere erişmek için yetkili GitHub he
 
 ### Android TV / Google TV: APK indir
 
-**[PureTV.apk indir](https://github.com/Heymez0/PureTV/releases/download/v2.0.0-preview/PureTV.apk)** · [Ön sürüm ve SHA256 doğrulaması](https://github.com/Heymez0/PureTV/releases/tag/v2.0.0-preview)
+**[PureTV.apk indir](https://github.com/Heymez0/PureTV/releases/download/v1.0.0-preview/PureTV.apk)** · [Ön sürüm ve SHA256 doğrulaması](https://github.com/Heymez0/PureTV/releases/tag/v1.0.0-preview)
 
-Bu, Android 9 ve üzeri için imzalı v2 ön sürümüdür. **PureTV.apk** dosyasını indirin;
+Bu, Android 9 ve üzeri için imzalı v1 ön sürümüdür. **PureTV.apk** dosyasını indirin;
 GitHub'ın otomatik oluşturduğu Source code ZIP dosyaları geliştiriciler içindir.
 
 **USB ile:**

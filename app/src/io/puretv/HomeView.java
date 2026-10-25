@@ -182,7 +182,8 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
     private List<HomeApps.Item> shelf = new ArrayList<>();
     private Spring[] tileFocus = new Spring[0];
     private RectF[] tileRects = new RectF[0];
-    private final Map<String, Bitmap> crispLogos = new HashMap<>();   // logos already sized for the focused tile
+    private final Map<Bitmap, Bitmap> crispLogos = new java.util.IdentityHashMap<>();
+    private int crispWidth; // source identity + stable shelf geometry; no draw-time bitmap work
     /** Each app's tile like its Apple TV icon: brand colors (top, bottom) and logo (0 = as is, 1 = white, 2 = dark). */
     private static final Map<String, int[]> TILE_STYLE = new HashMap<>();
     static {
@@ -243,7 +244,7 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
 
     private final Spring below = new Spring(0.34f, 1f, 0);
     private Spring[] otherFocus = new Spring[0];
-    private int otherIndex, sectionMove, otherFirstRow;
+    private int otherIndex, sectionMove, otherFirstRow, otherLastRow;
     private float sectionWiggle;
     private long sectionMoveAt;
     private final boolean weatherOn = Prefs.weather();
@@ -799,6 +800,9 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
         boolean belowMoving = below.step(dt);
         int first = Math.max(0, (int) Math.floor((below.value - otherTop() - GRID_ROW) / GRID_ROW));
         if (first != otherFirstRow) { otherFirstRow = first; requestLayout(); gridDirty = true; }
+        float otherTranslation=(1-drawer.value)*SHIFT-below.value;
+        int last=VisibleRows.end(otherTop(),GRID_ROW,otherTranslation,h/k);
+        if(last!=otherLastRow){otherLastRow=last;gridDirty=true;}
         boolean otherMoving = step(otherFocus, dt);
         boolean drawerMoving = drawer.step(dt);
         boolean sheetMoving = sheet.step(dt);
@@ -1298,6 +1302,7 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
             retarget(true);
             layoutShelf();
         }
+        prepareShelfLogos();
         tilesDirty = true;
         platter.invalidate();
     }
@@ -1318,7 +1323,9 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
             tileRects[i].set(x, y, x + tw, y + th);
             x += tw + gap;
         }
-        crispLogos.clear();
+        int pixelWidth=Math.round(tw);
+        if(pixelWidth!=crispWidth){crispLogos.clear();crispWidth=pixelWidth;}
+        prepareShelfLogos();
     }
 
     /** Shelf layer: the glass bar and its shadow (it only changes with the background). */
@@ -1496,18 +1503,28 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
     }
 
     private Bitmap crispLogo(HomeApps.Item it, boolean dark) {
-        Bitmap src = dark ? it.logoDark : it.logo;
-        if (tileRects.length == 0) return src;
-        String key = it.key + "@" + System.identityHashCode(src) + "@" + Math.round(tileRects[0].width());
-        Bitmap cached = crispLogos.get(key);
-        if (cached != null) return cached;
-        float bw = tileRects[0].width() * (1 + FOCUS_GROW), bh = tileRects[0].height() * (1 + FOCUS_GROW);
-        float lw = src.getWidth(), lh = src.getHeight();
-        float scale = (float) Math.sqrt(bw * bh * 0.085f / (lw * lh * Math.max(0.08f, it.logoInk))) * it.logoScale;
-        scale = Math.min(scale, Math.min(bw * 0.76f / lw, bh * 0.58f / lh));
-        Bitmap out = downscale(src, Math.round(lw * scale), Math.round(lh * scale));
-        crispLogos.put(key, out);
-        return out;
+        Bitmap source=dark?it.logoDark:it.logo;
+        Bitmap cached=crispLogos.get(source);
+        return cached==null?source:cached;
+    }
+
+    /** Called after catalogue/geometry changes, never by onDraw. Existing source identities retain prepared pixels. */
+    private void prepareShelfLogos() {
+        if(tileRects.length==0 || tileRects[0].width()<=0)return;
+        java.util.Set<Bitmap> wanted=java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<Bitmap,Boolean>());
+        for(HomeApps.Item item:shelf){
+            if(item.logo!=null){wanted.add(item.logo);prepareLogo(item,item.logo);}
+            if(item.logoDark!=null){wanted.add(item.logoDark);prepareLogo(item,item.logoDark);}
+        }
+        crispLogos.keySet().retainAll(wanted);
+    }
+    private void prepareLogo(HomeApps.Item item,Bitmap source){
+        if(crispLogos.containsKey(source))return;
+        float bw=tileRects[0].width()*(1+FOCUS_GROW),bh=tileRects[0].height()*(1+FOCUS_GROW);
+        float lw=source.getWidth(),lh=source.getHeight();
+        float scale=(float)Math.sqrt(bw*bh*.085f/(lw*lh*Math.max(.08f,item.logoInk)))*item.logoScale;
+        scale=Math.min(scale,Math.min(bw*.76f/lw,bh*.58f/lh));
+        crispLogos.put(source,downscale(source,Math.round(lw*scale),Math.round(lh*scale)));
     }
 
     /** Halves the size while it can (a 2×2 average, no aliasing), then finishes at the exact size. */
@@ -1719,6 +1736,9 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
         float sx = hx, base = r.top + 258 * k;
         if (wx.sunrise != 0) sx = sunItem(c, "sunrise", sunriseText, sx, base) + 36 * k;
         if (wx.sunset != 0) sunItem(c, "sunset", sunsetText, sx, base);
+        cardDimRight.setTextSize(15*k);
+        c.drawText("Weather: Open-Meteo · CC BY 4.0",r.right-30*k,r.bottom-12*k,cardDimRight);
+        cardDimRight.setTextSize(21*k);
     }
 
     private void refreshDrawerText() {
@@ -2480,7 +2500,7 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
         if (others.isEmpty() || otherLabels.length != others.size()) return;
         rowTitle.setColor(tone(L_DIM, 0xB3FFFFFF));
         if (otherFirstRow == 0) c.drawText(Ui.tr("Outros apps", "Other apps"), MARGIN * k, (otherTop() - 48) * k, rowTitle);
-        int start = otherFirstRow * COLUMNS, end = Math.min(others.size(), start + 5 * COLUMNS);
+        int start = otherFirstRow * COLUMNS, end = Math.min(others.size(), Math.min(otherLastRow,otherFirstRow+5) * COLUMNS);
         for (int i = start; i < end; i++) if (i != otherIndex) drawOtherApp(c, i);
         if (otherIndex >= start && otherIndex < end) drawOtherApp(c, otherIndex);
     }

@@ -1,0 +1,81 @@
+{
+  "reviewed_on": "2026-10-25",
+  "components": [
+    {
+      "name": "PureTV",
+      "license": "MIT",
+      "path": "LICENSE",
+      "source": "https://github.com/Heymez0/PureTV",
+      "sha256": "e2bfb35fcf41b79d33186fde2ea3f4d40443ba820b4f08bb3bf1843672b2c7a3"
+    },
+    {
+      "name": "Launcher portions",
+      "license": "MIT",
+      "path": "docs/licenses/LICENSE-launcher-MIT.txt",
+      "source": "https://github.com/simbasjungles/free-my-tv",
+      "sha256": "966ef935eb1e3929d31f862e7d04a80c88cf695d0e659992bba6fef1e13e69c3"
+    },
+    {
+      "name": "Inter",
+      "license": "OFL-1.1",
+      "path": "app/assets/fonts/OFL.txt",
+      "source": "https://github.com/rsms/inter",
+      "sha256": "262481e844521b326f5ecd053e59b98c8b2da78c8ee1bdbb6e8174305e54935a"
+    },
+    {
+      "name": "Material Symbols",
+      "license": "Apache-2.0",
+      "path": "app/assets/symbols/LICENSE-material-symbols.txt",
+      "source": "https://github.com/google/material-design-icons",
+      "sha256": "58d1e17ffe5109a7ae296caafcadfdbe6a7d176f0bc4ab01e12a689b0499d8bd"
+    },
+    {
+      "name": "Simple Icons web SVGs",
+      "license": "CC0-1.0",
+      "path": "docs/licenses/LICENSE-simple-icons-CC0.txt",
+      "source": "https://github.com/simple-icons/simple-icons",
+      "sha256": "9046848b63a5c92bff14e4accca80bd987e0623b74adf9226ce5198d312b79d5"
+    },
+    {
+      "name": "TMDB attribution mark",
+      "license": "TMDB branding terms",
+      "path": "tools/artwork/tmdb-logo.svg",
+      "source": "https://developer.themoviedb.org/docs/faq",
+      "sha256": "4698ff4b3cf7244ae04c08866c59bf86602cbe21bffe7ac72a4ddfe44552fcb9"
+    },
+    {
+      "name": "TMDB attribution raster",
+      "license": "TMDB branding terms",
+      "path": "app/assets/licenses/tmdb-logo.png",
+      "source": "https://files.readme.io/29c6fee-blue_short.svg",
+      "sha256": "f4f85579a2bca3e07ebf80628cf1ab504f122a8e37e9cccd9b28954db92ac244"
+    },
+    {
+      "name": "PureTV icon master",
+      "license": "MIT",
+      "path": "tools/artwork/puretv-icon.svg",
+      "source": "https://github.com/Heymez0/PureTV",
+      "sha256": "e63a62ff4ec6454f4772aecf70b980093fad6e7b418f5f5c20586bb530262506"
+    }
+  ],
+  "services": [
+    {
+      "name": "Open-Meteo weather / GeoNames geocoding",
+      "license": "CC-BY-4.0",
+      "source": "https://open-meteo.com/en/licence",
+      "changes": "Formatting, unit conversion and location lookup results"
+    },
+    {
+      "name": "TMDB",
+      "source": "https://developer.themoviedb.org/docs/faq",
+      "notice": "This product uses the TMDB API but is not endorsed or certified by TMDB."
+    },
+    {
+      "name": "Watchmode",
+      "source": "https://api.watchmode.com/",
+      "scope": "Optional builder-supplied API key; no credentials bundled"
+    }
+  ],
+  "separate_receiver": "tools/airplay/source-manifest.json records the optional GPL receiver and corresponding source; neither is inside the MIT launcher APK.",
+  "trademarks": "App logos and recommendation artwork belong to their owners; no affiliation or MIT relicensing is claimed."
+}

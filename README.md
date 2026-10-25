@@ -28,6 +28,8 @@ running Android TV 9. **LG webOS and Samsung Tizen are experimental ports and ha
 Recent content depends on what installed Android apps publish. Optional web catalogue cards use your own TMDB key.
 Android-specific settings, recent-content providers and AirPlay control are not available in the LG/Samsung web edition.
 
+[v1 performance measurements](docs/PERFORMANCE.md) · [Release checks and testing scope](docs/RELEASE.md)
+
 ## Languages
 
 PureTV includes **24 interface language catalogues**: English, Czech, Danish, Dutch, Finnish, French, German,
@@ -36,7 +38,7 @@ Simplified Chinese, Spanish, Swedish, Turkish, Ukrainian and Vietnamese.
 
 ## Preview
 
-Real English-interface screenshots from PureTV v2 on a Xiaomi Mi Stick running Android TV 9.
+Real English-interface screenshots from PureTV v1 on a Xiaomi Mi Stick running Android TV 9.
 
 ### Home Screens
 
@@ -75,9 +77,9 @@ The header banner is an illustration. [Capture details](docs/media/README.md).
 
 ## Install
 
-**Android TV / Google TV:** [Download PureTV.apk](https://github.com/Heymez0/PureTV/releases/download/v2.0.0-preview/PureTV.apk) · [Release and SHA256 checksum](https://github.com/Heymez0/PureTV/releases/tag/v2.0.0-preview)
+**Android TV / Google TV:** [Download PureTV.apk](https://github.com/Heymez0/PureTV/releases/download/v1.0.0-preview/PureTV.apk) · [Release and SHA256 checksum](https://github.com/Heymez0/PureTV/releases/tag/v1.0.0-preview)
 
-The signed v2 preview APK is for **Android 9 or newer**. Download it on your computer, copy it to a USB drive or
+The signed v1 preview APK is for **Android 9 or newer**. Download it on your computer, copy it to a USB drive or
 transfer it to the TV, then open it with the TV file manager. Follow PureTV's welcome guide after installation.
 [Step-by-step Android instructions](docs/INSTALL.md#android-tv--google-tv).
 

@@ -18,10 +18,10 @@ assert members['debian-binary']==b'2.0\n'
 with tarfile.open(fileobj=io.BytesIO(members['data.tar.gz']),mode='r:gz') as tar:
     webos={m.name:tar.extractfile(m).read() for m in tar if m.isfile()}
 base='usr/palm/applications/io.puretv/'
-info=json.loads(webos[base+'appinfo.json']);assert info['title']=='PureTV' and info['version']=='2.0.0' and info['id']=='io.puretv'
+info=json.loads(webos[base+'appinfo.json']);assert info['title']=='PureTV' and info['version']=='1.0.0' and info['id']=='io.puretv'
 with zipfile.ZipFile(ROOT/'PureTV-tizen.wgt') as z:
     assert z.testzip() is None;tizen={n:z.read(n) for n in z.namelist()};assert 'author-signature.xml' not in tizen
-xml=ET.fromstring(tizen['config.xml']);assert xml.attrib['version']=='2.0.0'
+xml=ET.fromstring(tizen['config.xml']);assert xml.attrib['version']=='1.0.0'
 assert xml.find('{http://www.w3.org/ns/widgets}name').text=='PureTV'
 assert xml.find('{http://tizen.org/ns/widgets}application').attrib['id']=='PureTVapp1.PureTV'
 for bundle,prefix in [(webos,base),(tizen,'')]:
@@ -34,6 +34,11 @@ for bundle,prefix in [(webos,base),(tizen,'')]:
     assert not any('/docs/' in n or '/media/' in n for n in bundle)
     assert prefix+'fonts/InterVariable.ttf' in bundle and prefix+'fonts/OFL.txt' in bundle
     assert prefix+'symbols/LICENSE-material-symbols.txt' in bundle
+    assert prefix+'third_party/LICENSE-simple-icons-CC0.txt' in bundle
+    assert prefix+'credits.html' in bundle and prefix+'tmdb-logo.png' in bundle
+    credit=bundle[prefix+'credits.html'].decode()
+    for target in re.findall(r'(?:src|href)="([^"#]+)"',credit):
+        if '://' not in target:assert prefix+target in bundle,target
     html=bundle[prefix+'index.html'].decode()
     for target in re.findall(r'(?:src|href)="([^"#]+)"',html):
         if '://' not in target:assert prefix+target in bundle,target

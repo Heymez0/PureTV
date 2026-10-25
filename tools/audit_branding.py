@@ -9,7 +9,7 @@ import xml.etree.ElementTree as ET
 ROOT = Path(__file__).resolve().parents[1]
 OBSOLETE = re.compile(r"free[\s_.-]*my[\s_.-]*tv|\bfm" + r"tv[_.-]", re.I)
 LEGAL = {
-    "docs/licenses/NOTICE.md", "docs/licenses/provenance.json", "docs/licenses/web-provenance.json",
+    "docs/licenses/NOTICE.md", "docs/licenses/provenance.json", "docs/licenses/web-provenance.json", "docs/licenses/component-inventory.json",
     "docs/licenses/LICENSE-launcher-MIT.txt", "app/assets/licenses/NOTICE.md",
     "app/assets/licenses/third_party/LICENSE-launcher-MIT.txt",
 }
