@@ -45,6 +45,8 @@ jobs:
         run: python3 tools/audit_branding.py
       - name: Public source audit
         run: python3 tools/audit_public.py
+      - name: Translation contracts
+        run: python3 tools/tests/test_i18n.py
       - name: Generic IPK and unsigned WGT inspection
         run: python3 tools/tests/test_web_packages.py
       - name: Offline web platform API regressions

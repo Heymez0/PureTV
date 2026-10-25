@@ -79,11 +79,12 @@ python tools/tests/test_web_packages.py
 node tools/tests/web_regression.js
 python tools/audit_public.py
 python tools/audit_branding.py
+python tools/translate.py --check --allow-fallback
 ```
 
-The five JVM suites cover bounded/stale requests, immutable content snapshots, long settings navigation,
+The six JVM suites cover bounded/stale requests, immutable content snapshots, long settings navigation,
 content controls, 1,600 poster-cache cycles, 3,200 dual-window cycles, welcome flow and TV input/remote rules.
-Configuration tests verify escaping and invalid-input rejection. No emulator or extra Java/Python library is needed.
+Locale tests verify percent placement for English, Turkish and French. Translation tests cover legacy two-argument calls, local menu wrappers, conditional labels, placeholders, date/plural syntax and core-label coverage across 24 catalogues. Configuration tests verify escaping and invalid-input rejection. No emulator or extra Java/Python library is needed.
 Android-native test classes in `tools/tests/io/puretv/` require a device and are excluded from the desktop runner.
 All generated Android/test files stay under `out/` and are excluded from source archives.
 
@@ -155,7 +156,7 @@ These are historical measurements from the earlier package identity, not measure
 a before/after comparison or a RAM/FPS guarantee. Content, process history and shared memory change the result.
 
 Earlier device checks covered tab, quick/full settings, other apps, light/dark themes, preview and actual Dream returns;
-four prepared posters were retained. No production crash/ANR was seen. The 5 JVM suites included 1,600 cache and
+four prepared posters were retained. No production crash/ANR was seen. The earlier five JVM suites included 1,600 cache and
 3,200 dual-window cycles. This preparation reruns desktop build/regressions and package audits; new package authorization,
 HOME recovery and mirroring still need physical QA before release.
 

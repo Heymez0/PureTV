@@ -9,7 +9,7 @@
     python3 tools/translate.py --new fr        # start a catalogue for a new language (then --fill --lang fr)
 
 The English text in the code is the source: every Ui.tr("...") / Ui.trf("...", ...) / Ui.plural("...", n) call (the
-first argument), plus Ui.datePattern("format|..."), and in web/ the same calls without "Ui." (tr, trf, plural and
+English argument; the second argument in legacy Ui.tr(portuguese, english) calls), plus Ui.datePattern("format|..."), and in web/ the same calls without "Ui." (tr, trf, plural and
 formatDate; tools/webapp.py packs the keys the web app uses into its i18n.js). en.json maps each key to its English
 text: a key "context|Text" is "Text" in a given context (a word that needs another translation there), and "{name}"
 is a placeholder filled at runtime. A key "plural|one:{n} season|other:{n} seasons" (Ui.plural) is a count: each language
@@ -102,8 +102,50 @@ def java_string(arg, literal=LITERAL):
                   else {"n": "\n", "t": "\t"}.get(m.group(1), m.group(1)), raw)
 
 
+def expression_keys(arg, literal=LITERAL):
+    """Literal results of a Java/JS string expression, including nested conditional branches."""
+    arg = arg.strip()
+    value = java_string(arg, literal)
+    if value is not None:
+        return [value]
+    # Scan only top-level operators; quoted colons and conditions' string arguments are not keys.
+    depth = 0
+    quote = None
+    question = None
+    nested = 0
+    i = 0
+    while i < len(arg):
+        ch = arg[i]
+        if quote:
+            if ch == "\\":
+                i += 2
+                continue
+            if ch == quote:
+                quote = None
+        elif ch in ("\"", "'"):
+            quote = ch
+        elif ch in "([{":
+            depth += 1
+        elif ch in ")]}":
+            depth -= 1
+        elif depth == 0 and ch == "?":
+            if question is None:
+                question = i
+            else:
+                nested += 1
+        elif depth == 0 and ch == ":" and question is not None:
+            if nested:
+                nested -= 1
+            else:
+                return expression_keys(arg[question + 1:i], literal) + expression_keys(arg[i + 1:], literal)
+        i += 1
+    if arg.startswith("(") and arg.endswith(")"):
+        return expression_keys(arg[1:-1], literal)
+    return []
+
+
 def calls():
-    """Every translatable call in the code: yields (file, line, kind, [argument values or None])."""
+    """Every statically known runtime translation key: (file, line, kind, [English keys])."""
     yield from java_calls()
     yield from web_calls()
 
@@ -115,18 +157,32 @@ def java_calls():
                 continue
             path = os.path.join(dirpath, name)
             text = open(path, encoding="utf-8").read()
-            for m in CALL.finditer(text):
-                line = text.count("\n", 0, m.start()) + 1
-                prefix = text[text.rfind("\n", 0, m.start()) + 1:m.start()].lstrip()
-                if prefix.startswith(("*", "//", "/*")):
-                    continue   # an example in a comment
-                args, _ = java_args(text, m.end())
-                yield os.path.relpath(path, ROOT), line, m.group(1), [java_string(a) for a in args]
+            patterns = [(CALL, True)]
+            if re.search(r"\bString\s+tr\(String", text):
+                patterns.append((re.compile(r"(?<![\w.])tr\("), False))
+            if name == "SettingsActivity.java":
+                patterns.append((re.compile(r"\b(?:action|adjust)\("), False))
+            for pattern, legacy in patterns:
+                for m in pattern.finditer(text):
+                    line = text.count("\n", 0, m.start()) + 1
+                    prefix = text[text.rfind("\n", 0, m.start()) + 1:m.start()].lstrip()
+                    if prefix.startswith(("*", "//", "/*")):
+                        continue
+                    args, _ = java_args(text, m.end())
+                    kind = m.group(1) if pattern is CALL else "tr"
+                    index = 1 if legacy and kind == "tr" and len(args) > 1 else 0
+                    keys = expression_keys(args[index]) if len(args) > index else []
+                    if keys:
+                        yield os.path.relpath(path, ROOT), line, kind, keys
+            # These helpers return presentation labels which are translated at their callers.
+            if name in {"HomeContentModes.java", "DeviceProfiles.java"}:
+                for m in re.finditer(r"static\s+String\s+label\([^)]*\)\s*\{\s*return\s+(.+?);\s*\}", text, re.S):
+                    yield os.path.relpath(path, ROOT), text.count("\n", 0, m.start()) + 1, "tr", expression_keys(m.group(1))
 
 
 def web_calls():
     for name in sorted(os.listdir(WEB)):
-        if not name.endswith(".js") or name == "strings.js":   # strings.js is where the calls are made, not used
+        if not name.endswith(".js") or name == "strings.js":
             continue
         path = os.path.join(WEB, name)
         text = open(path, encoding="utf-8").read()
@@ -136,17 +192,19 @@ def web_calls():
             if prefix.startswith(("*", "//", "/*")) or prefix.endswith("function "):
                 continue
             args, _ = java_args(text, m.end())
-            yield os.path.relpath(path, ROOT), line, m.group(1), [java_string(a, JS_LITERAL) for a in args]
+            keys = expression_keys(args[0], JS_LITERAL) if args else []
+            if keys:
+                yield os.path.relpath(path, ROOT), line, m.group(1), keys
 
 
 def web_keys():
-    """The keys the web app uses, with the plain text of each "context|Text" one (its fallback)."""
+    """Web runtime keys plus context-free fallback keys."""
     keys = set()
-    for _, _, _, args in web_calls():
-        if args and args[0] is not None:
-            keys.add(args[0])
-            if "|" in args[0]:
-                keys.add(english_of(args[0]))
+    for _, _, _, candidates in web_calls():
+        for key in candidates:
+            keys.add(key)
+            if "|" in key:
+                keys.add(english_of(key))
     return keys
 
 
@@ -155,14 +213,11 @@ def english_of(key):
 
 
 def extract():
-    """{key: English text} from the code; warns about calls whose text isn't a literal."""
+    """English runtime keys, excluding legacy source-language arguments and dynamic variables."""
     keys = {}
-    for path, line, kind, args in calls():
-        key = args[0]
-        if key is None:
-            print(f"warning: {path}:{line}: {kind} with text that isn't a string literal", file=sys.stderr)
-            continue
-        keys[key] = english_of(key)
+    for _, _, _, candidates in calls():
+        for key in candidates:
+            keys[key] = english_of(key)
     return dict(sorted(keys.items()))
 
 
@@ -212,7 +267,7 @@ def valid_format(text):
 
 def fits(key, english, text):
     """The translation keeps the English placeholders; a plural is forms like "one:…|few:…|other:…", each with them."""
-    if not isinstance(text, str):
+    if not isinstance(text, str) or (not text.strip() and english.strip()):
         return False
     if key.startswith("format|") and not valid_format(text):
         return False
@@ -231,7 +286,7 @@ def problems(en, cat):
     return missing, obsolete, broken
 
 
-def check(en):
+def check(en, allow_fallback=False):
     errors = []
     for lang in ["en"] + languages():
         try:
@@ -243,12 +298,14 @@ def check(en):
             errors.append(f"{lang}: catalogue must be a JSON object")
             continue
         missing, obsolete, _ = problems(en, cat)
-        for label, keys in (("missing key", missing), ("obsolete key", obsolete)):
+        for label, keys in (() if allow_fallback else (("missing key", missing), ("obsolete key", obsolete))):
             for key in keys:
                 errors.append(f"{lang}: {label}: {key!r}")
         for key, value in cat.items():
             if not isinstance(value, str):
                 errors.append(f"{lang}: non-string value: {key!r}")
+            elif not value.strip() and english_of(key).strip():
+                errors.append(f"{lang}: blank value: {key!r}")
             elif key.startswith("format|") and not valid_format(value):
                 errors.append(f"{lang}: invalid format: {key!r}: {value!r}")
             elif key.startswith("plural|") and not fits(key, english_of(key), value):
@@ -260,7 +317,7 @@ def check(en):
     if errors:
         print("\n".join(errors))
         return 1
-    print(f"OK: all catalogues match the code ({len(en)} keys).")
+    print(f"OK: stored translations are valid ({len(en)} source keys; English fallback allowed={allow_fallback}).")
     return 0
 
 
@@ -313,6 +370,7 @@ def translate(lang, items, model, key):
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--check", action="store_true", help="validate all catalogues without writing anything")
+    ap.add_argument("--allow-fallback", action="store_true", help="allow missing/unused keys while validating stored translations")
     ap.add_argument("--fill", action="store_true", help="translate the missing strings (needs ANTHROPIC_API_KEY)")
     ap.add_argument("--prune", action="store_true", help="remove keys the code no longer uses")
     ap.add_argument("--lang", action="append", help="only these languages (repeatable)")
@@ -322,7 +380,7 @@ def main():
 
     en = extract()
     if a.check:
-        return check(en)
+        return check(en, a.allow_fallback)
     os.makedirs(I18N, exist_ok=True)
     save("en", en)
     if a.new and not os.path.exists(os.path.join(I18N, a.new + ".json")):

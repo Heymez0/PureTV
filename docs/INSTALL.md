@@ -124,7 +124,10 @@ LG targets webOS 3+; Samsung targets Tizen 3+ with `PureTVapp1.PureTV`. Older Ne
 Older web engines use ES5 and framework-free CSS. A TV's built-in AirPlay is separate from this Android receiver;
 HomePod output and DRM support are not implemented by PureTV.
 
-The earlier Android runtime was tested on a Mi Stick / Android 9. The current PureTV identities pass desktop
-build/regression and package checks, but first-launch authorization, HOME/recovery and receiver mirroring require
-new-identity device QA. Separate physical Google TV, LG/Samsung signing, remote and HDMI validation is pending.
-Mock API tests and illustrative artwork are not physical-device tests. [Test commands](DEVELOPMENT.md#tests).
+**Device testing is limited to the native Android TV / Google TV edition.** Live screenshots and locale checks use
+a Xiaomi Mi Stick running Android TV 9. Separate Google TV firmware validation is not recorded; the shared native
+implementation is not a claim that every device has been tested. **LG webOS and Samsung Tizen are experimental,
+hardware-untested ports**; package builds and mock APIs do not establish physical compatibility.
+
+The repository uses renamed package IDs. First-launch authorization, HOME/recovery and receiver mirroring on a fresh
+new-ID installation remain separate validation targets. [Test commands](DEVELOPMENT.md#tests).

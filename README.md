@@ -1,15 +1,18 @@
 <div align="center">
-<img src="docs/media/hero.svg" width="100%" alt="PureTV — a quieter TV experience">
 
 # PureTV
 
 **A quieter TV home screen, built around your apps.**
 
 [Install](docs/INSTALL.md) · [Build](docs/DEVELOPMENT.md#build) · [AirPlay](tools/airplay/README.md) · [Changelog](docs/CHANGELOG.md)
+
 </div>
 
 PureTV brings a simple home screen to Android TVs, streaming boxes and sticks.
 A native Java/Canvas launcher runs on Android; LG and Samsung use a lightweight web app.
+
+**Hardware testing is limited to the Android TV / Google TV edition.** The reference device is a Xiaomi Mi Stick
+running Android TV 9. **LG webOS and Samsung Tizen are experimental ports and have not been tested on real TV hardware.**
 
 ## Features
 
@@ -23,20 +26,42 @@ A native Java/Canvas launcher runs on Android; LG and Samsung use a lightweight 
 Recent content depends on what installed Android apps publish. Optional web catalogue cards use your own TMDB key.
 Android-specific settings, recent-content providers and AirPlay control are not available in the LG/Samsung web edition.
 
+## Languages
+
+PureTV includes **24 interface language catalogues**: English, Czech, Danish, Dutch, Finnish, French, German,
+Greek, Hindi, Indonesian, Italian, Japanese, Korean, Norwegian Bokmål, Polish, Portuguese, Romanian, Russian,
+Simplified Chinese, Spanish, Swedish, Turkish, Ukrainian and Vietnamese.
+
+Select a language in **All settings → System and about → Language**, or use Automatic to follow the TV.
+Core menu labels, greetings and quick settings are translated. Some newer help text falls back to English.
+Resource numbers follow the selected app language without changing Android's system language.
+
 ## Preview
 
-<table><tr><th>Clock home</th><th>Dark screensaver</th></tr>
-<tr><td><img src="docs/media/clock-home.svg" alt="Illustration of the PureTV clock home"></td><td><img src="docs/media/oled-saver.svg" alt="Illustration of the PureTV dark screensaver"></td></tr></table>
+Three unedited screenshots from the deployed PureTV v2 app on a Xiaomi Mi Stick running Android TV 9, with English selected.
+The clock layout is used here so no viewing history, recommendations or personal titles are shown.
 
-English interface illustrations; not device screenshots. [About the artwork](docs/media/README.md).
+### Clock home
+
+![PureTV clock home in English on Mi Stick](docs/media/home-en.png)
+
+### Quick settings
+
+![PureTV quick settings with AirPlay and localized RAM information](docs/media/quick-settings-en.png)
+
+### Settings and language
+
+![PureTV settings with English selected](docs/media/settings-en.png)
+
+[Capture details](docs/media/README.md).
 
 ## Install
 
-| Platform | Source target | Guide |
+| Platform | Target and testing status | Guide |
 | --- | --- | --- |
-| Android TV / Google TV | Android 9+ / API 28 | [Install and first launch](docs/INSTALL.md#android-tv--google-tv) |
-| LG webOS | webOS 3+ | [Developer Mode installation](docs/INSTALL.md#lg-webos) |
-| Samsung Tizen | Tizen 3+ | [Certificate and installation](docs/INSTALL.md#samsung-tizen) |
+| Android TV / Google TV | Native edition; reference hardware: Mi Stick / Android 9 | [Install and first launch](docs/INSTALL.md#android-tv--google-tv) |
+| LG webOS | webOS 3+ · experimental, hardware-untested | [Developer Mode installation](docs/INSTALL.md#lg-webos) |
+| Samsung Tizen | Tizen 3+ · experimental, hardware-untested | [Certificate and installation](docs/INSTALL.md#samsung-tizen) |
 
 On Android, follow the welcome guide and choose Box/stick or TV. To go back, select **Original** in
 All settings → System and about → Default home screen before uninstalling.

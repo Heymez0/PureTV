@@ -2,8 +2,8 @@ package io.puretv;
 
 import android.app.ActivityManager;
 import android.content.Context;
+import java.util.Locale;
 import android.os.StatFs;
-import android.text.format.Formatter;
 
 /** One read-only snapshot on opening status; no polling or process inspection. */
 final class ResourceStatus {
@@ -29,7 +29,8 @@ final class ResourceStatus {
     }
     static String value(Context context, long available, long total) {
         if (available < 0 || total <= 0) return "—";
-        return Formatter.formatShortFileSize(context, Math.min(available, total)) + " " + Ui.tr("disponíveis", "available")
-                + " / " + Formatter.formatShortFileSize(context, total);
+        Locale locale = Ui.locale();
+        return LocaleFormats.bytes(Math.min(available, total), locale) + " " + Ui.tr("disponíveis", "available")
+                + " / " + LocaleFormats.bytes(total, locale);
     }
 }

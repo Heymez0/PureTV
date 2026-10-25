@@ -1,5 +1,14 @@
 # Changelog
 
+## v2 — preview and localization update
+
+- Replaced interface illustrations with three genuine English Mi Stick screenshots without viewing-history content.
+- Made native-only hardware testing and experimental LG/Samsung status explicit.
+- Documented 24 language catalogues and English fallback for untranslated help text.
+- Filled core menu/greeting labels, corrected English source extraction and repaired English catalogue text.
+- Made RAM percentages and resource sizes follow the app language with cached formatting context.
+- Added localization regressions; no extra background polling, service or receiver change.
+
 ## v2 — source preview
 
 - PureTV branding and package IDs; a welcome guide with Box/stick and TV profiles.

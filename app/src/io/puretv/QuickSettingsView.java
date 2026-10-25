@@ -52,7 +52,7 @@ final class QuickSettingsView extends View {
     }
     void resources(ResourceStatus.Snapshot value){
         ramUsed=value.ramTotal>0&&value.ramAvailable>=0?Ui.clamp(1-value.ramAvailable/(float)value.ramTotal):-1;
-        labels[3]=ramUsed<0?"RAM":"RAM %"+Math.round(ramUsed*100);
+        labels[3]=ramUsed<0?"RAM":"RAM "+LocaleFormats.percent(ramUsed,Ui.locale());
         ramValue=ResourceStatus.value(getContext(),value.ramAvailable,value.ramTotal);
         cacheText();invalidate();spoken.focusMoved();
     }
