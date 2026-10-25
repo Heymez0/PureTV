@@ -28,7 +28,7 @@ running Android TV 9. **LG webOS and Samsung Tizen are experimental ports and ha
 Recent content depends on what installed Android apps publish. Optional web catalogue cards use your own TMDB key.
 Android-specific settings, recent-content providers and AirPlay control are not available in the LG/Samsung web edition.
 
-[v1 performance measurements](docs/PERFORMANCE.md) · [Release checks and testing scope](docs/RELEASE.md)
+[Release checks and testing scope](docs/RELEASE.md)
 
 ## Languages
 
