@@ -3,7 +3,7 @@
 ## v2 — preview gallery layout
 
 - Restore the original PureTV title banner.
-- Show clock and combined home screens side by side, with Recommended selected in the combined view.
+- Feature the combined home screen at full width, with the clock home below it.
 - Arrange quick settings, the Shortcuts shelf and settings in a three-column feature row.
 - Add two unedited Mi Stick captures; keep runtime packages and application behavior unchanged.
 

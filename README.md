@@ -44,19 +44,15 @@ Real English-interface screenshots from PureTV v2 on a Xiaomi Mi Stick running A
 
 ### Home Screens
 
-<table>
-  <tr>
-    <td width="50%" align="center" valign="top">
-      <a href="docs/media/home-en.png"><img src="docs/media/home-en.png" width="100%" alt="Clock home page with weather and the app shelf"></a>
-      <br><strong>Clock home page</strong>
-    </td>
-    <td width="50%" align="center" valign="top">
-      <a href="docs/media/recommendations-en.png"><img src="docs/media/recommendations-en.png" width="100%" alt="Recent and recommended home with the Recommended tab selected"></a>
-      <br><strong>Recent + recommended</strong>
-      <br>Recommended tab selected
-    </td>
-  </tr>
-</table>
+<p align="center">
+  <a href="docs/media/recommendations-en.png"><img src="docs/media/recommendations-en.png" width="100%" alt="PureTV recent and recommended home screen"></a>
+  <br><strong>Recent + recommended</strong>
+</p>
+
+<p align="center">
+  <a href="docs/media/home-en.png"><img src="docs/media/home-en.png" width="50%" alt="Clock home page with weather and the app shelf"></a>
+  <br><strong>Clock home page</strong>
+</p>
 
 ### Features
 
