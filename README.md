@@ -46,11 +46,11 @@ Real English-interface screenshots from PureTV v2 on a Xiaomi Mi Stick running A
 
 <table>
   <tr>
-    <td width="50%" align="center">
+    <td width="50%" align="center" valign="top">
       <a href="docs/media/home-en.png"><img src="docs/media/home-en.png" width="100%" alt="Clock home page with weather and the app shelf"></a>
       <br><strong>Clock home page</strong>
     </td>
-    <td width="50%" align="center">
+    <td width="50%" align="center" valign="top">
       <a href="docs/media/recommendations-en.png"><img src="docs/media/recommendations-en.png" width="100%" alt="Recent and recommended home with the Recommended tab selected"></a>
       <br><strong>Recent + recommended</strong>
       <br>Recommended tab selected
@@ -62,17 +62,17 @@ Real English-interface screenshots from PureTV v2 on a Xiaomi Mi Stick running A
 
 <table>
   <tr>
-    <td width="33%" align="center">
+    <td width="33%" align="center" valign="top">
       <a href="docs/media/quick-settings-en.png"><img src="docs/media/quick-settings-en.png" width="100%" alt="Compact quick settings with AirPlay control and RAM information"></a>
       <br><strong>Quick settings</strong>
     </td>
-    <td width="34%" align="center">
+    <td width="34%" align="center" valign="top">
       <a href="docs/media/shortcuts-en.png"><img src="docs/media/shortcuts-en.png" width="100%" alt="Home scrolled down once to the Shortcuts shelf and detailed weather"></a>
       <br><strong>Shortcuts</strong>
     </td>
-    <td width="33%" align="center">
+    <td width="33%" align="center" valign="top">
       <a href="docs/media/settings-en.png"><img src="docs/media/settings-en.png" width="100%" alt="Settings with English selected as the interface language"></a>
-      <br><strong>Settings and language</strong>
+      <br><strong>Settings</strong>
     </td>
   </tr>
 </table>
