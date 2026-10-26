@@ -79,6 +79,26 @@ The header banner is an illustration. [Capture details](docs/media/README.md).
 
 ## Install
 
+### Easy to install
+
+With [Claude Code](https://code.claude.com/docs/en/cli-reference) or [Codex CLI](https://learn.chatgpt.com/docs/codex/cli) installed and signed in, run **one** of these commands in a folder on your computer.
+
+**Claude Code**
+
+```sh
+claude "Install PureTV on my TV from https://github.com/Heymez0/PureTV. Read the repository AGENTS.md and docs/INSTALL.md, identify my TV platform, ask only for missing device details, then follow the matching installation steps and preserve the original HOME recovery."
+```
+
+**Codex**
+
+```sh
+codex "Install PureTV on my TV from https://github.com/Heymez0/PureTV. Read the repository AGENTS.md and docs/INSTALL.md, identify my TV platform, ask only for missing device details, then follow the matching installation steps and preserve the original HOME recovery."
+```
+
+Each line starts an interactive installation assistant. Have your TV model/platform and local IP address ready.
+Developer Mode, device authorization and any required signing follow the platform guide below.
+Repository access is required while PureTV is private. LG/Samsung ports remain experimental and hardware-untested.
+
 | Platform | Target and testing status | Guide |
 | --- | --- | --- |
 | Android TV / Google TV | Native edition; reference hardware: Mi Stick / Android 9 | [Install and first launch](docs/INSTALL.md#android-tv--google-tv) |
