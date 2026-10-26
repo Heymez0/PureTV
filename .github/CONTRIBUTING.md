@@ -11,7 +11,7 @@ scenario and units; PSS and bitmap bytes differ. Do not promise universal RAM/FP
 Preserve HOME switching, Original recovery, Watchdog, Wi-Fi-owner protection and signature-guarded AirPlay control.
 Do not uninstall/clear system packages or change picture, audio, network, accounts or tuner settings.
 Never contribute private keys, device addresses, raw logs, viewing history or personal configured packages.
-Use existing UI translation catalogues; documentation/artwork is English. Keep required [notices](../docs/licenses/NOTICE.md).
+Use existing UI translation catalogues; the main README/artwork is English; the Turkish reader guide is docs/README.tr.md. Keep required [notices](../docs/licenses/NOTICE.md).
 
 For web changes, preserve ES5, platform bridges and hidden-page timer suspension. Mock tests do not establish
 physical TV, HDMI or certificate compatibility.

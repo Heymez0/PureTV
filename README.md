@@ -6,7 +6,7 @@
 
 **A quieter TV home screen, built around your apps.**
 
-[Install](docs/INSTALL.md) · [Build](docs/DEVELOPMENT.md#build) · [AirPlay](tools/airplay/README.md) · [Changelog](docs/CHANGELOG.md)
+[Install](docs/INSTALL.md) · [Turkish guide](docs/README.tr.md) · [Build](docs/DEVELOPMENT.md#build) · [AirPlay](tools/airplay/README.md) · [Changelog](docs/CHANGELOG.md)
 
 </div>
 
@@ -33,10 +33,6 @@ Android-specific settings, recent-content providers and AirPlay control are not 
 PureTV includes **24 interface language catalogues**: English, Czech, Danish, Dutch, Finnish, French, German,
 Greek, Hindi, Indonesian, Italian, Japanese, Korean, Norwegian Bokmål, Polish, Portuguese, Romanian, Russian,
 Simplified Chinese, Spanish, Swedish, Turkish, Ukrainian and Vietnamese.
-
-Select a language in **All settings → System and about → Language**, or use Automatic to follow the TV.
-Core menu labels, greetings and quick settings are translated. Some newer help text falls back to English.
-Resource numbers follow the selected app language without changing Android's system language.
 
 ## Preview
 
@@ -79,6 +75,14 @@ The header banner is an illustration. [Capture details](docs/media/README.md).
 
 ## Install
 
+**Android TV / Google TV:** [Download PureTV.apk](https://github.com/Heymez0/PureTV/releases/download/v2.0.0-preview/PureTV.apk) · [Release and SHA256 checksum](https://github.com/Heymez0/PureTV/releases/tag/v2.0.0-preview)
+
+The signed v2 preview APK is for **Android 9 or newer**. Download it on your computer, copy it to a USB drive or
+transfer it to the TV, then open it with the TV file manager. Follow PureTV's welcome guide after installation.
+[Step-by-step Android instructions](docs/INSTALL.md#android-tv--google-tv).
+
+PureTV is currently private: sign in to GitHub with repository access to view source and download files.
+
 ### Easy to install
 
 With [Claude Code](https://code.claude.com/docs/en/cli-reference) or [Codex CLI](https://learn.chatgpt.com/docs/codex/cli) installed and signed in, run **one** of these commands in a folder on your computer.
@@ -97,20 +101,20 @@ codex "Install PureTV on my TV from https://github.com/Heymez0/PureTV. Read the 
 
 Each line starts an interactive installation assistant. Have your TV model/platform and local IP address ready.
 Developer Mode, device authorization and any required signing follow the platform guide below.
-Repository access is required while PureTV is private. LG/Samsung ports remain experimental and hardware-untested.
+LG/Samsung ports remain experimental and hardware-untested.
 
-| Platform | Target and testing status | Guide |
+### Choose your platform
+
+| Platform | What to install | Instructions |
 | --- | --- | --- |
-| Android TV / Google TV | Native edition; reference hardware: Mi Stick / Android 9 | [Install and first launch](docs/INSTALL.md#android-tv--google-tv) |
-| LG webOS | webOS 3+ · experimental, hardware-untested | [Developer Mode installation](docs/INSTALL.md#lg-webos) |
-| Samsung Tizen | Tizen 3+ · experimental, hardware-untested | [Certificate and installation](docs/INSTALL.md#samsung-tizen) |
+| Android TV / Google TV | Signed **PureTV.apk**, by USB/file transfer or ADB | [Download and setup](docs/INSTALL.md#android-tv--google-tv) |
+| LG webOS | Build an **IPK**; Developer Mode is required | [LG steps](docs/INSTALL.md#lg-webos) · experimental, hardware-untested |
+| Samsung Tizen | Build and sign a **WGT** with your TV certificate | [Samsung steps](docs/INSTALL.md#samsung-tizen) · experimental, hardware-untested |
 
-On Android, follow the welcome guide and choose Box/stick or TV. To go back, select **Original** in
-All settings → System and about → Default home screen before uninstalling.
-On LG/Samsung, PureTV is an app; the manufacturer's HOME remains available.
-
-This source preview uses PureTV's own package IDs and is a separate installation from earlier packages.
-See [compatibility and device-test status](docs/INSTALL.md#compatibility) before installing.
+Android APKs are for Android devices. LG and Samsung use the separate packages listed above.
+On Android, the welcome guide lets you choose Box/stick or TV. Use **Original** in All settings → System and about →
+Default home screen to return to the manufacturer's HOME before removing an active replacement launcher.
+[Updates and package identity](docs/INSTALL.md#identity-and-upgrades) · [Platform testing scope](docs/INSTALL.md#compatibility).
 
 ## Build
 
@@ -124,7 +128,7 @@ python tizen/build.py --generic --sign YOUR_PROFILE
 ```
 
 The default Android APK is unsigned. [Build, signing and configuration](docs/DEVELOPMENT.md#build).
-No private keys or personal configuration are included. A public download/Release has not been published yet.
+The signed Android preview is available under [Install](#install). Private keys and personal configuration are excluded.
 
 ## Source layout
 

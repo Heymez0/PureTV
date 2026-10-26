@@ -1,5 +1,12 @@
 # Changelog
 
+## v2 — easier installation
+
+- Add one-line Claude Code/Codex installation prompts under Install.
+- Provide a signed Android preview APK download with USB, file-transfer and ADB instructions.
+- Separate LG and Samsung setup/build/sign/install steps and retain their experimental status.
+- Add a Turkish reader guide while keeping the default README in English.
+
 ## v2 — preview gallery layout
 
 - Restore the original PureTV title banner.
