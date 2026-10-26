@@ -12,4 +12,4 @@ Read README.md, docs/DEVELOPMENT.md and .github/CONTRIBUTING.md first. Keep chan
 
 - Web platforms: run python tools/tests/test_web_packages.py and node tools/tests/web_regression.js. Generic builds must have empty credentials. Never call an unsigned Tizen package install-ready.
 - Keep the compatibility matrix accurate: Android features are not automatically available in LG/Samsung. Use the PureTV platform IDs consistently and preserve original licence/provenance. These IDs form a separate install from legacy packages; never claim an in-place migration.
-- Label illustrations accurately and use only genuine captured screenshots when claiming device previews. Keep viewing history, personal titles and network identifiers out of shared images. docs/media must not be shipped in application packages.
+- Label illustrations accurately and use only genuine captured screenshots when claiming device previews. Keep viewing history and network identifiers out of shared images. App-published recommendations may be shown when the user requests them; keep playback history and progress private. docs/media must not be shipped in application packages.

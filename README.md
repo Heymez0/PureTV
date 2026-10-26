@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="docs/media/hero.svg" width="100%" alt="PureTV — a quieter TV experience">
+
 # PureTV
 
 **A quieter TV home screen, built around your apps.**
@@ -38,22 +40,46 @@ Resource numbers follow the selected app language without changing Android's sys
 
 ## Preview
 
-Three unedited screenshots from the deployed PureTV v2 app on a Xiaomi Mi Stick running Android TV 9, with English selected.
-The clock layout is used here so no viewing history, recommendations or personal titles are shown.
+Real English-interface screenshots from PureTV v2 on a Xiaomi Mi Stick running Android TV 9.
 
-### Clock home
+### Home Screens
 
-![PureTV clock home in English on Mi Stick](docs/media/home-en.png)
+<table>
+  <tr>
+    <td width="50%" align="center">
+      <a href="docs/media/home-en.png"><img src="docs/media/home-en.png" width="100%" alt="Clock home page with weather and the app shelf"></a>
+      <br><strong>Clock home page</strong>
+    </td>
+    <td width="50%" align="center">
+      <a href="docs/media/recommendations-en.png"><img src="docs/media/recommendations-en.png" width="100%" alt="Recent and recommended home with the Recommended tab selected"></a>
+      <br><strong>Recent + recommended</strong>
+      <br>Recommended tab selected
+    </td>
+  </tr>
+</table>
 
-### Quick settings
+### Features
 
-![PureTV quick settings with AirPlay and localized RAM information](docs/media/quick-settings-en.png)
+<table>
+  <tr>
+    <td width="33%" align="center">
+      <a href="docs/media/quick-settings-en.png"><img src="docs/media/quick-settings-en.png" width="100%" alt="Compact quick settings with AirPlay control and RAM information"></a>
+      <br><strong>Quick settings</strong>
+    </td>
+    <td width="34%" align="center">
+      <a href="docs/media/shortcuts-en.png"><img src="docs/media/shortcuts-en.png" width="100%" alt="Home scrolled down once to the Shortcuts shelf and detailed weather"></a>
+      <br><strong>Shortcuts</strong>
+    </td>
+    <td width="33%" align="center">
+      <a href="docs/media/settings-en.png"><img src="docs/media/settings-en.png" width="100%" alt="Settings with English selected as the interface language"></a>
+      <br><strong>Settings and language</strong>
+    </td>
+  </tr>
+</table>
 
-### Settings and language
-
-![PureTV settings with English selected](docs/media/settings-en.png)
-
-[Capture details](docs/media/README.md).
+Open any screenshot to see it at full resolution. The combined home shows app-published recommendations;
+viewing-history titles and progress are not shown. Recommendation titles and artwork follow the source app's language.
+The header banner is an illustration. [Capture details](docs/media/README.md).
 
 ## Install
 
