@@ -6,10 +6,10 @@ Captured on 2026-10-25 from the deployed PureTV v2 app on a Xiaomi Mi Stick (MiT
 The interface language is English. These are genuine full-resolution 1920 x 1080 device screenshots,
 copied without image edits. Select an image in the README to open its original file.
 
-The Home Screens row contains:
+The Home Screens section contains:
 
-- `home-en.png`: clock-only home, weather and the app shelf.
-- `recommendations-en.png`: Recent + recommended home with the Recommended tab selected.
+- `recommendations-en.png`: Recent + recommended home, featured first at full width.
+- `home-en.png`: clock-only home, weather and the app shelf, displayed below at half width.
 
 The Features row contains, in order:
 
