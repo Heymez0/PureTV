@@ -41,8 +41,6 @@ Installing a second HOME-capable package can display Android's HOME chooser; thi
 The two technical package IDs are separate installations, not an in-place migration. Full renamed-identity HOME
 authorization/Original recovery and a new receiver mirroring session are not established by the welcome smoke test.
 
-See [performance results](PERFORMANCE.md) for measured values and remaining frame-time limitations.
-
 ## Licences and distribution
 
 PureTV additions use MIT. Incorporated MIT notices, Inter's OFL and Material Symbols' Apache 2.0 text are preserved.

@@ -11,7 +11,7 @@
 - Set product versions to v1 / Android code 2 and 1.0.0 on the experimental web ports.
 - Add cache-boundary, motion-equivalence, culling and licence/package regressions.
 
-See [performance measurements](PERFORMANCE.md) and [release checks](RELEASE.md) for evidence and testing limits.
+See [release checks](RELEASE.md) for verification and testing limits.
 
 ## v1 — easier installation
 
