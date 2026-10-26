@@ -50,7 +50,7 @@ Depo şu anda gizlidir. Kaynağa ve indirmelere erişmek için yetkili GitHub he
 
 **[PureTV.apk indir](https://github.com/Heymez0/PureTV/releases/download/v1/PureTV.apk)** · [Ön sürüm ve SHA256 doğrulaması](https://github.com/Heymez0/PureTV/releases/tag/v1)
 
-Bu, Android 9 ve üzeri için imzalı v1 ön sürümüdür. **PureTV.apk** dosyasını indirin;
+Bu, Android 9 ve üzeri için imzalı v1 sürümüdür. **PureTV.apk** dosyasını indirin;
 GitHub'ın otomatik oluşturduğu Source code ZIP dosyaları geliştiriciler içindir.
 
 **USB ile:**

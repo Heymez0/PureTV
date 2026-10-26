@@ -59,4 +59,4 @@ of the renamed receiver have not been verified. The main APK download contains o
 - Reference hardware: Xiaomi Mi Stick, Android TV 9. No separate Google TV firmware or other manufacturer's TV inputs is claimed.
 - LG webOS and Samsung Tizen are experimental, desktop/package-tested and physically untested. A WGT needs the owner's Samsung certificate before installation.
 - Older Mi Stick GPUs still miss some 60 Hz deadlines during detailed-weather scrolling. No universal RAM/FPS guarantee is made.
-- Public/stable publication and repository visibility are separate owner actions. A private preview does not make the project public.
+- Public/stable publication and repository visibility are separate owner actions. A private release does not make the project public.
