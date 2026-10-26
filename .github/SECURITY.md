@@ -1,6 +1,6 @@
 # Security
 
-Use Security → Advisories → Report a vulnerability privately if enabled on the future GitHub repository.
+Use Security → Advisories → Report a vulnerability privately if enabled on this repository.
 Otherwise request a private reporting route without posting exploit details or credentials in a public issue.
 No dedicated security email address has been assigned.
 

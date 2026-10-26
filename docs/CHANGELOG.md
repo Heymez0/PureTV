@@ -1,6 +1,6 @@
 # Changelog
 
-## v1 — final release candidate
+## v1 — final release
 
 - Replace platform icons and the Android TV banner with original charcoal/gold PureTV artwork.
 - Prepare shelf logos before drawing; retain them across unchanged layouts.
@@ -10,13 +10,15 @@
 - Add readable bundled licence texts, component hashes, the full CC0 notice and service credits.
 - Set product versions to v1 / Android code 2 and 1.0.0 on the experimental web ports.
 - Add cache-boundary, motion-equivalence, culling and licence/package regressions.
+- Verify fresh `io.puretv` welcome/setup and HOME after reboot on Mi Stick / Android TV 9.
+- Verify renamed receiver settings control and owner-confirmed Screen Mirroring; distribute its matching full GPL source.
 
 See [release checks](RELEASE.md) for verification and testing limits.
 
 ## v1 — easier installation
 
 - Add one-line Claude Code/Codex installation prompts under Install.
-- Provide a signed Android preview APK download with USB, file-transfer and ADB instructions.
+- Provide a signed Android APK download with USB, file-transfer and ADB instructions.
 - Separate LG and Samsung setup/build/sign/install steps and retain their experimental status.
 - Add a Turkish reader guide while keeping the default README in English.
 

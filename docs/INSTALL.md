@@ -6,8 +6,7 @@
 
 Use the signed [PureTV.apk download](https://github.com/Heymez0/PureTV/releases/download/v1/PureTV.apk)
 from the [v1 release](https://github.com/Heymez0/PureTV/releases/tag/v1). Requires Android 9+.
-Sign in with repository access while the project is private. Download **PureTV.apk**; the automatic Source code ZIP
-contains source files for developers.
+Download **PureTV.apk**; the automatic Source code ZIP contains source files for developers.
 
 Choose **one** installation method:
 
@@ -23,7 +22,7 @@ For a stick without a usable USB storage connection, use file transfer or ADB be
 
 ### Option 2: File transfer to the TV
 
-1. Download `PureTV.apk` on your computer or phone with GitHub access.
+1. Download `PureTV.apk` on your computer or phone.
 2. Use your existing local file-transfer app to send the APK to the TV on the same network.
 3. Open the transferred APK with the TV file manager and select **Install**. Allow that installer source if Android asks.
 4. Open PureTV and follow [First launch](#first-launch).
