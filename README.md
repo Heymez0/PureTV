@@ -83,8 +83,6 @@ The signed v1 APK is for **Android 9 or newer**. Download it on your computer, c
 transfer it to the TV, then open it with the TV file manager. Follow PureTV's welcome guide after installation.
 [Step-by-step Android instructions](docs/INSTALL.md#android-tv--google-tv).
 
-PureTV is currently private: sign in to GitHub with repository access to view source and download files.
-
 ### Easy to install
 
 With [Claude Code](https://code.claude.com/docs/en/cli-reference) or [Codex CLI](https://learn.chatgpt.com/docs/codex/cli) installed and signed in, run **one** of these commands in a folder on your computer.

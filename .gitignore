@@ -1,4 +1,4 @@
-# Local configuration, signing and device credentials
+# PureTV v1 local configuration, signing and device credentials
 config.properties
 local.properties
 .env

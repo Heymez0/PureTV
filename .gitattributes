@@ -1,3 +1,4 @@
+# PureTV v1 source text and binary assets.
 * text=auto eol=lf
 *.sh text eol=lf
 *.py text eol=lf

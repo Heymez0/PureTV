@@ -33,13 +33,14 @@ structures, local resource paths, licences, platform bridges, empty credentials 
 GitHub Actions runs the checks for every main-branch update; see Actions for the result of the exact commit being released.
 
 Real-device checks use the existing same-key Mi Stick installation for navigation, credits, light-theme focus,
-screensaver return and the performance comparison. The exact signed generic io.puretv v1/code2 APK was also
-installed temporarily: its fresh entry opens the welcome guide. That temporary package was removed after testing.
-The existing HOME resolver, screensaver component and Android locale were restored.
+screensaver return and the performance comparison. The exact signed generic `io.puretv` v1/code2 APK was also
+installed with fresh data. Its welcome guide, TV ADB authorization, default HOME/screensaver setup and HOME after
+reboot passed. Its **Original** option restored the factory HOME/screensaver and the pre-existing disabled-package
+set. The previous working launcher, its preferences and Android locale were preserved after the temporary test.
 
 Installing a second HOME-capable package can display Android's HOME chooser; this is expected platform behavior.
-The two technical package IDs are separate installations, not an in-place migration. Full renamed-identity HOME
-authorization/Original recovery and a new receiver mirroring session are not established by the welcome smoke test.
+The two technical package IDs are separate installations, not an in-place migration. This setup/recovery result
+applies to the reference Mi Stick; firmware-specific HOME authorization still needs validation on other TVs.
 
 ## Licences and distribution
 
@@ -51,8 +52,11 @@ Neither the MIT licence nor an API key grants ownership of app logos or catalogu
 
 AirPlay remains a separate optional GPL app. Any receiver APK distribution must include the exact complete
 corresponding source identified in tools/airplay/source-manifest.json. The source patch alone is insufficient.
-The prepared receiver uses the unchanged upstream ARMv7 engine; a full native rebuild and physical mirroring
-of the renamed receiver have not been verified. The main APK download contains only the launcher.
+The prepared receiver uses the unchanged upstream ARMv7 engine; a full native rebuild has not been verified.
+The renamed `io.puretv.airplay` receiver was tested with the new launcher on Mi Stick / Android TV 9. Settings
+start/stop, quick-panel stop and keeping an explicit stop after reopening the receiver passed. The device owner
+confirmed a new Screen Mirroring session. An unprivileged control broadcast was not accepted.
+The v1 release distributes its APK and matching full GPL source together. The main APK contains only the launcher.
 
 ## Testing limits
 

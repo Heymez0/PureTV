@@ -6,8 +6,17 @@
   "abi": "armeabi-v7a",
   "source_asset": "PureTV-AirPlay-Source.zip",
   "full_native_rebuild_verified": false,
-  "status": "Interface build, matching PureTV certificates and unchanged ARMv7 library checks passed; physical new-identity QA pending",
+  "status": "Interface build, matching PureTV certificates and unchanged ARMv7 library checks passed; renamed receiver control and user-confirmed mirroring tested on Xiaomi Mi Stick / Android TV 9",
   "source_sha256": "13748331dad7760861c69bd0b59d559e3b8f191dfe686e5b329bee89f9ea7375",
   "receiver_apk_sha256": "24d252a5533c2b75845be9cbee5cf21cd4d54d2bd45a0141ad7400684a1fab2b",
-  "physical_new_identity_tested": false
+  "physical_new_identity_tested": true,
+  "physical_test": {
+    "device": "Xiaomi Mi Stick",
+    "os": "Android TV 9",
+    "date": "2026-10-26",
+    "launcher_package": "io.puretv",
+    "settings_start_stop": true,
+    "arrow_keys_do_not_toggle": true,
+    "mirroring": "Confirmed by the device owner using Screen Mirroring"
+  }
 }
