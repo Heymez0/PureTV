@@ -44,15 +44,6 @@ There is no continuous idle animation. Process PSS excludes the separate AirPlay
 A trial that hardware-cached the whole drawer increased weather-scroll cost and memory; it was rejected.
 Older Mi Stick GPUs still miss some 60 Hz deadlines during the weather transition. Lightweight mode remains available.
 
-## Reference review
-
-The review considered static-surface caching and memory-trim policy in Clean Your TV, background preparation in Matinee,
-and the shared launcher's drawing lifecycle. Those ideas were assessed against actual Mi Stick measurements;
-no new library or copied implementation was introduced from the comparison repositories.
-
-- [Clean Your TV](https://github.com/Gathin23/cleanyourtv): ClockScene, MemoryTrimPolicy, GlassView and HeroArt.
-- [Matinee](https://github.com/Jarvis322/matinee): AppCatalog, LastPlayedPanel and CinematicBackground.
-
 ## Reproducing checks
 
 Build Android, then run `python tools/tests/run.py` with the SDK/JDK arguments described in DEVELOPMENT.md.
