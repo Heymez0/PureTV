@@ -170,7 +170,7 @@ GitHub Actions runs the desktop and package checks on pushes and pull requests; 
 2. Commit with your own Git identity and push to your own PureTV repository. Publishing source does not automatically publish a downloadable Release.
 3. Let the first real GitHub Actions run pass; local results are not a remote CI result.
 4. Build with empty credentials and sign with your production key. Keep the same key for later updates and for the optional receiver.
-5. Increase Android versionCode for future releases. The current initial version is v2 / code 1; web package versions are 2.0.0.
+5. Increase Android versionCode for future releases. The current version is v1 / code 2; web package versions are 1.0.0.
 6. Complete first-launch, HOME/Original recovery, screensaver and receiver QA for the new package IDs before production release.
 7. Distribute matching complete GPL receiver source with any receiver APK, plus all required component notices.
 

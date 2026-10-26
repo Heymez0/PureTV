@@ -2,7 +2,7 @@
 
 ## Device screenshots
 
-Captured on 2026-10-25 from the deployed PureTV v2 app on a Xiaomi Mi Stick (MiTV-AESP0), Android TV 9.
+Captured on 2026-10-25 from the deployed PureTV v1 app on a Xiaomi Mi Stick (MiTV-AESP0), Android TV 9.
 The interface language is English. These are genuine full-resolution 1920 x 1080 device screenshots,
 copied without image edits. Select an image in the README to open its original file.
 
@@ -21,8 +21,10 @@ The recommendations screenshot was explicitly requested. It shows app-published 
 not viewing-history titles or playback progress. Source apps determine the language of recommendation content;
 English interface selection does not translate their artwork. App names, logos and content artwork belong to their owners.
 No account credentials, local network addresses or device identifiers appear in the shared captures.
-The clock/quick/settings captures remain the originals from the preceding update. The combined home layout and
-English app language are retained; no application code or TV system settings changed for this gallery update.
+All five captures were refreshed after the v1 update. The settings image shows the actual v1 version label;
+the shortcuts image includes the weather-data attribution. Captures were copied byte for byte without edits.
+The device-compatible installation was used for these views. Its existing combined layout and English app language
+were retained after capture; Android locale, HOME resolver and screensaver component were restored unchanged.
 
 These captures establish the deployed Android TV interface on this device. They do not establish LG/Samsung,
 every Google TV firmware, or fresh renamed-package setup compatibility. See [testing scope](../INSTALL.md#compatibility).

@@ -7,7 +7,6 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
 
-import android.util.LongSparseArray;
 
 /**
  * Blurred rounded-rectangle shadows for older GPUs. A BlurMaskFilter is rasterized on the CPU and uploaded again every
@@ -18,7 +17,7 @@ import android.util.LongSparseArray;
  */
 final class Shadows {
     void trim() { cache.clear(); }
-    private final LongSparseArray<Bitmap> cache = new LongSparseArray<>();
+    private final MaskCache<Bitmap> cache = new MaskCache<>(32, 1024L * 1024);
     private final Paint tint = new Paint(Paint.FILTER_BITMAP_FLAG);
     private final Rect src = new Rect();
     private final RectF dst = new RectF();
@@ -78,8 +77,7 @@ final class Shadows {
         new Canvas(full).drawRoundRect(m, m, w - m, h - m, radius, radius, p);
         mask = full.extractAlpha();
         full.recycle();
-        if (cache.size() > 64) cache.clear();     // focus animations step through a few sizes; keep it bounded
-        cache.put(key, mask);
+        cache.put(key, mask, mask.getAllocationByteCount());
         return mask;
     }
 }

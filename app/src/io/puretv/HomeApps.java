@@ -44,9 +44,9 @@ import java.util.Set;
 /**
  * What shows up on the home screen and in the "All Apps" sheet, and how to open each thing.
  *
- * On the home shelf, each app is its colored logo on a dark card: the official logo in assets/logos/<key>.png
- * (downloaded from Wikimedia Commons by tools/logos.py) or, without one, the logo lifted from the app's TV art (the
- * Android TV "banner"), saved to disk after the first time. In "All Apps", 16:9 cards with the whole TV art (or the
+ * On the home shelf, each app is its colored logo on a dark card, extracted from the installed app's TV banner
+ * and saved to the private cache after the first load. An optional bundled override can supply a logo.
+ * In "All Apps", 16:9 cards use the installed app's whole TV art (or the
  * icon on a dark card). Shortcuts (live TV, inputs, All Apps, settings) are icon buttons.
  */
 final class HomeApps {
@@ -852,7 +852,6 @@ final class HomeApps {
         return b;
     }
 
-    /** Official logo (tools/logos.py): trims the transparent margins and scales it down to at most 512 px. */
     /** The bundled logo, read once per process: reading it again on every load made a new image and filled caches. */
     private static Bitmap ownLogoCached(Context c, String key) {
         synchronized (LOGOS) {

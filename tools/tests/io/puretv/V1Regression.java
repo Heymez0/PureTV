@@ -1,7 +1,7 @@
 package io.puretv;
 import java.io.*;
 import java.util.*;
-class V2Regression {
+class V1Regression {
  static void ok(boolean v){if(!v)throw new AssertionError();}
  static void bounded()throws Exception{
   byte[] data=new byte[8193];Arrays.fill(data,(byte)9);

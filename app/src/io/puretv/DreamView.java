@@ -345,7 +345,7 @@ final class DreamView extends View implements Choreographer.FrameCallback, HomeD
             invalidate();
         }
         if (Prefs.lightweight()) Choreographer.getInstance().postFrameCallbackDelayed(this, 90);
-        else Choreographer.getInstance().postFrameCallback(this);
+        else Choreographer.getInstance().postFrameCallbackDelayed(this,45);
     }
 
     /** The clock that drives the animations. */
