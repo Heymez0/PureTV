@@ -79,7 +79,7 @@ The header banner is an illustration. [Capture details](docs/media/README.md).
 
 **Android TV / Google TV:** [Download PureTV.apk](https://github.com/Heymez0/PureTV/releases/download/v1/PureTV.apk) · [Release and SHA256 checksum](https://github.com/Heymez0/PureTV/releases/tag/v1)
 
-The signed v1 preview APK is for **Android 9 or newer**. Download it on your computer, copy it to a USB drive or
+The signed v1 APK is for **Android 9 or newer**. Download it on your computer, copy it to a USB drive or
 transfer it to the TV, then open it with the TV file manager. Follow PureTV's welcome guide after installation.
 [Step-by-step Android instructions](docs/INSTALL.md#android-tv--google-tv).
 
@@ -130,7 +130,7 @@ python tizen/build.py --generic --sign YOUR_PROFILE
 ```
 
 The default Android APK is unsigned. [Build, signing and configuration](docs/DEVELOPMENT.md#build).
-The signed Android preview is available under [Install](#install). Private keys and personal configuration are excluded.
+The signed Android APK is available under [Install](#install). Private keys and personal configuration are excluded.
 
 ## Source layout
 
