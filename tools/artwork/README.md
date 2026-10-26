@@ -1,7 +1,8 @@
 # PureTV icon source
 
 Original PureTV project artwork, MIT-licensed with the repository. The charcoal, warm gold and white match the interface.
-`puretv-icon.svg` is the editable master; the Android TV wide banner uses matching native vector paths.
+`puretv-icon.svg` is the editable master for the Cinema design: a gold TV frame with an ivory play mark.
+The Android TV wide banner is a separate asset.
 The platform PNGs are checked in, so building PureTV needs no image tooling.
 
 Optional asset regeneration requires Node.js and the development-only `sharp` package:
