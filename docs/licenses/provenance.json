@@ -12,7 +12,7 @@
     "distribution": "separate optional application"
   },
   "product": "PureTV",
-  "version": "v1",
+  "version": "v1.1",
   "scope": "Android TV / Google TV native launcher; LG webOS and Samsung Tizen web applications",
   "web_platforms": {
     "repository": "https://github.com/simbasjungles/free-my-tv",

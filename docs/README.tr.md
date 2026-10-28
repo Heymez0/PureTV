@@ -6,6 +6,8 @@
 
 [English / ana sayfa](../README.md) · [APK indir](https://github.com/Heymez0/PureTV/releases/latest/download/PureTV.apk) · [Ayrıntılı kurulum](INSTALL.md) · [Kaynak derleme](DEVELOPMENT.md)
 
+**Güncel sürüm: [PureTV v1.1](https://github.com/Heymez0/PureTV/releases/tag/v1.1)** · Android 9+
+
 PureTV; Android TV, Google TV ve Android kutu/stick cihazlar için hafif bir başlatıcıdır.
 LG webOS ve Samsung Tizen için ayrı web sürümleri bulunur. **Gerçek cihaz referansı Android TV 9 kullanan Mi Stick'tir.**
 Ayrı Google TV yazılımı testi kayıtlı değildir. LG/Samsung sürümleri deneysel durumdadır ve gerçek TV donanımında test edilmemiştir.
@@ -16,8 +18,9 @@ Ayrı Google TV yazılımı testi kayıtlı değildir. LG/Samsung sürümleri de
 - Ana uygulama rafı, kısayollar ve aşağı kaydırarak erişilen diğer uygulamalar.
 - Uzun basma menüsü, raf içinde taşıma; uygulamayı gizleme, kaldırma ve zorla durdurma.
 - Açık/koyu tema, yağış olasılığıyla hava durumu, 12/24 saat; koyu ekran koruyucu ya da TV'deki ve USB'deki kendi
-  fotoğraflarınızla ekran koruyucu.
-- Kompakt hızlı ayarlar, isteğe bağlı hafif mod, tek tuşla bellek boşaltma, açıldığında alınan RAM/depolama bilgisi.
+  fotoğraflarınızla ekran koruyucu (saatte ekran yanmasına karşı kaydırma ile).
+- Kompakt hızlı ayarlar: bellek için Boşalt düğmesi ve uyku zamanlayıcısı. İsteğe bağlı hafif mod ve otomatik bellek
+  boşaltma, açıldığında alınan RAM/depolama bilgisi.
 - Ayar yedekleme/geri yükleme, seçilen uygulamalar için basit PIN kilidi ve özel ana ekran modunda isteğe bağlı sesli
   asistan kapatma.
 - GitHub sürümlerinden güncelleme: bildirim ya da otomatik kurulum; yalnızca sizinkiyle aynı imzalı daha yeni sürümler.
@@ -30,9 +33,23 @@ Son izlenenler ve öneriler, kurulu uygulamaların Android ile paylaştığı i�
 Web sürümündeki isteğe bağlı katalog kartları kendi TMDB anahtarınızı kullanır.
 Android'e özgü içerik sağlayıcıları, sistem ayarları ve AirPlay kontrolü LG/Samsung sürümlerinde bulunmaz.
 
+### v1.1'deki yenilikler
+
+- **PureTV içinden güncelleme** (Sistem ve hakkında → Güncellemeler); referans Mi Stick'te uçtan uca denendi.
+- **Hızlı ayarlar:** bellek boşaltma ve 30–120 dakikalık uyku zamanlayıcısı.
+- **Uygulama kilidi, uygulama gizleme, TV açılınca başlatma, kaldır / zorla durdur,** fotoğraflı ekran koruyucu ve
+  otomatik bellek boşaltma.
+- **AirPlay alıcısı 0.0.36-puretv.2:** gerektiğinde başlar, PureTV'nin açık/koyu görünümünü izler.
+- **Güvenlik ve düzeltmeler:** kurulum sonuçları artık başka bir uygulama tarafından taklit edilemez; ayar geri
+  yüklemesinden sonra uygulama içerikleri görünür; Android 9–11'de daha akıcı ana ekran kaydırması.
+- **Yeni imza anahtarı:** v1 kullananlar v1.1'i kurmadan önce v1'i bir kez kaldırır (aşağıdaki Kurulum bölümüne bakın).
+
+[Tüm değişiklikler](CHANGELOG.md)
+
 ## Önizleme
 
-Görseller gerçek Mi Stick ekran görüntüleridir; arayüz dili İngilizcedir.
+Görseller gerçek Mi Stick ekran görüntüleridir; arayüz dili İngilizcedir. v1 ile çekildiler; v1.1 aynı görünümü korur
+ve hızlı ayarlara Boşalt düğmesi ile uyku zamanlayıcısını ekler.
 Öneri afişlerinin dili, içeriği sağlayan uygulamaya bağlıdır. İzleme geçmişi gösterilmez.
 
 ### Son izlenenler ve öneriler
@@ -150,7 +167,8 @@ Geri dönüş tamamlanana kadar eski uygulamanın verilerini koruyun.
 
 PureTV içinden üreticinin ana ekranına dönmek için:
 **All settings → System and about → Default home screen → Original**.
-Etkin ana ekranı kaldırmadan önce bu işlemi tamamlayın. Güncellemeler aynı imza anahtarını gerektirir.
+Etkin ana ekranı kaldırmadan önce bu işlemi tamamlayın. Güncellemeler aynı imza anahtarını gerektirir; v1.1'den
+itibaren sürümler yerinde ve PureTV'nin Güncellemeler ekranından güncellenir.
 [Kimlik ve güncelleme ayrıntıları](INSTALL.md#identity-and-upgrades).
 
 ## Geliştirme ve lisanslar
