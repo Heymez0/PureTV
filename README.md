@@ -57,8 +57,7 @@ Simplified Chinese, Spanish, Swedish, Turkish, Ukrainian and Vietnamese.
 
 ## Preview
 
-Real English-interface screenshots of PureTV on a Xiaomi Mi Stick running Android TV 9. They were captured with v1;
-v1.1 keeps the same look and adds the Free up button and Sleep timer to quick settings.
+Real English-interface screenshots of PureTV v1.1 on a Xiaomi Mi Stick running Android TV 9.
 
 ### Home Screens
 
@@ -77,7 +76,7 @@ v1.1 keeps the same look and adds the Free up button and Sleep timer to quick se
 <table>
   <tr>
     <td width="33%" align="center" valign="top">
-      <a href="docs/media/quick-settings-en.png"><img src="docs/media/quick-settings-en.png" width="100%" alt="Compact quick settings with AirPlay control and RAM information"></a>
+      <a href="docs/media/quick-settings-en.png"><img src="docs/media/quick-settings-en.png" width="100%" alt="Compact quick settings with AirPlay control, RAM with a Free up button and the sleep timer"></a>
       <br><strong>Quick settings</strong>
     </td>
     <td width="34%" align="center" valign="top">

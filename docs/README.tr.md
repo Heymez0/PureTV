@@ -48,8 +48,7 @@ Android'e özgü içerik sağlayıcıları, sistem ayarları ve AirPlay kontrol�
 
 ## Önizleme
 
-Görseller gerçek Mi Stick ekran görüntüleridir; arayüz dili İngilizcedir. v1 ile çekildiler; v1.1 aynı görünümü korur
-ve hızlı ayarlara Boşalt düğmesi ile uyku zamanlayıcısını ekler.
+Görseller PureTV v1.1'in gerçek Mi Stick ekran görüntüleridir; arayüz dili İngilizcedir.
 Öneri afişlerinin dili, içeriği sağlayan uygulamaya bağlıdır. İzleme geçmişi gösterilmez.
 
 ### Son izlenenler ve öneriler

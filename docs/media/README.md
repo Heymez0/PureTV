@@ -2,7 +2,7 @@
 
 ## Device screenshots
 
-Captured on 2026-10-25 from the deployed PureTV v1 app on a Xiaomi Mi Stick (MiTV-AESP0), Android TV 9.
+Captured on 2026-10-28 from the installed PureTV v1.1 app on a Xiaomi Mi Stick (MiTV-AESP0), Android TV 9.
 The interface language is English. These are genuine full-resolution 1920 x 1080 device screenshots,
 copied without image edits. Select an image in the README to open its original file.
 
@@ -13,7 +13,8 @@ The Home Screens section contains:
 
 The Features row contains, in order:
 
-- `quick-settings-en.png`: the compact quick panel over the clock home, with AirPlay and a RAM snapshot.
+- `quick-settings-en.png`: the compact quick panel over the clock home, with AirPlay, the RAM row's Free up button
+  and the sleep timer.
 - `shortcuts-en.png`: home scrolled down one level, showing the Shortcuts shelf and detailed weather.
 - `settings-en.png`: System and about, with Language set to English.
 
@@ -21,10 +22,12 @@ The recommendations screenshot was explicitly requested. It shows app-published 
 not viewing-history titles or playback progress. Source apps determine the language of recommendation content;
 English interface selection does not translate their artwork. App names, logos and content artwork belong to their owners.
 No account credentials, local network addresses or device identifiers appear in the shared captures.
-All five captures were refreshed after the v1 update. The settings image shows the actual v1 version label;
+All five captures were refreshed for v1.1. The settings image shows the actual v1.1 version label;
 the shortcuts image includes the weather-data attribution. Captures were copied byte for byte without edits.
-The device-compatible installation was used for these views. Its existing combined layout and English app language
-were retained after capture; Android locale, HOME resolver and screensaver component were restored unchanged.
+The clock-only views were taken with the layout temporarily set to Clock only and weather information on; the
+recommendations view was kept only after checking that its Recommended tab was selected. The owner's combined layout,
+weather setting and English app language were restored afterwards; Android locale, HOME resolver and screensaver
+component were unchanged.
 
 These captures establish the deployed Android TV interface on this device. They do not establish LG/Samsung,
 every Google TV firmware, or fresh renamed-package setup compatibility. See [testing scope](../INSTALL.md#compatibility).
