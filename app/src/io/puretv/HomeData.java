@@ -30,7 +30,7 @@ import java.util.concurrent.Executors;
  */
 final class HomeData {
     private static final String WEATHER_QUERY = "&current=temperature_2m,weather_code,is_day&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset"
-            + "&hourly=temperature_2m,weather_code,is_day&timezone=auto&forecast_days=2";
+            + "&hourly=temperature_2m,weather_code,is_day,precipitation_probability&timezone=auto&forecast_days=2";
 
     private static String weatherPlace() {
         return Prefs.latitude() + "," + Prefs.longitude();
@@ -59,6 +59,7 @@ final class HomeData {
         final List<Double> hourTemp = new ArrayList<>();
         final List<Integer> hourCode = new ArrayList<>();
         final List<Boolean> hourDay = new ArrayList<>();
+        final List<Integer> hourRain = new ArrayList<>();   // chance of rain in %, or -1 (a cached forecast without it)
     }
 
     private static HomeData instance;
@@ -145,14 +146,18 @@ final class HomeData {
             JSONArray temps = hourly.getJSONArray("temperature_2m");
             JSONArray codes = hourly.getJSONArray("weather_code");
             JSONArray days = hourly.optJSONArray("is_day");
+            JSONArray rain = hourly.optJSONArray("precipitation_probability");
             long now = System.currentTimeMillis();
             for (int i = 0; i < times.length() && w.hours.size() < 6; i++) {
+                // Open-Meteo sends null for an hour it has no value for: skip that hour, keep the forecast.
+                if (temps.isNull(i) || codes.isNull(i)) continue;
                 long at = localTime(times.getString(i), zone);
                 if (at <= now) continue;
                 w.hours.add(at);
                 w.hourTemp.add(temps.getDouble(i));
                 w.hourCode.add(codes.getInt(i));
                 w.hourDay.add(days == null || days.optInt(i, 1) == 1);
+                w.hourRain.add(rain == null || rain.isNull(i) ? -1 : Math.max(-1, Math.min(100, rain.optInt(i, -1))));
             }
         }
         return w;

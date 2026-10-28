@@ -19,11 +19,17 @@ running Android TV 9. **LG webOS and Samsung Tizen are experimental ports and ha
 ## Features
 
 - **Choose your home:** a clock, recent content, or recent content with app recommendations.
-- **Keep apps within reach:** separate app and shortcut shelves, other apps below, and long-press shelf reordering.
-- **Make it yours:** light/dark themes, weather, 12/24-hour time and a plain black screensaver.
-- **Stay in control:** compact quick settings, optional lightweight mode and on-demand RAM/storage snapshots.
-- **Use your TV:** box/stick and TV profiles, available TV inputs and remote-button settings.
-- **Receive AirPlay:** optional separate Android receiver with protected quick-panel on/off control.
+- **Keep apps within reach:** separate app and shortcut shelves, other apps below, long-press shelf reordering, and
+  hide, uninstall or force stop from an app's menu.
+- **Make it yours:** light/dark themes, weather with the chance of rain, 12/24-hour time, and a plain black screensaver
+  or one with your own photos from the TV and USB drives.
+- **Stay in control:** compact quick settings, optional lightweight mode, one-press "free memory", on-demand RAM/storage
+  snapshots, settings backup, a simple PIN lock for chosen apps, and updates from this repository's releases (notify
+  or install automatically; only newer builds signed like yours).
+- **Use your TV:** box/stick and TV profiles, available TV inputs, remote-button settings, and an app, Live TV or an
+  input that opens when the TV starts.
+- **Receive AirPlay:** optional separate Android receiver, installed and verified from PureTV, running only when you turn
+  it on, with protected quick-panel on/off control.
 
 Recent content depends on what installed Android apps publish. Optional web catalogue cards use your own TMDB key.
 Android-specific settings, recent-content providers and AirPlay control are not available in the LG/Samsung web edition.
@@ -77,9 +83,11 @@ The header banner is an illustration. [Capture details](docs/media/README.md).
 
 ## Install
 
-**Android TV / Google TV:** [Download PureTV.apk](https://github.com/Heymez0/PureTV/releases/download/v1/PureTV.apk) · [Release and SHA256 checksum](https://github.com/Heymez0/PureTV/releases/tag/v1)
+**Android TV / Google TV:** [Download PureTV.apk](https://github.com/Heymez0/PureTV/releases/latest/download/PureTV.apk) · [Release and SHA256 checksum](https://github.com/Heymez0/PureTV/releases/latest)
 
-The signed v1 APK is for **Android 9 or newer**. Download it on your computer, copy it to a USB drive or
+The signed v1.1 APK is for **Android 9 or newer**. **Coming from v1?** v1.1 is signed with a new key: back up your
+settings (System and about → Back up settings), uninstall PureTV v1 (and PureTV AirPlay), then install v1.1 and restore.
+Later releases update in place, also from PureTV's own Updates screen. Download it on your computer, copy it to a USB drive or
 transfer it to the TV, then open it with the TV file manager. Follow PureTV's welcome guide after installation.
 [Step-by-step Android instructions](docs/INSTALL.md#android-tv--google-tv).
 

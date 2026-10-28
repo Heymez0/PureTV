@@ -61,5 +61,25 @@ final class PerformanceRegression {
             ok(oldDraws==newDraws);ok(callbacks<10*hz);
         }
     }
-    public static void main(String[] args){masks();visibleRows();springs();pacing();System.out.println("PASS: bounded mask LRU, visible-row guard, identical springs and photo pacing");}
+    /** Direct poster pieces keep the framing of the former full-screen cover crop (within one screen pixel). */
+    private static void posterCrop(){
+        for(int[] screen:new int[][]{{1920,1080},{1280,720}}){
+            int W=screen[0],H=screen[1];float S=(float)W/H,ui=W/1920f;
+            int[][] pieces={{Math.round(1092*ui),Math.round(464*ui)},{Math.round(336*ui),Math.round(464*ui)},{192,108},{480,270}};
+            for(int sw=1;sw<=4000;sw+=37)for(int sh=1;sh<=4000;sh+=41)for(int[] piece:pieces){
+                float r=(float)piece[0]/piece[1];float[] got=PosterCrop.region(sw,sh,S,r);
+                float s=Math.max((float)W/sw,(float)H/sh),left=(W-sw*s)/2,top=(H-sh*s)/2;
+                int cw=Math.min(W,Math.round(H*r)),ch=Math.min(H,Math.round(cw/r)),x=(W-cw)/2,y=(H-ch)/2;
+                ok(Math.abs(got[0]*s+left-x)<=1.01f&&Math.abs(got[1]*s+top-y)<=1.01f);
+                ok(Math.abs(got[2]*s-cw)<=1.01f&&Math.abs(got[3]*s-ch)<=1.01f);
+                ok(got[0]>=-.001f&&got[1]>=-.001f&&got[0]+got[2]<=sw+.001f&&got[1]+got[3]<=sh+.001f);
+                ok(Math.abs(got[2]/got[3]-r)<=r*1e-4f);
+            }
+        }
+        for(int size:new int[]{0,1,108,192,464,1092})for(float region=.5f;region<20000;region*=1.37f){
+            int n=PosterCrop.halvings(region,size);long step=Math.max(1,size);
+            ok(n>=0&&region<=(step<<(n+1))&&(n==0||region>(step<<n)));
+        }
+    }
+    public static void main(String[] args){masks();visibleRows();springs();pacing();posterCrop();System.out.println("PASS: bounded mask LRU, visible-row guard, identical springs, photo pacing and direct poster framing");}
 }

@@ -8,7 +8,7 @@ import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from tools.build_android import ROOT, argument_file, java_tools
 
-TESTS = ["V1Regression", "PerformanceRegression", "PosterCacheRegression", "PosterPlanRegression", "WelcomeRegression", "TvModeRegression", "LocaleFormatsRegression"]
+TESTS = ["V1Regression", "PerformanceRegression", "PosterCacheRegression", "PosterPlanRegression", "WelcomeRegression", "TvModeRegression", "LocaleFormatsRegression", "FeatureRegression"]
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)

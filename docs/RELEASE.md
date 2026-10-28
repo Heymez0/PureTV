@@ -1,7 +1,7 @@
-# v1 release preparation
+# Release preparation
 
-Current product versions: **Android v1 / versionCode 2**, **webOS 1.0.0**, **Tizen 1.0.0**.
-The higher Android code allows updating the preceding preview despite the simpler product version name.
+Current product versions: **Android v1.1 / versionCode 3**, **webOS 1.0.0**, **Tizen 1.0.0**.
+v1 was versionCode 2 (its higher code let it update the preceding preview despite the simpler version name).
 Historical commits and third-party protocol/version names are retained.
 
 ## Source and packaging
@@ -42,6 +42,14 @@ Installing a second HOME-capable package can display Android's HOME chooser; thi
 The two technical package IDs are separate installations, not an in-place migration. This setup/recovery result
 applies to the reference Mi Stick; firmware-specific HOME authorization still needs validation on other TVs.
 
+## Signing key
+
+The v1 signing key is no longer available. From v1.1 the launcher and receiver APKs are signed with a new key
+(certificate SHA-256 `808dd32ee3d027606fbaa586c71755ae2e97957182d7f565f8c777db15c93677`), and both must use it.
+Android cannot update across keys, so v1 installations must uninstall PureTV and PureTV AirPlay before installing
+v1.1, and v1's built-in update check will not offer it to them. Restore preferences afterwards from a settings backup.
+Every later release must use this key and a higher versionCode (v1.1 is 3).
+
 ## Licences and distribution
 
 PureTV additions use MIT. Incorporated MIT notices, Inter's OFL and Material Symbols' Apache 2.0 text are preserved.
@@ -56,7 +64,7 @@ The prepared receiver uses the unchanged upstream ARMv7 engine; a full native re
 The renamed `io.puretv.airplay` receiver was tested with the new launcher on Mi Stick / Android TV 9. Settings
 start/stop, quick-panel stop and keeping an explicit stop after reopening the receiver passed. The device owner
 confirmed a new Screen Mirroring session. An unprivileged control broadcast was not accepted.
-The v1 release distributes its APK and matching full GPL source together. The main APK contains only the launcher.
+Each release distributes the receiver APK and its matching full GPL source together. The main APK contains only the launcher.
 
 ## Testing limits
 

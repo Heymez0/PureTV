@@ -20,7 +20,8 @@ public class ContinueSettingsActivity extends Activity implements ContinueWatchi
     @Override protected void onPause() {resumed=false;page.pause();source.removeListener(this);super.onPause();}
     @Override public void onContinueWatching() {rebuild();}
     private void toggleViewing() {
-        if(Prefs.viewingInformation()){setViewing(false);return;}
+        // On without the grant (e.g. after a restore on a new install): OK asks for it instead of turning viewing off.
+        if(Prefs.viewingInformation()&&ContinueWatching.permitted(this)){setViewing(false);return;}
         if(!ContinueWatching.permitted(this)){
             pendingEnable=true;requestPermissions(new String[]{ContinueWatching.PERMISSION},ACCESS);
         }else setViewing(true);
@@ -63,6 +64,7 @@ public class ContinueSettingsActivity extends Activity implements ContinueWatchi
         super.onRequestPermissionsResult(request,permissions,grants);
         if(request==ACCESS) {
             if(pendingEnable&&ContinueWatching.permitted(this))setViewing(true);
+            else if(pendingEnable&&Prefs.viewingInformation())setViewing(false);   // refused: off, so OK can still switch it
             pendingEnable=false;source.refresh(true);rebuild();
         }
     }

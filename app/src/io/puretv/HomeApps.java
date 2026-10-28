@@ -280,6 +280,7 @@ final class HomeApps {
             skip.add(AirPlayReceiver.ORIGINAL); // keep the rollback app installed, without a duplicate tile
         } catch (PackageManager.NameNotFoundException | SecurityException ignored) { }
         skip.addAll(HIDDEN);
+        skip.addAll(Prefs.hiddenApps());   // hidden by the person (Settings → Home screen → Hidden apps)
 
         List<Item> items = new ArrayList<>();
         Set<String> seen = new HashSet<>();
@@ -315,6 +316,7 @@ final class HomeApps {
 
     /** Opens the item with the system zoom transition growing out of the card (the app starts opening right away). */
     static boolean open(Activity a, Item it, View from, int x, int y, int w, int h) {
+        if (it.kind == APP && AppLock.intercept(a, it.pkg, it.label, () -> open(a, it, from, x, y, w, h))) return true;
         Intent intent, plain = null;
         switch (it.kind) {
             case APP:
@@ -436,17 +438,25 @@ final class HomeApps {
     static List<String[]> launchable(Context c) {
         PackageManager pm = c.getPackageManager();
         List<String[]> out = new ArrayList<>();
-        Set<String> seen = new HashSet<>();
-        Intent tv = new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LEANBACK_LAUNCHER);
-        for (ResolveInfo ri : pm.queryIntentActivities(tv, 0)) {
-            String pkg = ri.activityInfo.packageName;
-            if (seen.add(pkg)) out.add(new String[] {pkg, String.valueOf(ri.loadLabel(pm))});
+        for (Map.Entry<String, ResolveInfo> app : launchers(c).entrySet()) {
+            out.add(new String[] {app.getKey(), String.valueOf(app.getValue().loadLabel(pm))});
         }
+        return out;
+    }
+
+    /**
+     * The same apps as launchable(), in the same order, without loading any label: a label reads the app's own
+     * resources, so callers that show only a few apps load just those (ResolveInfo.loadLabel).
+     */
+    static Map<String, ResolveInfo> launchers(Context c) {
+        PackageManager pm = c.getPackageManager();
+        Map<String, ResolveInfo> out = new java.util.LinkedHashMap<>();
+        Intent tv = new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LEANBACK_LAUNCHER);
+        for (ResolveInfo ri : pm.queryIntentActivities(tv, 0)) out.putIfAbsent(ri.activityInfo.packageName, ri);
         Intent phone = new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER);
         for (ResolveInfo ri : pm.queryIntentActivities(phone, 0)) {
-            String pkg = ri.activityInfo.packageName;
-            if ((ri.activityInfo.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0 || !seen.add(pkg)) continue;
-            out.add(new String[] {pkg, String.valueOf(ri.loadLabel(pm))});
+            if ((ri.activityInfo.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0) continue;
+            out.putIfAbsent(ri.activityInfo.packageName, ri);
         }
         return out;
     }

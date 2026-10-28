@@ -137,9 +137,7 @@ final class SettingsPage extends View implements Choreographer.FrameCallback {
         scheduled=false;if(!running)return;
         float dt=lastFrame==0?1/60f:Math.min(.05f,(nanos-lastFrame)/1e9f);lastFrame=nanos;boolean moving=false;
         for(int i=Math.max(0,scroll-1);i<Math.min(focusMotion.length,scroll+VISIBLE+1);i++)moving|=focusMotion[i].step(dt);
-        if(moving){invalidate();scheduled=true;
-            if(Prefs.lightweight())Choreographer.getInstance().postFrameCallbackDelayed(this,30);
-            else Choreographer.getInstance().postFrameCallback(this);}
+        if(moving){invalidate();scheduled=true;Choreographer.getInstance().postFrameCallback(this);}   // full rate, as on Home
     }
     @Override protected void onDraw(Canvas c){
         if(title==null)return;

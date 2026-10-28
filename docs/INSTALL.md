@@ -4,9 +4,13 @@
 
 ## Android TV / Google TV
 
-Use the signed [PureTV.apk download](https://github.com/Heymez0/PureTV/releases/download/v1/PureTV.apk)
-from the [v1 release](https://github.com/Heymez0/PureTV/releases/tag/v1). Requires Android 9+.
+Use the signed [PureTV.apk download](https://github.com/Heymez0/PureTV/releases/latest/download/PureTV.apk)
+from the [latest release](https://github.com/Heymez0/PureTV/releases/latest) (v1.1). Requires Android 9+.
 Download **PureTV.apk**; the automatic Source code ZIP contains source files for developers.
+
+**Updating from v1:** v1.1 is signed with a new key, so Android won't install it over v1. Back up your settings
+(System and about → Back up settings), uninstall PureTV v1 and PureTV AirPlay, install v1.1, then Restore settings.
+In custom home mode, choose **Original** in PureTV v1 first so the TV's own home screen is back before uninstalling.
 
 Choose **one** installation method:
 
@@ -58,12 +62,18 @@ Scroll down to reach other applications.
 Quick settings is at the top right. All settings opens from that panel or the application list.
 Layout and profile are under Home screen; viewing-information sources and hidden items are under Content.
 Turning viewing information off leaves only the clock. Appearance and clock/weather have their own categories.
-Connections contains AirPlay control/help and system network/Bluetooth links. Device and performance contains resource
-snapshots and optional lightweight mode. Remote buttons contains supported mappings and the key test.
+Connections contains AirPlay control/help, the optional receiver installer and system network/Bluetooth links. Device and
+performance contains resource snapshots, optional lightweight mode and an optional voice-assistant switch (custom home
+mode only; the remote's microphone button stops working while it is off). Remote buttons contains supported mappings and
+the key test. System and about can back up and restore your choices (layout, shelves, shortcuts, sources, city, theme,
+remote buttons; never viewing history or HOME state). In custom home mode the backup is also copied to
+`Download/PureTV-settings.json`, which survives reinstalling and can be copied to a computer with `tools/device_qa.py`.
 
 TV inputs appear only in TV mode when the device provides them. A streaming stick does not gain physical HDMI inputs
 by changing profile. Existing TV input/CEC apps handle inputs; PureTV does not replace tuner, picture or audio settings.
-Optional receiver installation and same-certificate requirements are in the [AirPlay guide](../tools/airplay/README.md).
+The welcome guide's last page and Connections → AirPlay receiver can install the optional receiver from this repository's
+latest release after checking its package and certificate; Android asks you to allow and confirm the installation.
+Manual installation and same-certificate requirements are in the [AirPlay guide](../tools/airplay/README.md).
 
 ### Restore the original HOME
 

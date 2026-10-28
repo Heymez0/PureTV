@@ -142,7 +142,14 @@ final class ContinueWatching {
         @Override public void onChange(boolean selfChange){sourceChanged();}
     };
     private ContinueWatching(Context c) {context=c;}
-    static boolean permitted(Context c) {return c.checkSelfPermission(PERMISSION)==PackageManager.PERMISSION_GRANTED;}
+    /** Android kills the process when a runtime permission is revoked, so a grant seen once holds for this process. */
+    private static volatile boolean granted;
+    static boolean permitted(Context c) {
+        if(granted)return true;
+        boolean now=c.checkSelfPermission(PERMISSION)==PackageManager.PERMISSION_GRANTED;   // an IPC on Android 9
+        if(now)granted=true;
+        return now;
+    }
     Snapshot snapshot() {return snapshot;}
     void addListener(Listener l) {
         boolean first=listeners.isEmpty();if(!listeners.contains(l))listeners.add(l);refresh(first);
@@ -200,9 +207,26 @@ final class ContinueWatching {
             });
         });
     }
+    /** Launchable apps for one read. A label loads the app's resources, so only shown or counted apps get one. */
+    private static final class Installed {
+        private final Map<String,ResolveInfo> apps=new LinkedHashMap<>();
+        private final Map<String,String> labels=new HashMap<>();
+        private final PackageManager pm;
+        Installed(Context c) {
+            pm=c.getPackageManager();
+            for(Map.Entry<String,ResolveInfo> app:HomeApps.launchers(c).entrySet())
+                if(WatchNextRules.packageName(app.getKey()))apps.put(app.getKey(),app.getValue());
+        }
+        boolean containsKey(String pkg) {return apps.containsKey(pkg);}
+        Set<String> packages() {return apps.keySet();}
+        String get(String pkg) {
+            String label=labels.get(pkg);
+            if(label==null){ResolveInfo app=apps.get(pkg);if(app==null)return null;label=String.valueOf(app.loadLabel(pm));labels.put(pkg,label);}
+            return label;
+        }
+    }
     private Snapshot read(boolean enabled,boolean recommendations,boolean permission,Set<String> hidden,Set<String> hiddenPrograms) {
-        Map<String,String> installed=new LinkedHashMap<>();
-        for(String[] app:HomeApps.launchable(context))if(WatchNextRules.packageName(app[0]))installed.put(app[0],app[1]);
+        Installed installed=new Installed(context);
         Map<String,Integer> counts=new HashMap<>();
         List<Program> programs=new ArrayList<>();
         Set<String> seen=new HashSet<>();boolean failed=false;
@@ -233,15 +257,15 @@ final class ContinueWatching {
         if(recommendations && permission)try {previews=readPreviews(installed,hidden,hiddenPrograms,seen,counts);}
         catch(SecurityException|IllegalArgumentException|android.database.SQLException ignored) {failed=true;}
         List<Source> sources=new ArrayList<>();
-        for(Map.Entry<String,String> app:installed.entrySet())if(VIDEO.contains(app.getKey()) || counts.containsKey(app.getKey()))
-            sources.add(new Source(app.getKey(),app.getValue(),counts.getOrDefault(app.getKey(),0)));
+        for(String pkg:installed.packages())if(VIDEO.contains(pkg) || counts.containsKey(pkg))
+            sources.add(new Source(pkg,installed.get(pkg),counts.getOrDefault(pkg,0)));
         sources.sort((a,b)->a.label.compareToIgnoreCase(b.label));
         return new Snapshot(programs,previews,sources,permission,failed);
     }
     /** Read shared video previews for this launcher's selected apps. No provider writes or privileged permission.
      * Channel browsable belongs to the original launcher; it is commonly 0 while that launcher is disabled.
      * Respect our per-app choices, locked channels and individually hidden preview programs instead. */
-    private List<Program> readPreviews(Map<String,String> installed,Set<String> hidden,Set<String> hiddenPrograms,
+    private List<Program> readPreviews(Installed installed,Set<String> hidden,Set<String> hiddenPrograms,
             Set<String> seen,Map<String,Integer> counts) {
         Set<String> channels=new HashSet<>();
         try(Cursor c=context.getContentResolver().query(TvContract.Channels.CONTENT_URI,
@@ -382,6 +406,13 @@ final class ContinueWatching {
                 }
             } finally {if(connection!=null)connection.disconnect();}
         } else return null;
+        return decodeBytes(bytes);
+    }
+    /**
+     * At most 1280 px on the long side. Measured on the Mi Stick: decoding 1920 px art at full size for a sharper wide card
+     * doubled the poster's transient memory (16.5 MiB), so the slight upscale of such art is kept.
+     */
+    static Bitmap decodeBytes(byte[] bytes) {
         BitmapFactory.Options bounds=new BitmapFactory.Options();bounds.inJustDecodeBounds=true;
         BitmapFactory.decodeByteArray(bytes,0,bytes.length,bounds);
         if(bounds.outWidth<=0 || bounds.outHeight<=0 || (long)bounds.outWidth*bounds.outHeight>32_000_000L)return null;
@@ -397,6 +428,7 @@ final class ContinueWatching {
     }
     static boolean open(Activity activity,Program p) {
         if(p==null || !permitted(activity) || !WatchNextRules.packageName(p.pkg) || !Prefs.continueAllowed(p.pkg) || p.recommended && !Prefs.appRecommendations())return false;
+        if(AppLock.intercept(activity,p.pkg,p.app,()->open(activity,p)))return true;
         try {
             Intent parsed=Intent.parseUri(p.intent,Intent.URI_INTENT_SCHEME);
             Uri data=parsed.getData();String scheme=data==null?"":data.getScheme();

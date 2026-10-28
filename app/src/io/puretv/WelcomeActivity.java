@@ -19,7 +19,7 @@ public class WelcomeActivity extends Activity {
     private final ExecutorService io=Executors.newSingleThreadExecutor();
     private final Runnable poll=this::readState;
     private WelcomeView page;
-    private boolean visible,alive=true,loading,loaded,active,debug;
+    private boolean visible,alive=true,loading,loaded,active,debug,airplayMissing;
     private int requests;
     private String busy="",error="";
     static void open(Activity from){from.startActivity(new Intent(from,WelcomeActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP));}
@@ -33,7 +33,7 @@ public class WelcomeActivity extends Activity {
     @Override protected void onResume(){super.onResume();visible=true;page.resume();readState();}
     @Override protected void onPause(){visible=false;main.removeCallbacks(poll);page.pause();super.onPause();}
     @Override protected void onDestroy(){alive=false;main.removeCallbacksAndMessages(null);io.shutdownNow();super.onDestroy();}
-    private void render(){page.bind(WelcomeView.content(flow,loaded,debug,busy,error));}
+    private void render(){page.bind(WelcomeView.content(flow,loaded,debug,busy,error,airplayMissing));}
     private void readState(){
         main.removeCallbacks(poll);if(!alive||!visible||loading)return;loading=true;
         final android.content.Context context=getApplicationContext();
@@ -42,9 +42,9 @@ public class WelcomeActivity extends Activity {
             boolean enabled;
             try{enabled=Settings.Global.getInt(context.getContentResolver(),Settings.Global.ADB_ENABLED,0)!=0;}
             catch(RuntimeException unavailable){enabled=false;}
-            final boolean debugEnabled=enabled;
+            final boolean debugEnabled=enabled,receiverMissing=AirPlayReceiver.themedVersion(context).isEmpty();
             main.post(()->{
-                if(!alive)return;loading=false;loaded=true;active=home;debug=debugEnabled;
+                if(!alive)return;loading=false;loaded=true;active=home;debug=debugEnabled;airplayMissing=receiverMissing;
                 busy=WelcomeStore.busyText(state,SystemClock.elapsedRealtime());error=state.optString("error");
                 flow.observe(SystemClock.elapsedRealtime(),active,!busy.isEmpty(),error);
                 if(flow.step==WelcomeFlow.READY)WelcomeStore.status(context,WelcomeFlow.DONE);
@@ -81,6 +81,7 @@ public class WelcomeActivity extends Activity {
                 WelcomeStore.status(this,WelcomeFlow.DONE);
                 startActivity(new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));finish();break;
             case WelcomeView.CHECK:readState();break;
+            case WelcomeView.AIRPLAY:startActivity(new Intent(this,AirPlayInstallActivity.class));break;
             case WelcomeView.LEAVE:finish();break;
         }
     }

@@ -287,7 +287,9 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
     private boolean okDown, backDown;
 
     private Paint labelPaint, metaPaint, clockPaint, buttonPaint, capsuleText, tipPaint;
-    private Paint rowTitle, drawerLabel, cardTitle, cardText, cardDim, cardDimRight, bigTemp, hourPaint, hourTemp;
+    private Paint rowTitle, drawerLabel, cardTitle, cardText, cardDim, cardDimRight, bigTemp, hourPaint, hourTemp, hourRain;
+    /** The chance of rain under an hour: a calm blue that reads on the light and the dark card. */
+    private static final int RAIN_LIGHT = 0xFF1F6FB8, RAIN_DARK = 0xFF7DB8F0;
     private Paint pricePaint, sheetTitle;
     private TextPaint titlePaint, gridLabel, toastPaint;
     private final Paint bitmapPaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
@@ -323,7 +325,7 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
     private int textPrefs = -1;
     private String textLanguage;
     private String weatherTitle, nowTemp, highLow, sunriseText, sunsetText, staleText;
-    private final String[] hourText = new String[6], hourTempText = new String[6];
+    private final String[] hourText = new String[6], hourTempText = new String[6], hourRainText = {"", "", "", "", "", ""};
 
     /** What the hero shows: a recommendation or, without any, the date, the time and the weather. */
     private static final class Hero {
@@ -344,6 +346,16 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
         Layer(Context c, int kind) {
             super(c);
             this.kind = kind;
+        }
+
+        /**
+         * The drawer and sheet fade whole layers. Without a hardware layer (Android 9 to 11 here), a fading view with
+         * overlapping content is drawn into a full-size offscreen buffer on every frame: on a Mi Stick that saturated the
+         * GPU while the drawer opened or closed (10-22 ms buffer swaps). Applying the alpha to each drawing instead only
+         * lets a card's shadow show through its image for the few frames of a fade.
+         */
+        @Override public boolean hasOverlappingRendering() {
+            return false;
         }
 
         @Override protected void onDraw(Canvas c) {
@@ -754,6 +766,8 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
         hourPaint.setTextAlign(Paint.Align.CENTER);
         hourTemp = Ui.numbers(Ui.medium, 26 * k, 0xF2FFFFFF);
         hourTemp.setTextAlign(Paint.Align.CENTER);
+        hourRain = Ui.numbers(Ui.semibold, 19 * k, RAIN_DARK);
+        hourRain.setTextAlign(Paint.Align.CENTER);
 
 
         sheetTitle = Ui.text(Ui.displaySemibold, 40 * k, 0xFFFFFFFF);
@@ -778,8 +792,9 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
         float dt = lastNanos == 0 ? 1 / 60f : Math.min(0.05f, (frameTimeNanos - lastNanos) / 1e9f);
         lastNanos = frameTimeNanos;
         long up = SystemClock.uptimeMillis();
-        long stamp = data.weatherAt ^ (System.currentTimeMillis() / 60_000 * 31) ^ ((long) Prefs.version << 32)
-                ^ Float.floatToIntBits(dark()) ^ Ui.generation;
+        // The weather card shows nothing that changes by the minute: a minute in this key re-rendered it in software
+        // and re-uploaded the ~3 MB texture on the next drawer opening (a heavy first frame on the Mi Stick).
+        long stamp = data.weatherAt ^ ((long) Prefs.version << 32) ^ Float.floatToIntBits(dark()) ^ Ui.generation;
         if (stamp != weatherCacheStamp) { weatherCacheStamp = stamp; weatherCacheKey = Long.toString(stamp); }
         boolean sectionMoving = sectionMove != 0;
         if (sectionMoving) {
@@ -840,10 +855,9 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
         boolean busy = sectionMoving || belowMoving || otherMoving || tilesMoving || statusMoving || heroMoving || drawerItemsMoving || gridMoving || drawerMoving
                 || sheetMoving || toastFading || heroFading || bgFading || nightMoving || toast != null || !toasts.isEmpty();
         idle = !busy;
-        if (busy) {
-            if (Prefs.lightweight()) Choreographer.getInstance().postFrameCallbackDelayed(this, 30);
-            else Choreographer.getInstance().postFrameCallback(this);
-        }
+        // Every vsync while moving, lightweight mode included: its former 30 ms pacing halved the frame rate (measured on
+        // the Mi Stick: exactly 30 fps, felt as judder), while the same device draws shelf focus at 60 fps without it.
+        if (busy) Choreographer.getInstance().postFrameCallback(this);
         else Choreographer.getInstance().postFrameCallbackDelayed(this,ClockFormat.minuteDelay(System.currentTimeMillis()));
     }
 
@@ -1651,6 +1665,7 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
         bigTemp.setColor(drawerInk(1));
         hourPaint.setColor(tone(L_DIM, 0xADFFFFFF));
         hourTemp.setColor(drawerInk(0.95f));
+        hourRain.setColor(tone(RAIN_LIGHT, RAIN_DARK));
 
         float titleBase = ROW_TITLE * k;
         if (drawerInputs > 0) c.drawText(Ui.tr("Entradas", "Inputs"), drawerRects[0].left + 4 * k, titleBase, rowTitle);
@@ -1732,6 +1747,7 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
             c.drawText(hourText[i], hc, r.top + 96 * k, hourPaint);
             Symbols.draw(getContext(), c, Symbols.weather(wx.hourCode.get(i), wx.hourDay.get(i)), hc, r.top + 142 * k, 30 * k, drawerInk(0.9f));
             c.drawText(hourTempText[i], hc, r.top + 196 * k, hourTemp);
+            if (!hourRainText[i].isEmpty()) c.drawText(hourRainText[i], hc, r.top + 224 * k, hourRain);
         }
         float sx = hx, base = r.top + 258 * k;
         if (wx.sunrise != 0) sx = sunItem(c, "sunrise", sunriseText, sx, base) + 36 * k;
@@ -1754,6 +1770,8 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
             for (int i = 0; i < wx.hours.size() && i < 6; i++) {
                 hourText[i] = HomeData.hour(wx.hours.get(i));
                 hourTempText[i] = HomeData.degrees(wx.hourTemp.get(i));
+                int rain = i < wx.hourRain.size() ? wx.hourRain.get(i) : -1;
+                hourRainText[i] = rain >= FeatureRules.RAIN_SHOWN ? LocaleFormats.percent(rain / 100.0, Ui.locale()) : "";
             }
             sunriseText = Ui.tr("Nascer ", "Sunrise ") + Ui.time(wx.sunrise);
             sunsetText = Ui.tr("Pôr do sol ", "Sunset ") + Ui.time(wx.sunset);
@@ -2019,10 +2037,18 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
                 .build();
     }
 
-    /** New notices from the main process (mode switches, the check after the TV boots): those from the last 24 h. */
+    private volatile long noticeStamp = Long.MIN_VALUE;   // the state file last read for notices (LOADER thread)
+
+    /**
+     * New notices from the main process (mode switches, the check after the TV boots): those from the last 24 h.
+     * The 15 s tick reads the shared state file only after the main process has replaced it.
+     */
     private void checkNotices() {
         final Context c = getContext().getApplicationContext();
         LOADER.execute(() -> {
+            long stamp = HomeMode.stateStamp(c);
+            if (stamp == noticeStamp) return;
+            noticeStamp = stamp;
             JSONArray list = HomeMode.state(c).optJSONArray("notices");
             if (list == null) return;
             long seen = ui.getLong("seenNotice", 0), newest = seen;
@@ -2450,7 +2476,28 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
         if (zone == Z_DRAWER && QuickShortcuts.id(item) != null || (zone == Z_OTHER || sheetOpen) && others.size() > 1) {
             options.add(new QuickActionDialog.Option(Ui.tr("Mover na prateleira", "Move on shelf"), this::startSectionMove));
         }
+        if (item.kind == HomeApps.APP && item.pkg != null) addAppOptions(item, options);
         showActionMenu(item.label, options);
+    }
+
+    /**
+     * Hide (Other apps only: the shelf has its own editor), Uninstall (apps the person installed, with Android's
+     * confirmation) and Force stop (custom home mode). With the app lock on, the PIN is asked first.
+     */
+    private void addAppOptions(HomeApps.Item item, List<QuickActionDialog.Option> options) {
+        final Context app = getContext().getApplicationContext();
+        if (zone == Z_OTHER || sheetOpen) options.add(new QuickActionDialog.Option(Ui.tr("Hide app"), () -> AppLock.confirm(activity, () -> {
+            Prefs.setAppHidden(item.pkg, true);
+            catalogLoads.invalidate(); reload();
+            showToast(Ui.tr("App hidden. Show it again in Settings → Home screen → Hidden apps."));
+        })));
+        if (AppActions.canUninstall(app, item.pkg)) options.add(new QuickActionDialog.Option(Ui.tr("Uninstall"), () -> AppLock.confirm(activity, () -> {
+            if (!AppActions.uninstall(activity, item.pkg)) showToast(Ui.tr("Não deu para abrir ", "Couldn't open ") + item.label + ".");
+        })));
+        if (AppActions.canForceStop(app, item.pkg)) options.add(new QuickActionDialog.Option(Ui.tr("Force stop"), () -> LOADER.execute(() -> {
+            boolean stopped = AppActions.forceStop(app, item.pkg);
+            handler.post(() -> { if (!destroyed) showToast(stopped ? Ui.trf("{app} was stopped.", "app", item.label) : Ui.tr("Couldn't stop the app.")); });
+        })));
     }
 
     private RectF actionAnchor() {
@@ -3018,6 +3065,9 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
         for (int i = 0; i < hours; i++) {
             s.append(HomeData.hour(wx.hours.get(i))).append(' ').append(HomeData.degrees(wx.hourTemp.get(i))).append(i < hours - 1 ? ", " : ".");
         }
+        int rain = FeatureRules.firstRain(wx.hourRain.subList(0, Math.min(hours, wx.hourRain.size())), FeatureRules.RAIN_SHOWN);
+        if (rain >= 0) s.append(' ').append(Ui.trf("Chance of rain at {hour}: {percent}.", "hour", HomeData.hour(wx.hours.get(rain)),
+                "percent", LocaleFormats.percent(wx.hourRain.get(rain) / 100.0, Ui.locale())));
         if (wx.sunrise != 0) s.append(Ui.tr(" Nascer do sol ", " Sunrise ")).append(Ui.time(wx.sunrise)).append('.');
         if (wx.sunset != 0) s.append(Ui.tr(" Pôr do sol ", " Sunset ")).append(Ui.time(wx.sunset)).append('.');
         return s.toString();

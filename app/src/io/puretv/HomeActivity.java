@@ -62,11 +62,16 @@ public class HomeActivity extends Activity {
         if (home != null) {
             home.resume();
             if (browseRequested) { browseRequested = false; home.browseOtherApps(); }
+            StartupLaunch.check(this, home);
+            home.removeCallbacks(autoFree);
+            home.postDelayed(autoFree, 3_000);   // once the app left behind has settled in the background
         }
     }
 
+    private final Runnable autoFree = () -> FreeMemory.autoCheck(this);
+
     @Override protected void onPause() {
-        if (home != null) home.pause();
+        if (home != null) { home.removeCallbacks(autoFree); home.pause(); }
         super.onPause();
     }
 

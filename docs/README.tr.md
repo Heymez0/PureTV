@@ -4,7 +4,7 @@
 
 **Uygulamalarınıza odaklanan sade bir TV ana ekranı.**
 
-[English / ana sayfa](../README.md) · [APK indir](https://github.com/Heymez0/PureTV/releases/download/v1/PureTV.apk) · [Ayrıntılı kurulum](INSTALL.md) · [Kaynak derleme](DEVELOPMENT.md)
+[English / ana sayfa](../README.md) · [APK indir](https://github.com/Heymez0/PureTV/releases/latest/download/PureTV.apk) · [Ayrıntılı kurulum](INSTALL.md) · [Kaynak derleme](DEVELOPMENT.md)
 
 PureTV; Android TV, Google TV ve Android kutu/stick cihazlar için hafif bir başlatıcıdır.
 LG webOS ve Samsung Tizen için ayrı web sürümleri bulunur. **Gerçek cihaz referansı Android TV 9 kullanan Mi Stick'tir.**
@@ -14,11 +14,16 @@ Ayrı Google TV yazılımı testi kayıtlı değildir. LG/Samsung sürümleri de
 
 - Saat, son izlenenler veya son izlenenler ve önerilerin birlikte bulunduğu ana ekran seçenekleri.
 - Ana uygulama rafı, kısayollar ve aşağı kaydırarak erişilen diğer uygulamalar.
-- Uzun basma menüsü ve raf içinde taşıma.
-- Açık/koyu tema, hava durumu, 12/24 saat ve koyu ekran koruyucu.
-- Kompakt hızlı ayarlar, isteğe bağlı hafif mod, açıldığında alınan RAM/depolama bilgisi.
-- Kutu/stick ve TV profilleri; cihazın sunduğu TV girişleri ve desteklenen kumanda tuşları.
-- İsteğe bağlı, ayrı kurulan AirPlay alıcısı ve hızlı panelden alıcı kontrolü.
+- Uzun basma menüsü, raf içinde taşıma; uygulamayı gizleme, kaldırma ve zorla durdurma.
+- Açık/koyu tema, yağış olasılığıyla hava durumu, 12/24 saat; koyu ekran koruyucu ya da TV'deki ve USB'deki kendi
+  fotoğraflarınızla ekran koruyucu.
+- Kompakt hızlı ayarlar, isteğe bağlı hafif mod, tek tuşla bellek boşaltma, açıldığında alınan RAM/depolama bilgisi.
+- Ayar yedekleme/geri yükleme, seçilen uygulamalar için basit PIN kilidi ve özel ana ekran modunda isteğe bağlı sesli
+  asistan kapatma.
+- GitHub sürümlerinden güncelleme: bildirim ya da otomatik kurulum; yalnızca sizinkiyle aynı imzalı daha yeni sürümler.
+- Kutu/stick ve TV profilleri; cihazın sunduğu TV girişleri, desteklenen kumanda tuşları ve TV açılınca açılacak bir
+  uygulama, Canlı TV ya da giriş.
+- İsteğe bağlı, ayrı AirPlay alıcısı: PureTV'den doğrulanarak kurulur, yalnız açtığınızda çalışır ve hızlı panelden yönetilir.
 - 24 arayüz diline ait çeviri katalogları.
 
 Son izlenenler ve öneriler, kurulu uygulamaların Android ile paylaştığı içeriklere bağlıdır.
@@ -44,14 +49,16 @@ Görseller gerçek Mi Stick ekran görüntüleridir; arayüz dili İngilizcedir.
 
 ## Kurulum
 
-Depo şu anda gizlidir. Kaynağa ve indirmelere erişmek için yetkili GitHub hesabınızla giriş yapın.
-
 ### Android TV / Google TV: APK indir
 
-**[PureTV.apk indir](https://github.com/Heymez0/PureTV/releases/download/v1/PureTV.apk)** · [Ön sürüm ve SHA256 doğrulaması](https://github.com/Heymez0/PureTV/releases/tag/v1)
+**[PureTV.apk indir](https://github.com/Heymez0/PureTV/releases/latest/download/PureTV.apk)** · [Sürüm ve SHA256 doğrulaması](https://github.com/Heymez0/PureTV/releases/latest)
 
-Bu, Android 9 ve üzeri için imzalı v1 sürümüdür. **PureTV.apk** dosyasını indirin;
+Bu, Android 9 ve üzeri için imzalı v1.1 sürümüdür. **PureTV.apk** dosyasını indirin;
 GitHub'ın otomatik oluşturduğu Source code ZIP dosyaları geliştiriciler içindir.
+
+**v1 kullanıyorsanız:** v1.1 yeni bir anahtarla imzalandı. Önce ayarlarınızı yedekleyin (Sistem ve hakkında → Ayarları
+yedekle), PureTV v1'i (ve PureTV AirPlay'i) kaldırın, sonra v1.1'i kurup yedeği geri yükleyin. Sonraki sürümler
+doğrudan, PureTV'nin Güncellemeler ekranından da güncellenir.
 
 **USB ile:**
 

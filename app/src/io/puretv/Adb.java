@@ -34,7 +34,7 @@ import javax.crypto.Cipher;
  * ADB client that talks to the TV itself (127.0.0.1:5555, open while debugging is on). It's what lets the app switch
  * the home screen and the screensaver, and turn off apps, without a computer. The first time, the TV asks
  * "Allow USB debugging?" and you accept with "Always allow". Only HomeMode uses it, and only with its own fixed
- * commands (nothing from outside).
+ * commands (nothing from outside); the settings backup also copies its own file to Download with an existing grant.
  * Protocol: https://android.googlesource.com/platform/packages/modules/adb/+/refs/heads/main/protocol.txt
  */
 final class Adb implements Closeable {
@@ -57,6 +57,7 @@ final class Adb implements Closeable {
     private final DataInputStream in;
     private final OutputStream out;
     private int nextLocalId = 1;
+    private int maxPayload = 4096;
 
     private Adb(Socket socket) throws IOException {
         this.socket = socket;
@@ -64,8 +65,14 @@ final class Adb implements Closeable {
         out = socket.getOutputStream();
     }
 
-    /** Connects and authenticates. If the TV doesn't know our key yet, waits up to `approvalMs` for you to accept. */
+    /**
+     * Connects and authenticates. If the TV doesn't know our key yet, waits up to `approvalMs` for you to accept; a
+     * negative `approvalMs` never offers the key, so the TV shows no prompt (callers that only use an existing grant).
+     */
     static Adb connect(Context c, int approvalMs, Approval approval) throws IOException {
+        // Without a key there is no grant to use, and a key made here (another process) could replace the one the main
+        // process is just offering to the TV.
+        if (approvalMs < 0 && !new File(c.getFilesDir(), "adbkey").exists()) throw new IOException("the app's key isn't allowed on the TV");
         KeyPair keys = keys(c);
         Socket s = new Socket();
         try {
@@ -94,6 +101,8 @@ final class Adb implements Closeable {
                 }
                 if (m.command == CNXN) {
                     s.setSoTimeout(20_000);
+                    // The TV's largest message (arg1); older adbd took 4 KB, anything odd falls back to that.
+                    adb.maxPayload = m.arg1 >= 1024 ? Math.min(MAX_DATA, m.arg1) : 4096;
                     return adb;
                 }
                 if (m.command == STLS) throw new IOException("the TV asked for TLS (wireless debugging); use USB debugging");
@@ -102,6 +111,7 @@ final class Adb implements Closeable {
                     adb.send(AUTH, AUTH_SIGNATURE, 0, sign(keys.getPrivate(), m.data));
                     signed = true;
                 } else if (!offeredKey) {
+                    if (approvalMs < 0) throw new IOException("the app's key isn't allowed on the TV");
                     // Unknown key: send the public one; the TV shows "Allow USB debugging?".
                     adb.send(AUTH, AUTH_RSAPUBLICKEY, 0, publicKeyBlob(keys.getPublic()));
                     offeredKey = true;
@@ -137,6 +147,79 @@ final class Adb implements Closeable {
                 return result.toString("UTF-8");
             }
         }
+    }
+
+    /**
+     * Copies a local file to the TV (the sync service's SEND, as `adb push` does), so `pm install` can read it. Only
+     * AppUpdate uses it, for a checked APK, to a fixed path under /data/local/tmp.
+     */
+    void push(File file, String remote) throws IOException {
+        int local = nextLocalId++;
+        send(OPEN, local, 0, "sync:\0".getBytes(StandardCharsets.US_ASCII));
+        int remoteId = 0;
+        while (remoteId == 0) {
+            Message m = read();
+            if (m.arg1 != local) continue;
+            if (m.command == OKAY) remoteId = m.arg0;
+            else if (m.command == CLSE) throw new IOException("ADB refused the copy");
+        }
+        try {
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            byte[] spec = (remote + ",33188").getBytes(StandardCharsets.UTF_8);   // a regular file, mode 0644
+            syncHeader(stream, "SEND", spec.length);
+            stream.write(spec);
+            try (FileInputStream in = new FileInputStream(file)) {
+                byte[] buffer = new byte[64 * 1024];   // the sync service's largest DATA chunk
+                int n;
+                while ((n = in.read(buffer)) > 0) {
+                    syncHeader(stream, "DATA", n);
+                    stream.write(buffer, 0, n);
+                    if (stream.size() >= maxPayload) stream = flushSync(local, remoteId, stream);
+                }
+            }
+            syncHeader(stream, "DONE", (int) (System.currentTimeMillis() / 1000));
+            flushSync(local, remoteId, stream);
+            // The answer: "OKAY", or "FAIL" with a message.
+            ByteArrayOutputStream reply = new ByteArrayOutputStream();
+            while (reply.size() < 8) {
+                Message m = read();
+                if (m.arg1 != local) continue;
+                if (m.command == WRTE) { reply.write(m.data); send(OKAY, local, remoteId, null); }
+                else if (m.command == CLSE) break;
+            }
+            byte[] r = reply.toByteArray();
+            String id = r.length >= 4 ? new String(r, 0, 4, StandardCharsets.US_ASCII) : "";
+            if (!id.equals("OKAY")) {
+                String detail = r.length > 8 ? new String(r, 8, r.length - 8, StandardCharsets.UTF_8) : "";
+                throw new IOException("copy to the TV failed" + (detail.isEmpty() ? "" : ": " + detail.trim()));
+            }
+        } finally {
+            send(CLSE, local, remoteId, null);
+        }
+    }
+
+    private static void syncHeader(ByteArrayOutputStream out, String id, int value) {
+        ByteBuffer b = ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN);
+        b.put(id.getBytes(StandardCharsets.US_ASCII)).putInt(value);
+        out.write(b.array(), 0, 8);
+    }
+
+    /** Sends the buffered stream in messages the TV accepts, each after the previous one is acknowledged. */
+    private ByteArrayOutputStream flushSync(int local, int remoteId, ByteArrayOutputStream stream) throws IOException {
+        byte[] all = stream.toByteArray();
+        for (int at = 0; at < all.length; at += maxPayload) {
+            int n = Math.min(maxPayload, all.length - at);
+            byte[] chunk = new byte[n];
+            System.arraycopy(all, at, chunk, 0, n);
+            send(WRTE, local, remoteId, chunk);
+            while (true) {
+                Message m = read();
+                if (m.arg1 != local) continue;
+                if (m.command == OKAY) break;
+                if (m.command == CLSE) throw new IOException("the TV closed the copy");
+            }
+        }
+        return new ByteArrayOutputStream();
     }
 
     @Override public void close() {

@@ -81,6 +81,7 @@ final class DreamView extends View implements Choreographer.FrameCallback, HomeD
     private volatile int generation;
     private int slides;
     private Future<?> photoTask;
+    private List<Recs.Pick> photos = java.util.Collections.emptyList();
     private Slide current, incoming, prepared;
     private long startedAt, firstAt, lastFrame;
     private int w, h;
@@ -98,10 +99,25 @@ final class DreamView extends View implements Choreographer.FrameCallback, HomeD
             recs.prefetchAll();
             dirty = true;
             chromeDirty = true;
+            nextShift();
             prepareNext();
+            invalidate();   // the moved clock, also while a still photo needs no frames
             handler.postDelayed(this, 60_000);
         }
     };
+
+    /**
+     * Burn-in guard for OLED TVs: the corner clock, date and caption move a few whole pixels each minute along a slow
+     * loop (the photo itself already drifts; the photo-less clock has its own drift). Whole pixels keep the text sharp,
+     * and only the layers' translation changes: nothing is recorded again.
+     */
+    private int shiftStep;
+    private float shiftX, shiftY;
+    private void nextShift() {
+        double a = ++shiftStep * 0.9;
+        shiftX = Math.round(12 * k * Math.sin(a));
+        shiftY = Math.round(8 * k * Math.sin(1.7 * a + 0.5));
+    }
 
     DreamView(Context c) {
         super(c);
@@ -120,6 +136,7 @@ final class DreamView extends View implements Choreographer.FrameCallback, HomeD
         startedAt = clock();
         minute = -1;
         lastFrame = 0;
+        drewStill = false;
         failed.clear();
         fallback = true;
         dirty=chromeDirty=true;themePrefs=-1;
@@ -128,10 +145,27 @@ final class DreamView extends View implements Choreographer.FrameCallback, HomeD
         data.refreshIfStale();
         recs.refreshIfStale();
         recs.prefetchAll();
+        loadPhotos();
         prepareNext();
         handler.postDelayed(tick, 60_000);
         Choreographer.getInstance().postFrameCallback(this);
         invalidate();
+    }
+
+    /** Your own photos (Appearance → Screensaver photos), listed once per start; they replace the catalogue photos. */
+    private void loadPhotos() {
+        photos = java.util.Collections.emptyList();
+        if (!Prefs.screensaverPhotos() || !LocalPhotos.permitted(getContext())) return;
+        final int gen = generation;
+        final Context app = getContext().getApplicationContext();
+        worker.submit(() -> {
+            List<Recs.Pick> found = LocalPhotos.list(app);
+            handler.post(() -> {
+                if (!running || gen != generation || found.isEmpty()) return;
+                photos = found;
+                if (prepared == null && !decoding) prepareNext();
+            });
+        });
     }
 
     void stop() {
@@ -153,6 +187,7 @@ final class DreamView extends View implements Choreographer.FrameCallback, HomeD
         if (!gone.isEmpty()) handler.postDelayed(() -> { for (Bitmap b : gone) b.recycle(); }, 1000);
         current = incoming = prepared = null;
         slides = 0;
+        photos = java.util.Collections.emptyList();
     }
 
     @Override protected void onDetachedFromWindow() {
@@ -197,7 +232,7 @@ final class DreamView extends View implements Choreographer.FrameCallback, HomeD
     /** Loads the next photo in the background (one at a time); once ready, it comes in at the right moment. */
     private void prepareNext() {
         if (!running || decoding || prepared != null) return;
-        List<Recs.Pick> list = recs.showcase();
+        List<Recs.Pick> list = photos.isEmpty() ? recs.showcase() : photos;
         if (list.isEmpty()) return;
         Slide last = incoming != null ? incoming : current;
         int start = 0;
@@ -223,7 +258,7 @@ final class DreamView extends View implements Choreographer.FrameCallback, HomeD
             prepared = newSlide(pick, last.image);
             return;
         }
-        File file = recs.readyImage(pick);
+        File file = LocalPhotos.KIND.equals(pick.kind) ? new File(pick.backdrop) : recs.readyImage(pick);
         if (file == null) {
             failed.add(Recs.key(pick));   // the image is gone from disk: try the next one
             prepareNext();
@@ -340,13 +375,27 @@ final class DreamView extends View implements Choreographer.FrameCallback, HomeD
             lastFrame=frameTimeNanos;invalidate();
             Choreographer.getInstance().postFrameCallbackDelayed(this,1000);return;
         }
+        // Lightweight mode doesn't zoom: once the photo has faded in and its caption has risen, nothing moves until the
+        // next photo or minute. Drawing that same frame ~10 times a second kept the TV's GPU busy for nothing.
+        long up = clock();
+        boolean still = Prefs.lightweight() && current != null && incoming == null && up - firstAt >= 2 * FIRST_MS
+                && !(prepared != null && up >= current.startedAt + SHOW_MS);
+        if (still && drewStill && System.currentTimeMillis() / 60_000 == minute) {
+            long wait = 60_050 - System.currentTimeMillis() % 60_000;   // the next minute (the clock)
+            if (prepared != null) wait = Math.min(wait, current.startedAt + SHOW_MS - up);   // the next photo
+            // A decoded photo and the minute tick wake it earlier (they post a frame or invalidate themselves).
+            Choreographer.getInstance().postFrameCallbackDelayed(this, Math.max(90, wait));
+            return;
+        }
         if (frameTimeNanos - lastFrame >= (Prefs.lightweight() ? 95_000_000L : 45_000_000L)) {
             lastFrame = frameTimeNanos;
+            drewStill = still;
             invalidate();
         }
         if (Prefs.lightweight()) Choreographer.getInstance().postFrameCallbackDelayed(this, 90);
         else Choreographer.getInstance().postFrameCallbackDelayed(this,45);
     }
+    private boolean drewStill;
 
     /** The clock that drives the animations. */
     private long clock() {
@@ -387,6 +436,8 @@ final class DreamView extends View implements Choreographer.FrameCallback, HomeD
         }
 
         if (chromeDirty) recordChrome();
+        chrome.setTranslationX(shiftX);
+        chrome.setTranslationY(shiftY);
         chrome.setAlpha(first);
         chrome.draw(canvas);
         drawCaptions(canvas, up);
@@ -472,8 +523,10 @@ final class DreamView extends View implements Choreographer.FrameCallback, HomeD
     // MARK: - Photo caption (bottom left)
 
     private void recordCaption(Slide s) {
+        s.caption.setPosition(0, 0, w, h);
         Canvas c = s.caption.beginRecording(w, h);
         try {
+            if (LocalPhotos.KIND.equals(s.pick.kind)) return;   // your own photo: no catalogue caption
             float x = MARGIN * k, metaBase = META_BASE * k, titleBase = metaBase - 58 * k;
             String title = s.pick.title == null ? "" : s.pick.title;
             StaticLayout t = StaticLayout.Builder.obtain(title, 0, title.length(), titlePaint, Math.round(TITLE_W * k))
@@ -490,7 +543,11 @@ final class DreamView extends View implements Choreographer.FrameCallback, HomeD
         } finally {
             s.caption.endRecording();
         }
-        s.caption.setPosition(0, 0, w, h);
+    }
+
+    /** Your own photos have no caption: nothing is drawn (on Android 9 even an empty fade would need a layer). */
+    private static boolean captioned(Slide s) {
+        return !LocalPhotos.KIND.equals(s.pick.kind);
     }
 
     /** The caption fades out fast; the new one rises in once the photo has partly changed (like the home screen). */
@@ -498,21 +555,24 @@ final class DreamView extends View implements Choreographer.FrameCallback, HomeD
         if (incoming == null) {
             float a = current.startedAt == firstAt ? fadeIn(up - firstAt - 700, 900) : 1;
             current.caption.setAlpha(a);
-            current.caption.setTranslationY(14 * k * (1 - a));
-            current.caption.draw(c);
+            current.caption.setTranslationX(shiftX);
+            current.caption.setTranslationY(14 * k * (1 - a) + shiftY);
+            if (captioned(current)) current.caption.draw(c);
             return;
         }
         long t = up - incoming.startedAt;
         float out = 1 - Ui.clamp(t / 500f);
-        if (out > 0.004f) {
+        if (out > 0.004f && captioned(current)) {
             current.caption.setAlpha(out);
-            current.caption.setTranslationY(0);
+            current.caption.setTranslationX(shiftX);
+            current.caption.setTranslationY(shiftY);
             current.caption.draw(c);
         }
         float in = fadeIn(t - 1300, 900);
-        if (in > 0.004f) {
+        if (in > 0.004f && captioned(incoming)) {
             incoming.caption.setAlpha(in);
-            incoming.caption.setTranslationY(14 * k * (1 - in));
+            incoming.caption.setTranslationX(shiftX);
+            incoming.caption.setTranslationY(14 * k * (1 - in) + shiftY);
             incoming.caption.draw(c);
         }
     }

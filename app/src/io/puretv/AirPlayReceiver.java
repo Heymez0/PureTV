@@ -19,14 +19,25 @@ final class AirPlayReceiver {
     private static Intent intent(Context context) {
         return new Intent(Intent.ACTION_MAIN).setComponent(new ComponentName(receiver(context), ORIGINAL + ".MainActivity"));
     }
+    /** The PureTV receiver follows the settings surface: same light/dark choice and background colours. */
     static Intent decorate(Context context, Intent intent) {
         if (intent == null || intent.getComponent() == null || !THEMED.equals(intent.getComponent().getPackageName())) return intent;
-        return intent.putExtra("puretv_sky_top", 0xFF302A23).putExtra("puretv_sky_bottom", 0xFF111113);
+        boolean dark = HomeData.get(context).isNight(System.currentTimeMillis());
+        return intent.putExtra("puretv_dark", dark)
+                .putExtra("puretv_sky_top", dark ? 0xFF302A23 : 0xFFEAE5DD)
+                .putExtra("puretv_sky_bottom", dark ? 0xFF111113 : 0xFFF3F3F5);
     }
     static String version(Context context) {
         try {
             if (intent(context).resolveActivity(context.getPackageManager()) == null) return "";
             String name = context.getPackageManager().getPackageInfo(receiver(context), 0).versionName;
+            return name == null ? "" : name;
+        } catch (PackageManager.NameNotFoundException | SecurityException e) { return ""; }
+    }
+    /** The PureTV receiver's own version ("" when only the original or no receiver is installed): the one PureTV controls. */
+    static String themedVersion(Context context) {
+        try {
+            String name = context.getPackageManager().getPackageInfo(THEMED, 0).versionName;
             return name == null ? "" : name;
         } catch (PackageManager.NameNotFoundException | SecurityException e) { return ""; }
     }

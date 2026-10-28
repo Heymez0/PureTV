@@ -55,7 +55,7 @@ public class AirPlayActivity extends Activity {
     }
 
     private void openReceiver() {
-        if (!available()) { error = missing(); page.announceForAccessibility(error); return; }
+        if (!available()) { startActivity(new android.content.Intent(this, AirPlayInstallActivity.class)); return; }
         try {
             error = "";
             if (!AirPlayReceiver.open(this)) throw new ActivityNotFoundException();
@@ -67,8 +67,7 @@ public class AirPlayActivity extends Activity {
     }
 
     private String missing() {
-        return Ui.tr("O receptor AirPlay não está instalado. Instale-o nesta TV e volte aqui.",
-                "AirPlay Receiver is not installed. Install it on this TV, then return here.");
+        return Ui.tr("AirPlay Receiver is not installed. Select Open AirPlay Receiver to install it from PureTV's release.");
     }
     @Override protected void onResume() { super.onResume();receiverVersion=AirPlayReceiver.version(this);page.resume();control.resume(); }
     @Override protected void onPause() { control.pause(); page.pause(); super.onPause(); }

@@ -72,6 +72,7 @@ final class HomeMode {
         // Xiaomi
         "com.miui.tv.analytics", "com.xiaomi.statistic",                              // telemetry
         "com.mitv.tvhome.mitvplus", "com.xm.webcontent",                              // Mi TV+ promo channels, promo web content
+        "tv.alphonso.alphonso_eula",                                                  // Alphonso ACR: watches what's on screen
         // Skyworth (VEON and other badges; MediaTek)
         "com.smartdevice.epopplayer", "com.coocaa.demonow.lightining",               // store demos (start on screen on)
         "com.smartdevice.recommendation",                                             // Coolita promo channels
@@ -80,7 +81,10 @@ final class HomeMode {
         "com.mediatek.tv.retaildemo", "com.electronic.manual",                        // store demo, manual
     };
 
-    /** The voice assistant, only with disable_assistant=true in config.properties (the mic button stops working). */
+    /**
+     * The voice assistant, only when chosen in Device and performance (default: disable_assistant in config.properties;
+     * the mic button stops working). Original turns it back on like everything else this mode turned off.
+     */
     static final String[] ASSISTANT = {"com.google.android.katniss", "com.android.hotwordenrollment.okgoogle"};
 
     /** Never turned off, not even by mistake (picture, sound, inputs, remote, store). Checked before every disable. */
@@ -153,6 +157,11 @@ final class HomeMode {
         return !PROTECTED.contains(pkg) && !CORE.matcher(pkg).matches() && !FACTORY.matcher(pkg).matches();
     }
 
+    /** Force stop from an app's menu: the same packages are off limits as for turning off, and never this app. */
+    static boolean mayStop(String pkg) {
+        return pkg != null && !pkg.equals(PKG) && mayTurnOff(pkg);
+    }
+
     /**
      * Of these, the ones the TV still needs, whatever they look like: the software under its inputs (they ask for
      * TV_INPUT_HARDWARE; off, HDMI shows "No signal" and only a full restore brought it back, CleanYourTV #321), and
@@ -212,11 +221,15 @@ final class HomeMode {
     }
 
     static void ensureRemoteServiceNow(Context app) {
-        if (!RemoteKeys.supported() || !FREE.equals(state(app).optString("mode"))) return;
-        try (Adb adb = Adb.connect(app, 10_000, null)) {
-            remoteService(app, adb, true);
-        } catch (IOException e) {
-            AppLog.w("remote buttons service: " + e.getMessage());
+        // Serialized with the switches: after an app update this job and the custom-home check run together, and both
+        // update the state file.
+        synchronized (RUN) {
+            if (!RemoteKeys.supported() || !FREE.equals(state(app).optString("mode"))) return;
+            try (Adb adb = Adb.connect(app, 10_000, null)) {
+                remoteService(app, adb, true);
+            } catch (IOException e) {
+                AppLog.w("remote buttons service: " + e.getMessage());
+            }
         }
     }
 
@@ -240,9 +253,10 @@ final class HomeMode {
         if (on == current.contains(REMOTE_SERVICE)) return;
         List<String> list = new ArrayList<>(others);
         if (on) {
+            // The TV's answer first: no shell round trip between reading and writing the state file.
+            boolean wasOff = !"1".equals(adb.shell("settings get secure accessibility_enabled").trim());
             JSONObject s = state(c);
-            try { s.put("accessibilityWasOff", !"1".equals(adb.shell("settings get secure accessibility_enabled").trim())); }
-            catch (JSONException ignored) {}
+            try { s.put("accessibilityWasOff", wasOff); } catch (JSONException ignored) {}
             save(c, s);
             list.add(REMOTE_SERVICE);
         }
@@ -488,6 +502,71 @@ final class HomeMode {
         return found;
     }
 
+    /** The assistant choice changed in settings: applied now in custom home mode, otherwise at the next switch. */
+    static void assistant(Context c) {
+        ModeJob.schedule(c, ModeJob.ASSISTANT, null, 0);
+    }
+
+    /**
+     * Turns the voice assistant off (with the same checks as a switch: protected, TV inputs/remote, Wi-Fi owner, kept
+     * off by the person) or back on (only what this mode turned off). Nothing else changes.
+     */
+    static void assistantNow(Context app) {
+        synchronized (RUN) {
+            JSONObject s = state(app);
+            if (!FREE.equals(s.optString("mode"))) return;
+            boolean off = Prefs.assistantOff();
+            Set<String> disabled = new HashSet<>(stringList(s, "disabled"));
+            List<String> keptOff = stringList(s, "keptOff");
+            List<String> changed = new ArrayList<>();
+            try (Adb adb = Adb.connect(app, 10_000, null)) {
+                Set<String> present = packages(adb, ""), disabledNow = packages(adb, "-d");
+                if (off) {
+                    Set<String> owners = wifiOwners(adb);
+                    if (owners == null) {
+                        if (!"0".equals(adb.shell("settings get global wifi_on").trim())) {
+                            notice(app, Ui.tr("I couldn't check which app saved the Wi-Fi, so nothing changed. Try again in a minute."));
+                            return;
+                        }
+                        owners = new HashSet<>();
+                    }
+                    Set<String> candidates = new HashSet<>();
+                    for (String pkg : ASSISTANT) {
+                        if (present.contains(pkg) && !disabledNow.contains(pkg) && !keptOff.contains(pkg)
+                                && !owners.contains(pkg) && mayTurnOff(pkg)) candidates.add(pkg);
+                    }
+                    Set<String> needed = neededByTv(adb, candidates);
+                    if (needed == null) needed = candidates;
+                    for (String pkg : sorted(candidates)) {
+                        if (needed.contains(pkg)) continue;
+                        if (adb.shell("pm disable-user --user 0 " + pkg).contains("disabled-user")) {
+                            disabled.add(pkg);
+                            changed.add(pkg);
+                        }
+                    }
+                } else {
+                    for (String pkg : ASSISTANT) {
+                        if (!disabled.contains(pkg)) continue;
+                        if (!present.contains(pkg) || !disabledNow.contains(pkg)
+                                || adb.shell("pm enable " + pkg).contains("new state: enabled")) {
+                            disabled.remove(pkg);
+                            changed.add(pkg);
+                        }
+                    }
+                }
+                record(adb, disabled);
+                JSONObject latest = state(app);
+                latest.put("disabled", new JSONArray(sorted(disabled)));
+                save(app, latest);
+            } catch (Exception e) {
+                notice(app, Ui.trf("Couldn't change the voice assistant: {error}", "error", e.getMessage()));
+                return;
+            }
+            if (!changed.isEmpty()) notice(app, off ? Ui.tr("Voice assistant turned off. The remote's microphone button no longer works.")
+                    : Ui.tr("Voice assistant turned back on."));
+        }
+    }
+
     /** Safety net: our home screen crashed 3 times in a row. The home screen and the screensaver go back; the rest stays. */
     static void revertHomeNow(Context app) {
         synchronized (RUN) {
@@ -655,7 +734,7 @@ final class HomeMode {
         String dreamPkg = packageOf(dream);
         if (dreamPkg != null && !dreamPkg.equals(PKG) && !dreamPkg.equals(homePkg)) out.add(dreamPkg);
         out.addAll(Arrays.asList(DEBLOAT));
-        if (Config.DISABLE_ASSISTANT) out.addAll(Arrays.asList(ASSISTANT));
+        if (Prefs.assistantOff()) out.addAll(Arrays.asList(ASSISTANT));
         return out;
     }
 
@@ -843,23 +922,43 @@ final class HomeMode {
 
     // MARK: - State (a file shared by the two processes; atomic writes)
 
+    /** Far above a real state file (20 notices, metrics, two package lists): a corrupt one can't exhaust memory. */
+    private static final int STATE_LIMIT = 1024 * 1024;
+
     static JSONObject state(Context c) {
         synchronized (FILE_LOCK) {
             File f = new File(c.getFilesDir(), "home-state.json");
             if (!f.exists()) return defaults();
+            // To the end of the opened file, not its earlier length: the other process may have just replaced it with
+            // a longer one (a new notice), and a cut read would look like a missing file ("original", no notices).
             try (FileInputStream in = new FileInputStream(f)) {
-                byte[] data = new byte[(int) f.length()];
-                int read = 0;
-                while (read < data.length) {
-                    int n = in.read(data, read, data.length - read);
-                    if (n < 0) break;
-                    read += n;
-                }
-                return new JSONObject(new String(data, 0, read, StandardCharsets.UTF_8));
+                return new JSONObject(new String(BoundedInput.read(in, STATE_LIMIT), StandardCharsets.UTF_8));
             } catch (IOException | JSONException e) {
                 return defaults();
             }
         }
+    }
+
+    private static volatile long modeStamp = Long.MIN_VALUE;
+    private static volatile boolean modeFree;
+
+    /**
+     * Custom home mode is on (the TV already allows this app's ADB key). Asked by menus and settings rows on the main
+     * thread: the file is read and parsed again only when save() has replaced it (stateStamp), otherwise one stat.
+     */
+    static boolean custom(Context c) {
+        long stamp = stateStamp(c);
+        if (stamp != modeStamp) {
+            modeFree = FREE.equals(state(c).optString("mode"));
+            modeStamp = stamp;
+        }
+        return modeFree;
+    }
+
+    /** Changes whenever save() replaces the file (time and size); 0 without it. Readers skip unchanged state. */
+    static long stateStamp(Context c) {
+        File f = new File(c.getFilesDir(), "home-state.json");
+        return f.lastModified() * 31 + f.length();
     }
 
     private static JSONObject defaults() {

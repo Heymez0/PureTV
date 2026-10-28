@@ -1,13 +1,11 @@
 package io.puretv;
 
-import android.app.AlertDialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
 import android.view.inputmethod.EditorInfo;
-import android.widget.EditText;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import java.util.ArrayList;
@@ -21,15 +19,16 @@ final class SettingsEditors {
     private final Context context;
     private final Handler main=new Handler(Looper.getMainLooper());
     private final Runnable modePoll=this::readMode;
-    private String kind="",selectedShelf="",cityMessage="";
+    private String kind="",selectedShelf="",cityMessage="",drawn="";
     private int generation,remoteKey;
-    private boolean alive=true,appsLoading,shelfLoading,cityLoading,modeLoading,modeReady,pendingRender;
+    private boolean alive=true,appsLoading,shelfLoading,cityLoading,modeLoading,modeReady,pendingRender,inputsLoading,live;
+    private List<HomeApps.Item> inputs;
     private long pendingAt;
     private List<String[]> apps,shelfCandidates,cities=new ArrayList<>();
     private final List<String> shelfOrder=new ArrayList<>();
     private JSONObject mode=new JSONObject(),recommendations=new JSONObject();
     private boolean hasKey;
-    private AlertDialog cityDialog;
+    private TextDialog cityDialog;
 
     SettingsEditors(SettingsActivity activity){this.activity=activity;context=activity.getApplicationContext();}
     private String tr(String text){return Ui.tr(text);}
@@ -38,16 +37,18 @@ final class SettingsEditors {
     void restore(Bundle state){remoteKey=Math.max(0,Math.min(Prefs.KEYS.length-1,state.getInt("remote_key",0)));open(state.getString("editor",""));}
     void openRemote(int key){remoteKey=key;open("remote");}
     void open(String next){
-        if(!next.equals("device")&&!next.equals("layout")&&!next.equals("shelf")&&!next.equals("city")&&!next.equals("language")&&!next.equals("remote")&&!next.equals("home")&&!next.equals("status"))return;
+        if(!next.equals("device")&&!next.equals("layout")&&!next.equals("shelf")&&!next.equals("city")&&!next.equals("language")&&!next.equals("remote")&&!next.equals("home")&&!next.equals("status")
+            &&!next.equals("hidden")&&!next.equals("startup")&&!next.equals("lock"))return;
         close();kind=next;
         if(kind.equals("shelf")){shelfCandidates=null;selectedShelf="";loadShelf();}
         if(kind.equals("city")){cities=new ArrayList<>();cityMessage="";cityLoading=false;}
-        if(kind.equals("remote"))loadApps();
+        if(appList())loadApps();
+        if(kind.equals("startup"))loadInputs();
         render();
         if(kind.equals("city")&&activity.settingsVisible())askCity();
         if(wantsMode())readMode();
     }
-    void close(){generation++;kind="";pendingRender=false;main.removeCallbacks(modePoll);dismissCity();}
+    void close(){generation++;kind="";drawn="";pendingRender=false;main.removeCallbacks(modePoll);dismissCity();}
     void pause(){main.removeCallbacks(modePoll);dismissCity();}
     void destroy(){alive=false;generation++;pause();}
     void resume(){
@@ -93,7 +94,99 @@ final class SettingsEditors {
                 choices.add(action(tr("Original"),()->chooseHome(HomeMode.ORIGINAL)));
                 activity.showEditor(data(tr("Default home screen"),modeHint(),choices),freeActive()?0:1);break;
             case "status":renderStatus();break;
+            case "hidden":renderHidden();break;
+            case "startup":renderStartup();break;
+            case "lock":renderLock();break;
         }
+    }
+    /** Editors that list the installed apps (loaded once in the background). */
+    private boolean appList(){return kind.equals("remote")||kind.equals("hidden")||kind.equals("startup")||kind.equals("lock");}
+
+    // MARK: - Hidden apps
+
+    private void renderHidden(){
+        List<SettingsPage.Row> rows=new ArrayList<>();
+        for(String pkg:Prefs.hiddenApps()){
+            SettingsPage.Row row=action(appName(pkg),()->{Prefs.setAppHidden(pkg,false);renderHidden();});
+            row.value=tr("Show");rows.add(row);
+        }
+        if(rows.isEmpty())rows.add(new SettingsPage.Row(tr("No hidden apps."),null,false));
+        activity.showEditor(data(tr("Hidden apps"),tr("OK shows the app in Other apps again. Hidden apps stay installed."),rows),lockFocus(rows));
+    }
+
+    // MARK: - On TV start
+
+    private void loadInputs(){
+        if(inputs!=null||inputsLoading||!Prefs.television())return;inputsLoading=true;
+        new Thread(()->{
+            List<HomeApps.Item> found;
+            try{found=TvInputCatalog.hdmi(context,true);}catch(RuntimeException unavailable){found=new ArrayList<>();}
+            boolean hasLive;try{hasLive=HomeApps.liveTv(context)!=null;}catch(RuntimeException ignored){hasLive=false;}
+            final List<HomeApps.Item> result=found;final boolean available=hasLive;
+            main.post(()->{
+                if(!alive)return;inputs=result;live=available;inputsLoading=false;
+                if(kind.equals("startup")){if(activity.settingsVisible())renderStartup();else pendingRender=true;}
+                else if(activity.settingsCategory()==0)activity.refreshSettings();
+            });
+        },"settings-inputs").start();
+    }
+    String startupValue(){
+        String choice=Prefs.startup();
+        if(choice.equals(FeatureRules.HOME))return tr("Home screen");
+        if(choice.equals(FeatureRules.LIVE))return tr("Live TV");
+        if(choice.startsWith(FeatureRules.APP)){loadAppsQuietly();return appName(choice.substring(FeatureRules.APP.length()));}
+        String key=choice.substring(FeatureRules.INPUT.length());
+        if(inputs!=null)for(HomeApps.Item input:inputs)if(key.equals(input.key))return input.label;
+        loadInputs();return tr("TV input");
+    }
+    private void loadAppsQuietly(){if(apps==null)loadApps();}
+    private void renderStartup(){
+        List<SettingsPage.Row> rows=new ArrayList<>();String choice=Prefs.startup();int selected=0;
+        rows.add(startupRow(tr("Home screen"),FeatureRules.HOME,choice));
+        if(Prefs.television()){
+            if(live)rows.add(startupRow(tr("Live TV"),FeatureRules.LIVE,choice));
+            if(inputs!=null)for(HomeApps.Item input:inputs)rows.add(startupRow(input.label,FeatureRules.INPUT+input.key,choice));
+        }
+        if(apps==null)rows.add(new SettingsPage.Row(tr("Checking…"),null,false));
+        else for(String[] app:apps)if(!app[0].isEmpty())rows.add(startupRow(app[1],FeatureRules.APP+app[0],choice));
+        for(int i=0;i<rows.size();i++)if(tr("In use").equals(rows.get(i).value)){selected=i;break;}
+        activity.showEditor(data(tr("On TV start"),tr("Opens once, in the first minutes after the TV starts. Back returns to the home screen."),rows),selected);
+    }
+    private SettingsPage.Row startupRow(String label,String value,String choice){
+        SettingsPage.Row row=action(label,()->{Prefs.setStartup(value);StartupLaunch.markCurrentStart(context);activity.finishEditor();});
+        row.value=value.equals(choice)?tr("In use"):"";return row;
+    }
+
+    // MARK: - App lock
+
+    private void renderLock(){
+        List<SettingsPage.Row> rows=new ArrayList<>();
+        if(!Prefs.lockSet()){
+            rows.add(action(tr("Set a PIN"),()->AppLock.choosePin(activity,this::lockChanged)));
+            activity.showEditor(data(tr("App lock"),tr("Choose a PIN first, then the apps to lock. A simple household lock: apps opened another way (TV Settings, the remote's app buttons) are not locked."),rows),0);
+            return;
+        }
+        SettingsPage.Row hours=new SettingsPage.Row(tr("Locked hours"),d->{
+            String[] all=FeatureRules.HOURS;int i=java.util.Arrays.asList(all).indexOf(Prefs.lockHours());
+            Prefs.setLockHours(all[(i+(d==0?1:d)+all.length)%all.length]);renderLock();
+        },true);
+        hours.value=AppLock.hoursLabel(Prefs.lockHours());rows.add(hours);
+        rows.add(action(tr("Change PIN"),()->AppLock.choosePin(activity,this::lockChanged)));
+        rows.add(action(tr("Turn off app lock"),()->{Prefs.clearLock();activity.finishEditor();}));
+        if(apps==null)rows.add(new SettingsPage.Row(tr("Checking…"),null,false));
+        else for(String[] app:apps){
+            if(app[0].isEmpty())continue;final String pkg=app[0];
+            SettingsPage.Row row=action(app[1],()->{Prefs.setAppLocked(pkg,!Prefs.lockedApps().contains(pkg));renderLock();});
+            row.value=Prefs.lockedApps().contains(pkg)?tr("Locked"):"";rows.add(row);
+        }
+        activity.showEditor(data(tr("App lock"),tr("OK locks or unlocks an app. Locked apps ask for the PIN when opened from PureTV."),rows),lockFocus(rows));
+    }
+    /** After the PIN dialogs: drawn again only if the editor is still open and visible. */
+    private void lockChanged(){if(alive&&kind.equals("lock")){if(activity.settingsVisible())renderLock();else pendingRender=true;}}
+    /** Keeps the focus on the row just changed when the list is drawn again. */
+    private int lockFocus(List<SettingsPage.Row> rows){
+        int focus=kind.equals(drawn)?activity.editorFocus():0;drawn=kind;
+        return Math.max(0,Math.min(rows.size()-1,focus));
     }
     void update(SettingsPage.Data data){
         if(kind.equals("layout")){
@@ -184,13 +277,9 @@ final class SettingsEditors {
     private void dismissCity(){if(cityDialog!=null){cityDialog.dismiss();cityDialog=null;}}
     private void askCity(){
         if(cityLoading||cityDialog!=null||!activity.settingsVisible())return;
-        EditText field=new EditText(activity);field.setSingleLine(true);field.setHint(tr("Type the city's name"));field.setImeOptions(EditorInfo.IME_ACTION_SEARCH);
-        field.setFilters(new android.text.InputFilter[]{new android.text.InputFilter.LengthFilter(120)});
-        AlertDialog dialog=new AlertDialog.Builder(activity,android.R.style.Theme_DeviceDefault_Dialog_Alert)
-            .setTitle(tr("City")).setView(field).setPositiveButton(tr("Search"),(d,n)->searchCity(field.getText().toString()))
-            .setNegativeButton(tr("Cancel"),null).create();
-        cityDialog=dialog;dialog.setOnDismissListener(d->{if(cityDialog==dialog)cityDialog=null;});
-        field.setOnEditorActionListener((v,action,event)->{dialog.dismiss();searchCity(field.getText().toString());return true;});dialog.show();
+        // The settings popup style; the keyboard's Search key searches, Back cancels.
+        TextDialog dialog=new TextDialog(activity,tr("City"),tr("Type the city's name"),EditorInfo.IME_ACTION_SEARCH,120,this::searchCity);
+        cityDialog=dialog;dialog.setOnDismissListener(d->{if(cityDialog==dialog)cityDialog=null;});dialog.show();
     }
     private void searchCity(String query){
         String name=query.trim();if(name.isEmpty()||cityLoading||!kind.equals("city"))return;
@@ -232,8 +321,8 @@ final class SettingsEditors {
             found.add(0,new String[]{"",tr("Nothing")});final List<String[]> result=found;
             main.post(()->{
                 if(!alive)return;apps=result;appsLoading=false;
-                if(kind.equals("remote")){if(activity.settingsVisible())renderRemote();else pendingRender=true;}
-                else if(activity.settingsCategory()==6)activity.refreshSettings();
+                if(appList()){if(activity.settingsVisible())render();else pendingRender=true;}
+                else if(activity.settingsCategory()==6||activity.settingsCategory()==0)activity.refreshSettings();
             });
         },"settings-remote-apps").start();
     }

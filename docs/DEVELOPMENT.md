@@ -82,11 +82,25 @@ python tools/audit_branding.py
 python tools/translate.py --check --allow-fallback
 ```
 
-The six JVM suites cover bounded/stale requests, immutable content snapshots, long settings navigation,
-content controls, 1,600 poster-cache cycles, 3,200 dual-window cycles, welcome flow and TV input/remote rules.
+The eight JVM suites cover bounded/stale requests, immutable content snapshots, long settings navigation,
+content controls, 1,600 poster-cache cycles, 3,200 dual-window cycles, direct poster framing, welcome flow, TV input/remote rules, locale formats, the settings-backup allowlist, the receiver download rules, and the hidden-app, start-up, app-lock (PIN, hours, waits) and rain rules (`FeatureRules`).
 Locale tests verify percent placement for English, Turkish and French. Translation tests cover legacy two-argument calls, local menu wrappers, conditional labels, placeholders, date/plural syntax and core-label coverage across 24 catalogues. Configuration tests verify escaping and invalid-input rejection. No emulator or extra Java/Python library is needed.
 Android-native test classes in `tools/tests/io/puretv/` require a device and are excluded from the desktop runner.
 All generated Android/test files stay under `out/` and are excluded from source archives.
+
+### Device checks
+
+With USB/network debugging allowed for your computer, `tools/device_qa.py` repeats the device checks without installing
+anything or changing HOME, settings or packages:
+
+```sh
+python tools/device_qa.py --serial TV_ADDRESS:5555 snapshot   # read-only summary
+python tools/device_qa.py --serial TV_ADDRESS:5555 native     # after the build: native poster tests and timing
+```
+
+`native` runs `PosterNativeRegression`, `DualPosterNativeRegression` and `PosterBenchNative` with `app_process` from
+`/data/local/tmp/puretv-qa` and always deletes that folder. The snapshot omits network names, addresses, accounts and
+viewing history. `settings pull|push FILE` copies the settings backup in `Download` to or from the computer.
 
 Web tests inspect generic IPK/WGT structure, manifests, resources, empty credentials and licences, then exercise mock
 Luna/Tizen APIs without network/browser access. They do not establish hardware, renderer, HDMI or signing compatibility.
@@ -123,11 +137,19 @@ AirPlay control do not run on LG/Samsung. Artwork/provenance stays out of runtim
 
 - Frame callbacks stop when animation settles; listeners/timers stop on hidden screens.
 - The combined home prepares up to three recent items and three recommendations, limited by actual content count.
+- Each poster's cards and blurred background are filtered straight from the decoded artwork; no full-screen
+  intermediate bitmap is allocated per poster. Recent-content reads load app labels only for the apps they list.
+- Artwork is decoded at most 1280 px on the long side. Decoding 1920 px art at full size for a sharper wide card was
+  measured on the Mi Stick and rejected: it doubled the poster's transient memory.
+- A granted viewing permission is remembered for the process (Android ends the process when it is revoked).
 - Unchanged artwork survives normal tab/settings/app/screensaver returns. Real memory-pressure trimming, bounded
   requests and stale-response rejection remain active.
 - Hidden artwork retention budgets are 16 MiB for a single tab and 32 MiB combined. These are not total RAM guarantees
   or a hard heap limit imposed on visible posters.
 - Android 9–12 avoids preparing glass textures it does not draw. Text measurements/static backgrounds are reused.
+- Home layers apply fade alpha per drawing (no offscreen buffer per frame on Android 9–11). Lightweight mode removes
+  shadows and screensaver motion but keeps the full frame rate. Check with `dumpsys SurfaceFlinger --latency` while
+  scrolling: on the Mi Stick the drawer and other apps scroll at 60 fps.
 - Network state is event-driven. RAM/storage is a one-time panel snapshot.
 - Weather/content requests run in the background and coalesce. Clock mode disables content listeners.
 
@@ -157,10 +179,11 @@ a before/after comparison or a RAM/FPS guarantee. Content, process history and s
 
 Earlier device checks covered tab, quick/full settings, other apps, light/dark themes, preview and actual Dream returns;
 four prepared posters were retained. No production crash/ANR was seen. The earlier five JVM suites included 1,600 cache and
-3,200 dual-window cycles. This preparation reruns desktop build/regressions and package audits; new package authorization,
-HOME recovery and mirroring still need physical QA before release.
+3,200 dual-window cycles. The renamed package's welcome, TV ADB authorization, HOME/Original recovery and receiver
+control were later checked on the reference Mi Stick; see [release checks](RELEASE.md).
 
-No new Android 13+ hardware, other manufacturers' inputs, OLED burn-in prevention or Apple mirroring session is claimed.
+No new Android 13+ hardware, other manufacturers' inputs or OLED burn-in prevention is claimed; Screen Mirroring was
+confirmed only for the owner's session on the reference Mi Stick.
 GitHub Actions runs the desktop and package checks on pushes and pull requests; consult the repository Actions page for the current result.
 
 
@@ -170,7 +193,9 @@ GitHub Actions runs the desktop and package checks on pushes and pull requests; 
 2. Commit with your own Git identity and push to your own PureTV repository. Publishing source does not automatically publish a downloadable Release.
 3. Let the first real GitHub Actions run pass; local results are not a remote CI result.
 4. Build with empty credentials and sign with your production key. Keep the same key for later updates and for the optional receiver.
-5. Increase Android versionCode for future releases. The current version is v1 / code 2; web package versions are 1.0.0.
+5. Increase Android versionCode for future releases. The current version is v1.1 / code 3; web package versions are 1.0.0.
+   In-app updates (`AppUpdate`) offer a release only when its `PureTV.apk` (and `PureTV-AirPlay.apk`) has a higher
+   versionCode and the same signing certificate as the installed app; keep those asset names and a plain tag.
 6. Complete first-launch, HOME/Original recovery, screensaver and receiver QA for the new package IDs before production release.
 7. Distribute matching complete GPL receiver source with any receiver APK, plus all required component notices.
 

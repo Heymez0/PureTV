@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapShader;
 import android.graphics.Canvas;
 import android.graphics.LinearGradient;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.graphics.Shader;
@@ -20,7 +21,7 @@ import android.graphics.Shader;
  *  - with forLight: the cards (the photo without scrims, cropped wide and tall, already at the focused card size) and
  *    the frosted and glass versions blended with white (by day) and with near-black (at night).
  * Only what is needed gets built (with forLight, no full photo: the cards are lightweight, so all 9 for the three tabs
- * fit in memory, ready); the other fields stay null.
+ * fit in memory, ready; each piece is filtered straight from the decoded photo); the other fields stay null.
  * The final image lives only in GPU memory (HARDWARE): drawing it costs one texture, and the process doesn't hold 8 MB.
  */
 final class Backdrop {
@@ -82,6 +83,24 @@ final class Backdrop {
     }
 
     static Backdrop make(Bitmap src, boolean forLight) {
+        if (forLight) {
+            // Light design: everything comes from the photo without scrims. Each piece is filtered straight from the
+            // part of the decoded photo it shows, the same framing as the full-screen cover crop, without building
+            // that 1920×1080 copy and its card-sized cutouts (~16 MB transient per poster on the TV's native heap).
+            float screen = (float) W / H;
+            Bitmap wide = gpu(scaled(src, PosterCrop.region(src.getWidth(), src.getHeight(), screen, (float) WIDE_W / WIDE_H), WIDE_W, WIDE_H));
+            Bitmap tall = gpu(scaled(src, PosterCrop.region(src.getWidth(), src.getHeight(), screen, (float) TALL_W / TALL_H), TALL_W, TALL_H));
+            float[] cover = PosterCrop.region(src.getWidth(), src.getHeight(), screen, screen);
+            int[] frost = blur(pixels(scaled(src, cover, FW, FH)), FW, FH, 3, 3);
+            int[] light = whiten(frost.clone(), 0.82f);
+            // Only Android 13+ can render this texture. Both card shapes and background pixels are unchanged.
+            int[] glass = android.os.Build.VERSION.SDK_INT>=33?blur(pixels(scaled(src, cover, GW, GH)), GW, GH, 2, 2):null;
+            int[] lightGlass = glass==null?null:whiten(glass.clone(), 0.74f);
+            int[] night = darken(frost.clone(), 0.76f);
+            int[] nightGlass = glass==null?null:darken(glass, 0.56f);
+            src.recycle();
+            return new Backdrop(null, frost, null, wide, tall, light, lightGlass, night, nightGlass);
+        }
         Bitmap out = Bitmap.createBitmap(W, H, Bitmap.Config.ARGB_8888);
         Canvas c = new Canvas(out);
         Paint photo = new Paint(Paint.FILTER_BITMAP_FLAG | Paint.DITHER_FLAG);
@@ -89,19 +108,6 @@ final class Backdrop {
         float sw = src.getWidth() * scale, sh = src.getHeight() * scale;
         c.drawBitmap(src, null, new RectF((W - sw) / 2, (H - sh) / 2, (W + sw) / 2, (H + sh) / 2), photo);
         src.recycle();
-        if (forLight) {
-            // Light design: everything comes from the photo without scrims.
-            Bitmap wide = card(out, WIDE_W, WIDE_H), tall = card(out, TALL_W, TALL_H);
-            int[] frost = reduce(out, FW, FH, 3, 3);
-            int[] light = whiten(frost.clone(), 0.82f);
-            // Only Android 13+ can render this texture. Both card shapes and background pixels are unchanged.
-            int[] glass = android.os.Build.VERSION.SDK_INT>=33?reduce(out, GW, GH, 2, 2):null;
-            int[] lightGlass = glass==null?null:whiten(glass.clone(), 0.74f);
-            int[] night = darken(frost.clone(), 0.76f);
-            int[] nightGlass = glass==null?null:darken(glass, 0.56f);
-            out.recycle();
-            return new Backdrop(null, frost, null, wide, tall, light, lightGlass, night, nightGlass);
-        }
 
         float boost = Math.max(0, Math.min(0.3f, (luminance(out, 0, 0.22f, 0.5f, 0.62f) - 0.22f) * 1.1f));
         Paint scrim = new Paint(Paint.DITHER_FLAG);
@@ -137,9 +143,12 @@ final class Backdrop {
         bounds.inJustDecodeBounds = true;
         android.graphics.BitmapFactory.decodeFile(f.getPath(), bounds);
         if (bounds.outWidth <= 0 || bounds.outHeight <= 0) throw new java.io.IOException("unreadable image");
+        if ((long) bounds.outWidth * bounds.outHeight > 100_000_000L) throw new java.io.IOException("image too large");
         android.graphics.BitmapFactory.Options opts = new android.graphics.BitmapFactory.Options();
         opts.inSampleSize = 1;
-        while (bounds.outWidth / (opts.inSampleSize * 2) >= w && bounds.outHeight / (opts.inSampleSize * 2) >= h) opts.inSampleSize *= 2;
+        // Down to 90% of the photo size before the final scale: a 4000×3000 camera photo or a 3840×2160 original then
+        // decodes at a quarter of its pixels (about 12 or 8 MB instead of 48 or 33 MB) for a barely visible upscale.
+        while (bounds.outWidth / (opts.inSampleSize * 2) >= w * 9 / 10 && bounds.outHeight / (opts.inSampleSize * 2) >= h * 9 / 10) opts.inSampleSize *= 2;
         Bitmap src = android.graphics.BitmapFactory.decodeFile(f.getPath(), opts);
         if (src == null) throw new java.io.IOException("unreadable image");
         float ratio = (float) w / h;
@@ -166,20 +175,23 @@ final class Backdrop {
         return out;
     }
 
-    /** The center of the photo at the card's aspect ratio, filtered down (halving while possible) to the exact size. */
-    private static Bitmap card(Bitmap full, int w, int h) {
-        float ratio = (float) w / h;
-        int cw = Math.min(full.getWidth(), Math.round(full.getHeight() * ratio));
-        int ch = Math.min(full.getHeight(), Math.round(cw / ratio));
-        Bitmap b = Bitmap.createBitmap(full, (full.getWidth() - cw) / 2, (full.getHeight() - ch) / 2, cw, ch);
-        while (b.getWidth() / 2 >= w) {
+    /**
+     * `region` of the photo ({left, top, width, height}, PosterCrop) filtered to exactly w×h: one filtered draw, then
+     * halving (a true 2×2 average) when the source is much larger, so no step skips pixels.
+     */
+    private static Bitmap scaled(Bitmap src, float[] region, int w, int h) {
+        int steps = PosterCrop.halvings(region[2], w);
+        Bitmap b = Bitmap.createBitmap(w << steps, h << steps, Bitmap.Config.ARGB_8888);
+        Matrix m = new Matrix();
+        m.setTranslate(-region[0], -region[1]);
+        m.postScale(b.getWidth() / region[2], b.getHeight() / region[3]);
+        new Canvas(b).drawBitmap(src, m, new Paint(Paint.FILTER_BITMAP_FLAG | Paint.DITHER_FLAG));
+        for (int i = 0; i < steps; i++) {
             Bitmap half = Bitmap.createScaledBitmap(b, b.getWidth() / 2, b.getHeight() / 2, true);
-            if (b != full) b.recycle();
+            b.recycle();
             b = half;
         }
-        Bitmap out = Bitmap.createScaledBitmap(b, w, h, true);
-        if (b != full && b != out) b.recycle();
-        return gpu(out);
+        return b;
     }
 
     /** Copies it to GPU memory (cheap to draw; the process doesn't keep the pixels). */
@@ -224,9 +236,20 @@ final class Backdrop {
         }
         Bitmap small = Bitmap.createScaledBitmap(b, w, h, true);
         if (b != full) b.recycle();
+        return blur(pixels(small), w, h, radius, passes);
+    }
+
+    /** The bitmap's pixels; the bitmap is released. */
+    private static int[] pixels(Bitmap small) {
+        int w = small.getWidth(), h = small.getHeight();
         int[] px = new int[w * h];
         small.getPixels(px, 0, w, 0, 0, w, h);
         small.recycle();
+        return px;
+    }
+
+    /** Box passes of radius r, in place. */
+    private static int[] blur(int[] px, int w, int h, int radius, int passes) {
         int[] tmp = new int[px.length];
         for (int pass = 0; pass < passes; pass++) {
             box(px, tmp, w, h, radius, true);

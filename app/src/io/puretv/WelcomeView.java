@@ -19,7 +19,7 @@ import java.util.function.IntConsumer;
 /** Static native welcome surface: no images, backdrop decoding, animation loop or network work. */
 final class WelcomeView extends View {
     static final int NEXT=1,LATER=2,DEVELOPERS=3,ENABLE=4,HOME=5,SETTINGS=6,BACK=7,CHECK=8,LEAVE=9,NETWORK=10;
-    static final int BOX=11,TV=12;
+    static final int BOX=11,TV=12,AIRPLAY=13;
     static final class Button {
         final int action;final String text;final boolean enabled;
         Button(int action,String text,boolean enabled){this.action=action;this.text=text;this.enabled=enabled;}
@@ -35,7 +35,9 @@ final class WelcomeView extends View {
     }
     private static String tr(String text){return Ui.tr(text);}
     private static Button button(int action,String text,boolean enabled){return new Button(action,tr(text),enabled);}
-    static Content content(WelcomeFlow flow,boolean loaded,boolean debug,String busy,String error){
+    static Content content(WelcomeFlow flow,boolean loaded,boolean debug,String busy,String error){return content(flow,loaded,debug,busy,error,false);}
+    /** `airplay`: the optional receiver isn't installed, so the last page offers it (never required). */
+    static Content content(WelcomeFlow flow,boolean loaded,boolean debug,String busy,String error,boolean airplay){
         switch(flow.step){
             case WelcomeFlow.DEVICE:return new Content(flow.step,tr("Where will you use PureTV?"),
                 tr("Choose TV box / stick for a device connected to your TV. Choose Television when PureTV runs on the TV itself, with its own tuner and HDMI inputs. Your theme and app arrangement stay the same."),
@@ -57,7 +59,9 @@ final class WelcomeView extends View {
                 busy.isEmpty()?tr("Preparing setup…"):busy,button(CHECK,"Check progress",true),button(LEAVE,"Continue in the background",true));
             case WelcomeFlow.READY:return new Content(flow.step,tr("PureTV is ready"),
                 tr("Press Home to return to your new interface. You can arrange your apps, choose viewing content and change the weather in Settings."),
-                tr("You can return to the original interface whenever you want."),button(HOME,"Go to home screen",true),button(SETTINGS,"Personalize in settings",true));
+                tr("You can return to the original interface whenever you want."),airplay
+                    ?new Button[]{button(HOME,"Go to home screen",true),button(SETTINGS,"Personalize in settings",true),button(AIRPLAY,"Add AirPlay (optional)",true)}
+                    :new Button[]{button(HOME,"Go to home screen",true),button(SETTINGS,"Personalize in settings",true)});
             default:return new Content(WelcomeFlow.INTRO,tr("Welcome to PureTV"),
                 tr("Your apps, a calmer home screen and controls made for your remote. A few short steps will help you switch to your new interface."),
                 loaded?tr("Use the arrow buttons to move and OK to choose."):tr("Checking…"),button(NEXT,"Let's begin",true),button(LATER,"Set up later",true));

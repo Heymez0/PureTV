@@ -153,12 +153,19 @@ final class Recs {
         }
     }
 
+    /** Replaced whole (written alongside, then renamed): the settings screen never reads a half-written file. */
     private void writeStatus() {
-        try (FileOutputStream out = new FileOutputStream(new File(context.getFilesDir(), "recs-status.json"))) {
+        File dir = context.getFilesDir(), tmp = new File(dir, "recs-status.json." + android.os.Process.myPid() + ".tmp");
+        try (FileOutputStream out = new FileOutputStream(tmp)) {
             out.write(new JSONObject().put("count", picks.size()).put("error", error).put("at", System.currentTimeMillis())
                     .toString().getBytes(StandardCharsets.UTF_8));
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            //noinspection ResultOfMethodCallIgnored
+            tmp.delete();
+            return;
         }
+        //noinspection ResultOfMethodCallIgnored
+        if (!tmp.renameTo(new File(dir, "recs-status.json"))) tmp.delete();
     }
 
     String error() { return error; }
@@ -237,8 +244,11 @@ final class Recs {
         return p.backdrop != null && imageFile(p).exists();
     }
 
+    /** TMDB's "/abc.jpg" becomes "abc.jpg"; any other text gets a neutral name, so it can never name a path. */
     private File imageFile(Pick p) {
-        return new File(new File(context.getCacheDir(), "recs"), p.backdrop.replace("/", ""));
+        String name = p.backdrop.replace("/", "");
+        if (!name.matches("[A-Za-z0-9_-]{1,96}\\.(jpg|jpeg|png|webp)")) name = "image-" + Integer.toHexString(p.backdrop.hashCode());
+        return new File(new File(context.getCacheDir(), "recs"), name);
     }
 
     /** With a key: fetches the list if stale or the time of day (morning/afternoon/night) changed; then the details. */

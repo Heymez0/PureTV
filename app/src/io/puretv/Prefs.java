@@ -72,6 +72,18 @@ final class Prefs {
 
     static void setLanguage(String v) { put("language", v); Ui.applyLanguage(); }
 
+    /**
+     * The language is chosen in the :home process, but each process keeps the copy of the settings it read first. The
+     * main process (mode jobs) reloads it before writing progress or notices, so they appear in the language in use.
+     */
+    @SuppressWarnings("deprecation")
+    static void refreshLanguage() {
+        if (app == null) return;
+        String before = language();
+        app.getSharedPreferences("settings", Context.MODE_MULTI_PROCESS);   // reloads the file if :home changed it
+        if (!language().equals(before)) Ui.applyLanguage();
+    }
+
     /** "auto", "C" or "F". */
     static String temperature() {
         String v = sp().getString("temperature", Config.TEMPERATURE).trim().toUpperCase(Locale.ROOT);
@@ -208,6 +220,44 @@ final class Prefs {
         catalogVersion++;
     }
 
+    /** Apps the person hid from Other apps (still installed; Settings → Home screen → Hidden apps shows them again). */
+    static List<String> hiddenApps() { return FeatureRules.packages(sp().getString("hidden_apps", "")); }
+    static void setAppHidden(String pkg, boolean hidden) {
+        List<String> list = hiddenApps();
+        if (!WatchNextRules.packageName(pkg) || list.contains(pkg) == hidden) return;
+        if (hidden) list.add(pkg); else list.remove(pkg);
+        sp().edit().putString("hidden_apps", String.join(",", list)).apply();
+        catalogVersion++;
+    }
+
+    /** What opens when the TV starts: "" (the home screen), "live", "app:<package>" or "input:<key>". */
+    static String startup() { return FeatureRules.startup(sp().getString("startup", "")); }
+    static void setStartup(String value) { put("startup", FeatureRules.startup(value)); }
+
+    /** Screensaver photos from the TV's own pictures and USB drives (needs the photos permission). */
+    static boolean screensaverPhotos() { return sp().getBoolean("screensaver_photos", false); }
+    static void setScreensaverPhotos(boolean on) { put("screensaver_photos", on); }
+    /** Device and performance → Automatic memory cleanup (off by default). */
+    static boolean autoFreeMemory() { return sp().getBoolean("auto_free_memory", false); }
+    static void setAutoFreeMemory(boolean on) { put("auto_free_memory", on); }
+
+    // MARK: - App lock (never in the backup: a restored file must not set or clear a PIN)
+
+    static boolean lockSet() { return !sp().getString("lock_pin", "").isEmpty(); }
+    static String lockPin() { return sp().getString("lock_pin", ""); }
+    static void setLockPin(String stored) { sp().edit().putString("lock_pin", stored).apply(); version++; }
+    static void clearLock() { sp().edit().remove("lock_pin").remove("lock_apps").remove("lock_hours").apply(); version++; }
+    static List<String> lockedApps() { return FeatureRules.packages(sp().getString("lock_apps", "")); }
+    static void setAppLocked(String pkg, boolean locked) {
+        List<String> list = lockedApps();
+        if (!WatchNextRules.packageName(pkg) || list.contains(pkg) == locked) return;
+        if (locked) list.add(pkg); else list.remove(pkg);
+        sp().edit().putString("lock_apps", String.join(",", list)).apply();
+        version++;
+    }
+    static String lockHours() { return FeatureRules.hours(sp().getString("lock_hours", FeatureRules.ALWAYS)); }
+    static void setLockHours(String value) { put("lock_hours", FeatureRules.hours(value)); }
+
     static List<String> otherAppsOrder() {
         String raw = sp().getString("other_apps_order", "");
         List<String> out = new ArrayList<>();
@@ -294,6 +344,100 @@ final class Prefs {
             for (int i = 0; i < KEYS.length; i++) if (KEYS[i] == keyCode && keyApps[i] != null) return keyApps[i];
             return defaultApp(keyCode);
         }
+    }
+
+    // MARK: - Settings backup (BackupRules checks every value again)
+
+    static java.util.Map<String, Object> backup() {
+        java.util.Map<String, Object> out = new java.util.HashMap<>();
+        java.util.Map<String, ?> all = sp().getAll();
+        for (String key : BackupRules.STRINGS) if (all.get(key) instanceof String) out.put(key, all.get(key));
+        for (String key : BackupRules.BOOLEANS) if (all.get(key) instanceof Boolean) out.put(key, all.get(key));
+        Object sources = all.get(BackupRules.SOURCES);
+        if (sources instanceof java.util.Set) out.put(BackupRules.SOURCES, new java.util.HashSet<>((java.util.Set<?>) sources));
+        return out;
+    }
+
+    /** The backed-up choices replace the current ones; a choice the backup lacks goes back to its default. */
+    @SuppressWarnings("unchecked")
+    static void restore(java.util.Map<String, Object> values, java.util.Map<Integer, String> keys) {
+        SharedPreferences.Editor edit = sp().edit();
+        for (String key : BackupRules.STRINGS) edit.remove(key);
+        for (String key : BackupRules.BOOLEANS) edit.remove(key);
+        edit.remove(BackupRules.SOURCES);
+        for (java.util.Map.Entry<String, Object> value : values.entrySet()) {
+            Object v = value.getValue();
+            if (v instanceof Boolean) edit.putBoolean(value.getKey(), (Boolean) v);
+            else if (v instanceof java.util.Set) edit.putStringSet(value.getKey(), new java.util.HashSet<>((java.util.Set<String>) v));
+            else if (v instanceof String) edit.putString(value.getKey(), (String) v);
+        }
+        edit.commit();
+        lightweight = sp().getBoolean("lightweight", false);
+        if (!keys.isEmpty()) {
+            StringBuilder sb = new StringBuilder();
+            for (int key : KEYS) sb.append(key).append('=').append(keys.containsKey(key) ? keys.get(key) : keyApp(key)).append('\n');
+            writeKeys(sb.toString());
+        }
+        version++;
+        contentVersion++;
+        catalogVersion++;
+        Ui.applyLanguage();
+    }
+
+    /**
+     * Turn off the voice assistant in custom home mode (the remote's microphone button stops working). Chosen in the
+     * :home process and applied by HomeMode in the main process, so it lives in a small file both read, like the keys.
+     */
+    static boolean assistantOff() {
+        File f = new File(app.getFilesDir(), "assistant.txt");
+        if (!f.exists()) return Config.DISABLE_ASSISTANT;
+        try (BufferedReader r = new BufferedReader(new FileReader(f))) {
+            return "off".equals(r.readLine());
+        } catch (IOException e) {
+            return Config.DISABLE_ASSISTANT;
+        }
+    }
+
+    static boolean setAssistantOff(boolean off) {
+        File tmp = new File(app.getFilesDir(), "assistant." + android.os.Process.myPid() + ".tmp");
+        try (FileOutputStream out = new FileOutputStream(tmp)) {
+            out.write((off ? "off\n" : "on\n").getBytes(StandardCharsets.UTF_8));
+            out.getFD().sync();
+        } catch (IOException e) {
+            //noinspection ResultOfMethodCallIgnored
+            tmp.delete();
+            return false;
+        }
+        return tmp.renameTo(new File(app.getFilesDir(), "assistant.txt"));
+    }
+
+    /**
+     * Updates from GitHub: "notify" (default), "auto" or "off". Chosen in :home, used by the daily job in the main
+     * process, so it lives in a small file both read, like the assistant choice.
+     */
+    static String updateMode() {
+        File f = new File(app.getFilesDir(), "updates.txt");
+        if (!f.exists()) return InstallRules.NOTIFY;
+        try (BufferedReader r = new BufferedReader(new FileReader(f))) {
+            return InstallRules.mode(r.readLine());
+        } catch (IOException e) {
+            return InstallRules.NOTIFY;
+        }
+    }
+
+    static boolean setUpdateMode(String mode) {
+        File tmp = new File(app.getFilesDir(), "updates." + android.os.Process.myPid() + ".tmp");
+        try (FileOutputStream out = new FileOutputStream(tmp)) {
+            out.write((InstallRules.mode(mode) + "\n").getBytes(StandardCharsets.UTF_8));
+            out.getFD().sync();
+        } catch (IOException e) {
+            //noinspection ResultOfMethodCallIgnored
+            tmp.delete();
+            return false;
+        }
+        boolean ok = tmp.renameTo(new File(app.getFilesDir(), "updates.txt"));
+        if (ok) version++;
+        return ok;
     }
 
     static void setKeyApp(int keyCode, String pkg) {
