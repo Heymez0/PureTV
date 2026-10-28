@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- After PureTV updates itself in custom home mode, the new version removes the copied APK from `/data/local/tmp`
+  (the old process ended during the install and left it there).
+
 ## v1.1
 
 **Signed with a new key.** The v1 signing key is no longer available, so PureTV and PureTV AirPlay v1.1 are signed with a

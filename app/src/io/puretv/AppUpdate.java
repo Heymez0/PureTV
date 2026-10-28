@@ -155,7 +155,7 @@ final class AppUpdate {
 
     /**
      * Installs with the TV's shell (custom home mode, existing grant, never a new prompt). True when Android reported
-     * success. Updating PureTV itself ends this process right after; the file is removed on the next check.
+     * success. Updating PureTV itself ends this process right after; the new version removes the file (afterUpdate).
      */
     static boolean installQuietly(Context c, Found f) {
         try (Adb adb = Adb.connect(c, -1, null)) {
@@ -228,6 +228,17 @@ final class AppUpdate {
 
     /** After this app was updated (MY_PACKAGE_REPLACED, the new version): the notice the old process couldn't write. */
     static void afterUpdate(Context c) {
+        // The old process ended inside `pm install`, before it could remove the copied APK: remove it now.
+        if (HomeMode.custom(c)) {
+            final Context app = c.getApplicationContext();
+            new Thread(() -> {
+                try (Adb adb = Adb.connect(app, -1, null)) {
+                    adb.shell("rm -f " + REMOTE);
+                } catch (IOException | RuntimeException e) {
+                    AppLog.w("update cleanup: " + e.getMessage());
+                }
+            }, "update-cleanup").start();
+        }
         SharedPreferences seen = c.getSharedPreferences("updates", Context.MODE_PRIVATE);
         long pending = seen.getLong("pendingCode", 0);
         if (pending <= 0) return;
