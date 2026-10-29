@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- **Faster on TVs:** Android installs an app with only profiled code compiled, and the background compile that should
+  follow needs idle-and-charging time a TV stick rarely gets. In custom home mode PureTV now compiles itself and the
+  AirPlay receiver ahead of time (`cmd package compile -m speed`) once per installed build: a minute after an update,
+  three minutes after turning custom home mode on, and after a start if a build is still uncompiled. Measured on the Mi
+  Stick (Android TV 9) while moving around the home screen: frames over 16 ms 61 % → 25 %, 90th percentile 31 → 18 ms;
+  home cold start about 1030 → 950 ms. About 3 seconds of work per build.
+
 ## v1.2
 
 - **Background from content** (Appearance): on by default; off keeps the theme's plain background in the recent and

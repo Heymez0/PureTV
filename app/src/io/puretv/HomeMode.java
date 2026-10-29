@@ -212,6 +212,47 @@ final class HomeMode {
     }
 
     /**
+     * Android installs an app with only the code a profile names compiled; on a TV the background compile that should
+     * follow needs idle-and-charging time a stick rarely gets, so PureTV mostly ran interpreted. With the TV's ADB grant
+     * (custom home mode) it compiles itself and the AirPlay receiver ahead of time once per installed build. Measured on
+     * the Mi Stick: home cold start 1030 → 910 ms, frames over 16 ms while moving around 61 % → 30 %; ~3 s of work.
+     */
+    static void compile(Context c, long delayMs) {
+        ModeJob.schedule(c, ModeJob.COMPILE, null, delayMs);
+    }
+
+    static void compileNow(Context c) {
+        synchronized (RUN) {
+            if (!custom(c)) return;
+            android.content.SharedPreferences done = c.getSharedPreferences("compiled", Context.MODE_PRIVATE);
+            String[] pkgs = {PKG, AirPlayReceiver.THEMED};
+            List<String> todo = new ArrayList<>();
+            for (String pkg : pkgs) {
+                long stamp = installedAt(c, pkg);   // changes with every install or update of that app
+                if (stamp > 0 && done.getLong(pkg, 0) != stamp) todo.add(pkg);
+            }
+            if (todo.isEmpty()) return;
+            try (Adb adb = Adb.connect(c, -1, null)) {
+                for (String pkg : todo) {
+                    String out = adb.shell("cmd package compile -m speed -f " + pkg).trim();
+                    if (out.contains("Success")) done.edit().putLong(pkg, installedAt(c, pkg)).apply();
+                    else AppLog.w("compile " + pkg + ": " + out);
+                }
+            } catch (IOException | RuntimeException e) {
+                AppLog.w("compile: " + e.getMessage());
+            }
+        }
+    }
+
+    private static long installedAt(Context c, String pkg) {
+        try {
+            return c.getPackageManager().getPackageInfo(pkg, 0).lastUpdateTime;
+        } catch (android.content.pm.PackageManager.NameNotFoundException e) {
+            return 0;
+        }
+    }
+
+    /**
      * The remote's app buttons (RemoteKeys) need an accessibility service that only filters those keys. It is on only
      * on TCL, Vestel, KTC and Sony TVs (and Formovie projectors) in custom home mode, and goes off with Original. Android turns it off when this app is updated, so the
      * boot check and an update turn it back on.
@@ -390,6 +431,7 @@ final class HomeMode {
             done(c, null);
             adb.shell("am start -a android.intent.action.MAIN -c android.intent.category.HOME");
             ModeJob.schedule(c, ModeJob.MEMORY, FREE, 120_000);
+            compile(c, 180_000);   // after the memory measurement, so it doesn't overlap it
         } catch (Exception e) {
             done(c, Ui.trf("Couldn't turn on the home screen: {error}", "error", e.getMessage()));
         }

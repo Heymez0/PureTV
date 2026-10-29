@@ -11,11 +11,13 @@ public class HomeReceiver extends BroadcastReceiver {
         if (Intent.ACTION_BOOT_COMPLETED.equals(action)) {
             HomeMode.bootCheck(context);
             SleepTimer.clear(context);   // its alarms didn't survive the restart
+            HomeMode.compile(context, 5 * 60_000L);   // a build installed since the last start (e.g. the receiver)
             ModeJob.scheduleUpdates(context);
         } else if (Intent.ACTION_MY_PACKAGE_REPLACED.equals(action)) {
             HomeMode.verify(context);   // app updated: complete custom home mode if something is missing
             HomeMode.ensureRemoteService(context, 3_000);
             AppUpdate.afterUpdate(context);
+            HomeMode.compile(context, 60_000);   // the new build, once the TV has settled after the install
             ModeJob.scheduleUpdates(context);
         }
     }

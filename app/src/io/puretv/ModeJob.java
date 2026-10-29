@@ -14,7 +14,7 @@ import android.os.PersistableBundle;
  */
 public class ModeJob extends JobService {
     static final String APPLY = "apply", VERIFY = "verify", REVERT = "revert", MEMORY = "memory", REMOTE = "remote",
-            ASSISTANT = "assistant", UPDATE = "update";
+            ASSISTANT = "assistant", UPDATE = "update", COMPILE = "compile";
 
     @Override public boolean onStartJob(JobParameters params) {
         PersistableBundle extras = params.getExtras();
@@ -32,6 +32,7 @@ public class ModeJob extends JobService {
                     case REMOTE: HomeMode.ensureRemoteServiceNow(app); break;
                     case ASSISTANT: HomeMode.assistantNow(app); break;
                     case UPDATE: AppUpdate.runJob(app); break;
+                    case COMPILE: HomeMode.compileNow(app); break;
                     default: break;
                 }
             } catch (Throwable t) {
@@ -59,6 +60,7 @@ public class ModeJob extends JobService {
             case REMOTE: return 1874;
             case ASSISTANT: return 1318;
             case UPDATE: return 1950;
+            case COMPILE: return 1789;
             default: throw new IllegalArgumentException(action);
         }
     }
