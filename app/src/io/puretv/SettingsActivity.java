@@ -116,6 +116,9 @@ public class SettingsActivity extends Activity {
                 SettingsPage.Row auto=adjust("Automatic memory cleanup",d->Prefs.setAutoFreeMemory(!Prefs.autoFreeMemory()));
                 auto.hint=tr("When less than 15% of memory is left, returning to the home screen frees it, at most every 15 minutes. The app you just left starts again from the beginning.");
                 rows.add(auto);
+                SettingsPage.Row optimize=adjust("Optimise apps during the screensaver",d->Prefs.setOptimizeApps(!Prefs.optimizeApps()));
+                optimize.hint=tr("Custom home mode: ten minutes into the screensaver, apps you installed are compiled for how you use them, which Android itself rarely gets to do on a TV. It stops as soon as you press a key.");
+                rows.add(optimize);
                 SettingsPage.Row lock=action("App lock",()->AppLock.confirm(this,()->editor("lock")));
                 lock.hint=tr("A PIN for chosen apps when they are opened from PureTV, always or in the evening. A simple household lock: apps opened another way (TV Settings, the remote's app buttons) are not locked.");
                 rows.add(lock);
@@ -225,7 +228,8 @@ public class SettingsActivity extends Activity {
             case 5:data.rows[0].value=ResourceStatus.value(this,resources.ramAvailable,resources.ramTotal);
                 data.rows[1].value=ResourceStatus.value(this,resources.storageAvailable,resources.storageTotal);
                 data.rows[2].value=on(Prefs.lightweight());data.rows[4].value=on(!Prefs.assistantOff());data.rows[5].value=freeStatus;
-                data.rows[6].value=on(Prefs.autoFreeMemory());data.rows[7].value=on(Prefs.lockSet());break;
+                data.rows[6].value=on(Prefs.autoFreeMemory());data.rows[7].value=on(Prefs.optimizeApps());
+                data.rows[8].value=on(Prefs.lockSet());break;
             case 6:
                 if(RemoteKeys.supported())editors.updateRemote(data);
                 if(Prefs.television())data.rows[RemoteKeys.supported()?Prefs.KEYS.length:0].value=on(Prefs.tvRemote());break;

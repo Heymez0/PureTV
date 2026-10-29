@@ -15,7 +15,7 @@ final class BackupRules {
             "longitude", "home_content_mode", "viewing_previous_mode", "shelf", "quick_shortcuts", "other_apps_order",
             "hidden_apps", "startup"};
     static final String[] BOOLEANS = {"lightweight", "tv_inputs", "inactive_inputs", "tv_remote", "sounds",
-            "continue_watching", "viewing_information", "weather", "detailed_weather", "screensaver_photos", "content_background",
+            "continue_watching", "viewing_information", "weather", "detailed_weather", "screensaver_photos", "content_background", "optimize_apps",
             "auto_free_memory"};
     static final String SOURCES = "continue_hidden";
     private static final Pattern LANGUAGE = Pattern.compile("auto|[a-z]{2,3}(-[A-Za-z0-9]{2,8})?");

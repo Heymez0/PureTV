@@ -243,6 +243,9 @@ final class Prefs {
     /** Device and performance → Automatic memory cleanup (off by default). */
     static boolean autoFreeMemory() { return sp().getBoolean("auto_free_memory", false); }
     static void setAutoFreeMemory(boolean on) { put("auto_free_memory", on); }
+    /** Device and performance → Optimise apps during the screensaver (on by default; custom home mode). */
+    static boolean optimizeApps() { return sp().getBoolean("optimize_apps", true); }
+    static void setOptimizeApps(boolean on) { put("optimize_apps", on); }
 
     // MARK: - App lock (never in the backup: a restored file must not set or clear a PIN)
 

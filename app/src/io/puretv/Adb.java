@@ -127,6 +127,20 @@ final class Adb implements Closeable {
         }
     }
 
+    /**
+     * A command that may run longer than the usual 20 s without printing (compiling a large app took over 20 s on the
+     * Mi Stick and timed out the rest of the run): waits up to `timeoutMs` for it, then restores the usual timeout.
+     */
+    String shell(String command, int timeoutMs) throws IOException {
+        int usual = socket.getSoTimeout();
+        socket.setSoTimeout(timeoutMs);
+        try {
+            return shell(command);
+        } finally {
+            socket.setSoTimeout(usual);
+        }
+    }
+
     /** Runs a command in the TV's shell and returns its output (stdout and stderr together). */
     String shell(String command) throws IOException {
         int local = nextLocalId++;

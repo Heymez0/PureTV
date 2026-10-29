@@ -8,6 +8,12 @@
   three minutes after turning custom home mode on, and after a start if a build is still uncompiled. Measured on the Mi
   Stick (Android TV 9) while moving around the home screen: frames over 16 ms 61 % → 25 %, 90th percentile 31 → 18 ms;
   home cold start about 1030 → 950 ms. About 3 seconds of work per build.
+- **Faster apps (Netflix, YouTube and others):** Android recompiles apps from how you use them only after an hour of
+  idle time while charging, which a stick that sleeps with the TV never gets, so they kept their install-time compile.
+  Device and performance → Optimise apps during the screensaver (on by default, custom home mode): ten minutes into
+  the screensaver PureTV runs Android's own profile-guided compile for the apps you installed, one at a time, each again
+  after an update or a week, and stops when you press a key. Measured on the Mi Stick: YouTube's cold start
+  1314 → 1159 ms; Netflix, whose interface runs mostly in native code, barely changes (about 12–14 s of work per app).
 
 ## v1.2
 

@@ -14,7 +14,7 @@ import android.os.PersistableBundle;
  */
 public class ModeJob extends JobService {
     static final String APPLY = "apply", VERIFY = "verify", REVERT = "revert", MEMORY = "memory", REMOTE = "remote",
-            ASSISTANT = "assistant", UPDATE = "update", COMPILE = "compile";
+            ASSISTANT = "assistant", UPDATE = "update", COMPILE = "compile", OPTIMIZE = "optimize";
 
     @Override public boolean onStartJob(JobParameters params) {
         PersistableBundle extras = params.getExtras();
@@ -33,6 +33,7 @@ public class ModeJob extends JobService {
                     case ASSISTANT: HomeMode.assistantNow(app); break;
                     case UPDATE: AppUpdate.runJob(app); break;
                     case COMPILE: HomeMode.compileNow(app); break;
+                    case OPTIMIZE: HomeMode.optimizeAppsNow(app); break;
                     default: break;
                 }
             } catch (Throwable t) {
@@ -61,6 +62,7 @@ public class ModeJob extends JobService {
             case ASSISTANT: return 1318;
             case UPDATE: return 1950;
             case COMPILE: return 1789;
+            case OPTIMIZE: return 1856;
             default: throw new IllegalArgumentException(action);
         }
     }
@@ -83,6 +85,12 @@ public class ModeJob extends JobService {
         scheduler.schedule(new JobInfo.Builder(id(UPDATE), new ComponentName(c, ModeJob.class)).setExtras(extras)
                 .setPeriodic(24 * 60 * 60_000L).setPersisted(true).setRequiresDeviceIdle(idle)
                 .setRequiredNetworkType(JobInfo.NETWORK_TYPE_UNMETERED).build());
+    }
+
+    /** Drops a pending job of this action (a running one finishes on its own). */
+    static void cancel(Context c, String action) {
+        JobScheduler scheduler = c.getSystemService(JobScheduler.class);
+        if (scheduler != null) scheduler.cancel(id(action));
     }
 
     /** Schedules a job (one pending per action: a new request replaces the old one). */

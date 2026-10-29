@@ -124,6 +124,15 @@ final class FeatureRules {
                 && sinceLastMs >= AUTO_FREE_COOLDOWN_MS;
     }
 
+    // MARK: - App compile catch-up (during the screensaver)
+
+    /** An app is compiled again when it was installed or updated since, or a week after the last time. */
+    static final long OPTIMIZE_EVERY_MS = 7L * 24 * 60 * 60_000;
+
+    static boolean optimizeDue(long installedAt, long recordedInstall, long lastRun, long now) {
+        return installedAt > 0 && (installedAt != recordedInstall || now - lastRun >= OPTIMIZE_EVERY_MS || now < lastRun);
+    }
+
     // MARK: - Rain warning
 
     /** An hour's chance of rain is shown from this percentage. */

@@ -24,10 +24,12 @@ public class Screensaver extends DreamService {
     @Override public void onDreamingStarted() {
         super.onDreamingStarted();
         if (view != null) view.start();
+        HomeMode.optimizeApps(this);   // nobody is watching: catch up Android's skipped app compile (HomeMode)
     }
 
     @Override public void onDreamingStopped() {
         if (view != null) view.stop();
+        HomeMode.stopOptimizingApps(this);
         super.onDreamingStopped();
     }
 

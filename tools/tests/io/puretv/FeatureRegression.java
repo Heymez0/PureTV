@@ -106,6 +106,10 @@ final class FeatureRegression {
         long gb=1024L*1024*1024,cool=FeatureRules.AUTO_FREE_COOLDOWN_MS;
         ok(FeatureRules.autoFree(gb/10,gb,cool)&&!FeatureRules.autoFree(gb*16/100,gb,cool)&&!FeatureRules.autoFree(gb/3,gb,cool));
         ok(!FeatureRules.autoFree(gb/10,gb,cool-1)&&!FeatureRules.autoFree(-1,gb,cool)&&!FeatureRules.autoFree(0,0,cool));
+        // App compile catch-up: after an install or update, or a week later; never for a missing app.
+        long week=FeatureRules.OPTIMIZE_EVERY_MS,now=10*week;
+        ok(FeatureRules.optimizeDue(5,0,0,now)&&FeatureRules.optimizeDue(6,5,now-1,now)&&FeatureRules.optimizeDue(5,5,now-week,now));
+        ok(!FeatureRules.optimizeDue(5,5,now-week+1,now)&&!FeatureRules.optimizeDue(0,0,0,now)&&FeatureRules.optimizeDue(5,5,now+1,now));
         // The backup carries hidden apps, the start choice and screensaver photos, but never the app lock.
         Map<String,Object> in=new HashMap<>();
         in.put("hidden_apps","com.a.b,bad pkg");in.put("startup","app:com.netflix.ninja");in.put("screensaver_photos",true);
