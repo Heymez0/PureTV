@@ -56,7 +56,9 @@ final class AirPlayControl {
         controlAvailable=available(); // Every command still verifies the receiver and its signature afresh.
         if(!controlAvailable) {state="error";busy=false;if(visible)changed.run();return;}
         try {
-            context.sendOrderedBroadcast(new Intent(ACTION+command).setComponent(COMPONENT),null,
+            // A receiver force-stopped in TV Settings is "stopped": Android would drop the command until it is opened once.
+            context.sendOrderedBroadcast(new Intent(ACTION+command).setComponent(COMPONENT)
+                    .addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES),null,
                 new BroadcastReceiver() {
                     @Override public void onReceive(Context c, Intent i) {
                         if(!visible || token!=generation)return;

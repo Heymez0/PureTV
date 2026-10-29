@@ -25,6 +25,9 @@
   redraws the header, shelf, drawer and Other apps on every frame on TVs without the Android 13 glass (their panels
   don't show the photo). On the Mi Stick, moving along the shelf right after a start dropped frames (20–24 ms) in 4
   of 11 runs before; in 9 runs after, only the very first frame of the start was slow.
+- **AirPlay control after a force stop:** if the AirPlay receiver was force-stopped in TV Settings, Android dropped
+  PureTV's start/stop/status commands until the receiver was opened once; they now reach it (still only PureTV, by
+  signature permission).
 - **Translations:** the texts added since v1 (updates, app lock, hidden apps, sleep timer, memory, screensaver photos,
   the new settings hints and others, 129 in all) are now in all 23 other languages instead of English.
 
