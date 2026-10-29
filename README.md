@@ -8,7 +8,7 @@
 
 [Install](docs/INSTALL.md) · [Turkish guide](docs/README.tr.md) · [Build](docs/DEVELOPMENT.md#build) · [AirPlay](tools/airplay/README.md) · [Changelog](docs/CHANGELOG.md)
 
-**Current release: [PureTV v1.2](https://github.com/Heymez0/PureTV/releases/tag/v1.2)** · Android 9+
+**Current release: [PureTV v1.3](https://github.com/Heymez0/PureTV/releases/tag/v1.3)** · Android 9+
 
 </div>
 
@@ -36,6 +36,16 @@ running Android TV 9. **LG webOS and Samsung Tizen are experimental ports and ha
 
 Recent content depends on what installed Android apps publish. Optional web catalogue cards use your own TMDB key.
 Android-specific settings, recent-content providers and AirPlay control are not available in the LG/Samsung web edition.
+
+### New in v1.3
+
+- **AirPlay receiver 0.0.36-puretv.3:** iPhones, iPads and Macs list the TV as **PureTV**; mirrored video goes straight
+  to the TV's video plane instead of an extra GPU copy, and each frame shows as soon as it is decoded.
+- **Translations:** the 129 texts added since v1 are now in all 24 languages.
+- **Smoother first seconds** on the home screen while posters arrive, and clearer settings descriptions.
+- **Faster on TVs:** PureTV compiles itself ahead of time, and Optimise apps during the screensaver speeds up the apps
+  you installed (custom home mode).
+- Light theme: the clock/weather pill and the header buttons are easier to see.
 
 ### New in v1.2
 
@@ -132,7 +142,7 @@ The header banner is an illustration. [Capture details](docs/media/README.md).
 
 **Android TV / Google TV:** [Download PureTV.apk](https://github.com/Heymez0/PureTV/releases/latest/download/PureTV.apk) · [Release and SHA256 checksum](https://github.com/Heymez0/PureTV/releases/latest)
 
-The signed v1.2 APK is for **Android 9 or newer**. Download it on your computer, copy it to a USB drive or transfer it
+The signed v1.3 APK is for **Android 9 or newer**. Download it on your computer, copy it to a USB drive or transfer it
 to the TV, then open it with the TV file manager. Follow PureTV's welcome guide after installation.
 [Step-by-step Android instructions](docs/INSTALL.md#android-tv--google-tv).
 

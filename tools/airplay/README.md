@@ -1,8 +1,8 @@
 # Optional PureTV AirPlay receiver
 
 The receiver is a separate **GPL-3.0** Android app; the launcher remains MIT-licensed.
-Package: `io.puretv.airplay`. Source version: `0.0.36-puretv.2`. Supplied native engine: **armeabi-v7a**.
-Since [v1.1](https://github.com/Heymez0/PureTV/releases/tag/v1.1), releases distribute `0.0.36-puretv.2`, signed with
+Package: `io.puretv.airplay`. Source version: `0.0.36-puretv.3`. Supplied native engine: **armeabi-v7a**.
+[v1.3](https://github.com/Heymez0/PureTV/releases/tag/v1.3) distributes `0.0.36-puretv.3` (v1.1 and v1.2: `0.0.36-puretv.2`), signed with
 PureTV's new key (v1 distributed `0.0.36-puretv.1` with the previous key).
 
 ## Install
@@ -18,7 +18,8 @@ from the same release, verify them with **SHA256SUMS** and install the APK after
 
 Then:
 
-1. Open the receiver once and choose its name and pairing preferences. Keep the sender on the same local network.
+1. Senders list the TV as **PureTV** (from `0.0.36-puretv.3`; a name typed in the receiver is kept). Open the receiver
+   to change the name or the pairing preferences. Keep the sender on the same local network.
 2. Open PureTV's quick settings and select **AirPlay** with OK to start or stop it. The same control is in
    All settings → Connections. Arrow keys move focus without changing the state.
 3. On an iPhone, iPad or Mac, open Screen Mirroring and choose the receiver name. Enter the TV's PIN if enabled.
@@ -43,7 +44,8 @@ Receiver pairing/PIN settings are not overridden. Do not run multiple receiver e
 `source-manifest.json` identifies the pinned base and the matching **PureTV-AirPlay-Source.zip** hash; the receiver APK
 hash is added once the APK is signed with the production key. The complete source archive contains the Gradle wrapper,
 interface code, native-source snapshots, licences and build notes. The patches in this folder are for review
-(`puretv-v0.0.36.patch`: upstream → `0.0.36-puretv.1`; `puretv-0.0.36-puretv.2.patch`: on demand, wake lock and theme); they are not
+(`puretv-v0.0.36.patch`: upstream → `0.0.36-puretv.1`; `puretv-0.0.36-puretv.2.patch`: on demand, wake lock and theme; `puretv-0.0.36-puretv.3.patch`: direct video output,
+immediate frame release and the PureTV name); they are not
 a substitute for that full source distribution. Keep each receiver APK together with its matching source archive.
 
 Extract the full archive and follow its `PURETV-SOURCE-NOTES.md`. The interface build uses JDK 17+, SDK 37 and its wrapper:
@@ -57,5 +59,8 @@ The interface build passed for `0.0.36-puretv.2` and its six ARMv7 engine librar
 `0.0.36-puretv.1`. That earlier build was tested with the `io.puretv` launcher on Xiaomi Mi Stick / Android TV 9:
 settings on/off and arrow-key navigation passed, and the device owner confirmed successful Screen Mirroring. The
 on-demand start and 15-minute stop, light/dark layout and idle wake-lock behaviour of `0.0.36-puretv.2` were checked on
-the same device with a test key; a sender connection was not part of that check. Full native rebuilding is not verified. Other ABIs, HomePod output and
+the same device with a test key; a sender connection was not part of that check. `0.0.36-puretv.3` (interface build,
+engine libraries byte-identical) decodes mirrored video straight into the display surface, falling back to the GL
+pipeline where needed; on the same device it was started and stopped from PureTV's quick settings and the device owner
+confirmed Screen Mirroring from an iPhone. Full native rebuilding is not verified. Other ABIs, HomePod output and
 DRM support are not added. Distribute the matching full GPL source alongside any receiver APK.

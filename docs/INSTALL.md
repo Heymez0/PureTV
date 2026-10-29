@@ -5,7 +5,7 @@
 ## Android TV / Google TV
 
 Use the signed [PureTV.apk download](https://github.com/Heymez0/PureTV/releases/latest/download/PureTV.apk)
-from the [latest release](https://github.com/Heymez0/PureTV/releases/latest) (v1.2). Requires Android 9+.
+from the [latest release](https://github.com/Heymez0/PureTV/releases/latest) (v1.3). Requires Android 9+.
 Download **PureTV.apk**; the automatic Source code ZIP contains source files for developers.
 
 **Updating from v1:** since v1.1 PureTV is signed with a new key, so Android won't install it over v1. Back up your settings

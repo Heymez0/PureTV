@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="io.puretv"
-    android:versionCode="4"
-    android:versionName="v1.2">
+    android:versionCode="5"
+    android:versionName="v1.3">
 
     <!-- Install results reach only this app (another app can't fake one and make PureTV open a screen). -->
     <permission android:name="io.puretv.permission.INSTALL_STATUS" android:protectionLevel="signature" />

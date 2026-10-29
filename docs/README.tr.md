@@ -6,7 +6,7 @@
 
 [English / ana sayfa](../README.md) · [APK indir](https://github.com/Heymez0/PureTV/releases/latest/download/PureTV.apk) · [Ayrıntılı kurulum](INSTALL.md) · [Kaynak derleme](DEVELOPMENT.md)
 
-**Güncel sürüm: [PureTV v1.2](https://github.com/Heymez0/PureTV/releases/tag/v1.2)** · Android 9+
+**Güncel sürüm: [PureTV v1.3](https://github.com/Heymez0/PureTV/releases/tag/v1.3)** · Android 9+
 
 PureTV; Android TV, Google TV ve Android TV kutuları/stickleri için hafif bir ana ekrandır (başlatıcı).
 LG webOS ve Samsung Tizen için ayrı web sürümleri vardır. **Testlerin yapıldığı gerçek cihaz, Android TV 9 kullanan
@@ -37,6 +37,16 @@ içindedir.
 Son izlenenler ve öneriler, kurulu uygulamaların Android ile paylaştığı içeriğe bağlıdır. Web sürümündeki isteğe bağlı
 katalog kartları için kendi TMDB anahtarınız gerekir. Android'e özgü içerik kaynakları, sistem ayarları ve AirPlay
 kontrolü LG/Samsung sürümlerinde yoktur.
+
+### v1.3'teki yenilikler
+
+- **AirPlay alıcısı 0.0.36-puretv.3:** iPhone, iPad ve Mac'te TV **PureTV** adıyla görünür; yansıtılan görüntü fazladan
+  GPU kopyası olmadan doğrudan TV'nin video katmanına gider ve her kare çözülür çözülmez gösterilir.
+- **Çeviriler:** v1'den sonra eklenen 129 metin artık 24 dilin hepsinde.
+- Afişler gelirken ana ekranın **ilk saniyeleri daha akıcı**; ayar açıklamaları daha anlaşılır.
+- **TV'de daha hızlı:** PureTV kendini önceden derler; Ekran koruyucuda uygulamaları iyileştir, kurduğunuz uygulamaları
+  hızlandırır (özel ana ekran modu).
+- Açık tema: saat/hava durumu kutusu ve üst düğmeler daha belirgin.
 
 ### v1.2'deki yenilikler
 
@@ -92,7 +102,7 @@ Background from content) ile kapatabilirsiniz.
 
 **[PureTV.apk indir](https://github.com/Heymez0/PureTV/releases/latest/download/PureTV.apk)** · [Sürüm ve SHA256 doğrulaması](https://github.com/Heymez0/PureTV/releases/latest)
 
-Bu, Android 9 ve üzeri için imzalı v1.2 sürümüdür. **PureTV.apk** dosyasını indirin; GitHub'ın kendiliğinden
+Bu, Android 9 ve üzeri için imzalı v1.3 sürümüdür. **PureTV.apk** dosyasını indirin; GitHub'ın kendiliğinden
 eklediği "Source code" ZIP dosyaları geliştiriciler içindir.
 
 **v1 kullanıyorsanız:** PureTV v1.1'den beri yeni bir anahtarla imzalandığı için Android yeni sürümü v1'in üzerine kurmaz.

@@ -1,29 +1,36 @@
 {
   "base_url": "https://github.com/jqssun/android-airplay-server",
   "base_commit": "a46cca0a6a1274e9e33c0e750f0f1c1eb1d881ea",
-  "version": "0.0.36-puretv.2",
+  "version": "0.0.36-puretv.3",
   "package": "io.puretv.airplay",
   "abi": "armeabi-v7a",
   "source_asset": "PureTV-AirPlay-Source.zip",
   "full_native_rebuild_verified": false,
-  "release": "v1.1",
-  "status": "Interface build passed; the six ARMv7 engine libraries are byte-identical to 0.0.36-puretv.1. On-demand start and the 15-minute idle stop were checked on a Mi Stick with a test key on 2026-10-28, as were the PureTV light/dark layout and the idle wake-lock behaviour (none on demand, held with start at boot, released when stopped); a sender connection was not part of the check. Signed with PureTV v1.1's key (certificate SHA-256 808dd32ee3d027606fbaa586c71755ae2e97957182d7f565f8c777db15c93677) and installed beside PureTV v1.1 on the Mi Stick on 2026-10-28.",
-  "source_sha256": "fe8f2e3faf35bf8ccce941d63df7139f33d2c245949e2a4214b730729e8e9a46",
-  "receiver_apk_sha256": "4cd6afb4c05b4b086f0c614022d76df97c0b3af4a358352e13b557ff82b6f5ef",
+  "release": "v1.3",
+  "status": "Interface build passed; the six ARMv7 engine libraries are byte-identical to 0.0.36-puretv.2. Mirrored video is decoded straight into the display surface (GL pipeline as fallback), frames are released as soon as they are decoded, and the default receiver name is PureTV. On a Mi Stick / Android TV 9 on 2026-10-29 it was started and stopped from PureTV quick settings (no idle wake lock) and the device owner confirmed Screen Mirroring from an iPhone.",
+  "source_sha256": "dc37b7d57d3382e6dc6532b5cc9870b557d7fb1a24f8785f934a6dc3f252efdc",
+  "receiver_apk_sha256": "pending: added when the APK is signed with the production key",
   "physical_new_identity_tested": true,
   "previous": {
-    "version": "0.0.36-puretv.1",
-    "release": "v1",
-    "source_sha256": "13748331dad7760861c69bd0b59d559e3b8f191dfe686e5b329bee89f9ea7375",
-    "receiver_apk_sha256": "24d252a5533c2b75845be9cbee5cf21cd4d54d2bd45a0141ad7400684a1fab2b",
-    "physical_test": {
-      "device": "Xiaomi Mi Stick",
-      "os": "Android TV 9",
-      "date": "2026-10-26",
-      "launcher_package": "io.puretv",
-      "settings_start_stop": true,
-      "arrow_keys_do_not_toggle": true,
-      "mirroring": "Confirmed by the device owner using Screen Mirroring"
+    "version": "0.0.36-puretv.2",
+    "release": "v1.1",
+    "status": "Interface build passed; the six ARMv7 engine libraries are byte-identical to 0.0.36-puretv.1. On-demand start and the 15-minute idle stop were checked on a Mi Stick with a test key on 2026-10-28, as were the PureTV light/dark layout and the idle wake-lock behaviour (none on demand, held with start at boot, released when stopped); a sender connection was not part of the check. Signed with PureTV v1.1's key (certificate SHA-256 808dd32ee3d027606fbaa586c71755ae2e97957182d7f565f8c777db15c93677) and installed beside PureTV v1.1 on the Mi Stick on 2026-10-28.",
+    "source_sha256": "fe8f2e3faf35bf8ccce941d63df7139f33d2c245949e2a4214b730729e8e9a46",
+    "receiver_apk_sha256": "4cd6afb4c05b4b086f0c614022d76df97c0b3af4a358352e13b557ff82b6f5ef",
+    "previous": {
+      "version": "0.0.36-puretv.1",
+      "release": "v1",
+      "source_sha256": "13748331dad7760861c69bd0b59d559e3b8f191dfe686e5b329bee89f9ea7375",
+      "receiver_apk_sha256": "24d252a5533c2b75845be9cbee5cf21cd4d54d2bd45a0141ad7400684a1fab2b",
+      "physical_test": {
+        "device": "Xiaomi Mi Stick",
+        "os": "Android TV 9",
+        "date": "2026-10-26",
+        "launcher_package": "io.puretv",
+        "settings_start_stop": true,
+        "arrow_keys_do_not_toggle": true,
+        "mirroring": "Confirmed by the device owner using Screen Mirroring"
+      }
     }
   }
 }

@@ -1,0 +1,458 @@
+--- a/PureTV-AirPlay/app/build-native.gradle.kts
++++ b/PureTV-AirPlay/app/build-native.gradle.kts
+@@ -33,8 +33,8 @@
+         applicationId = "io.puretv.airplay"
+         minSdk = 23
+         targetSdk = 37
+-        versionCode = 37
+-        versionName = "0.0.36-puretv.2"
++        versionCode = 38
++        versionName = "0.0.36-puretv.3"
+ 
+         externalNativeBuild {
+             cmake {
+--- a/PureTV-AirPlay/app/build.gradle.kts
++++ b/PureTV-AirPlay/app/build.gradle.kts
+@@ -33,8 +33,8 @@
+         applicationId = "io.puretv.airplay"
+         minSdk = 23
+         targetSdk = 37
+-        versionCode = 37
+-        versionName = "0.0.36-puretv.2"
++        versionCode = 38
++        versionName = "0.0.36-puretv.3"
+ 
+ 
+     }
+--- a/PureTV-AirPlay/app/src/main/kotlin/io/github/jqssun/airplay/AirPlayApp.kt
++++ b/PureTV-AirPlay/app/src/main/kotlin/io/github/jqssun/airplay/AirPlayApp.kt
+@@ -4,4 +4,14 @@
+ import dagger.hilt.android.HiltAndroidApp
+ 
+ @HiltAndroidApp
+-class AirPlayApp : Application()
++class AirPlayApp : Application() {
++    override fun onCreate() {
++        super.onCreate()
++        // PureTV: before any service, receiver or screen reads the name
++        val prefs = getSharedPreferences(Prefs.NAME, MODE_PRIVATE)
++        val name = prefs.getString(Prefs.SERVER_NAME.key, null)
++        if (name != null && (name.isBlank() || name == Prefs.OLD_SERVER_NAME)) {
++            prefs.edit().putString(Prefs.SERVER_NAME.key, Prefs.SERVER_NAME.def).apply()
++        }
++    }
++}
+--- a/PureTV-AirPlay/app/src/main/kotlin/io/github/jqssun/airplay/Prefs.kt
++++ b/PureTV-AirPlay/app/src/main/kotlin/io/github/jqssun/airplay/Prefs.kt
+@@ -72,7 +72,10 @@
+ 
+     fun forced(v: String) = when (v) { ON -> true; OFF -> false; else -> null }
+ 
+-    val SERVER_NAME = str("server_name", "Android AirPlay", restart = true)
++    // PureTV: senders list the TV as "PureTV". A name the owner typed is kept; the upstream default is renamed once
++    // (AirPlayApp.onCreate), so earlier installs show PureTV too.
++    const val OLD_SERVER_NAME = "Android AirPlay"
++    val SERVER_NAME = str("server_name", "PureTV", restart = true)
+     val SERVER_PORT = int("server_port", 7000, 1..65535, restart = true)
+     val AUTO_START = bool("auto_start", true)
+     // PureTV: off by default. AirPlay then runs only after it is turned on (PureTV's quick settings or this app)
+--- a/PureTV-AirPlay/app/src/main/kotlin/io/github/jqssun/airplay/renderer/VideoPipeline.kt
++++ b/PureTV-AirPlay/app/src/main/kotlin/io/github/jqssun/airplay/renderer/VideoPipeline.kt
+@@ -31,7 +31,8 @@
+     private var aTex = 0
+     private var uTexMatrix = 0
+     private val texMatrix = FloatArray(16)
+-    private var hasFrame = false
++    // a decoded frame is in the texture (PureTV: the renderer repaints it on a returning display before handing over)
++    @Volatile var hasFrame = false; private set
+ 
+     private var surfaceTexture: SurfaceTexture? = null
+     var inputSurface: Surface? = null; private set
+@@ -39,6 +40,8 @@
+     @Volatile private var frameAvailable = false
+     private var pendingDisplay: Surface? = null
+     private var displayDirty = false
++    private var displayAsked = 0L
++    private var displayBound = 0L
+     @Volatile private var videoW = 0
+     @Volatile private var videoH = 0
+ 
+@@ -49,10 +52,20 @@
+         while (inputSurface == null && running) lock.wait()
+     }
+ 
+-    fun setDisplaySurface(surface: Surface?) = synchronized(lock) {
++    // wait: return once the GL thread has let go of the old surface (PureTV: the decoder may connect to it next)
++    fun setDisplaySurface(surface: Surface?, wait: Boolean = false) = synchronized(lock) {
+         pendingDisplay = surface
+         displayDirty = true
++        val asked = ++displayAsked
+         lock.notifyAll()
++        if (wait && Thread.currentThread() !== thread) {
++            while (running && displayBound < asked) lock.wait()
++        }
++    }
++
++    // PureTV: the decoder drew the latest frames elsewhere (straight to the display); don't repaint this older one
++    fun forgetFrame() {
++        hasFrame = false
+     }
+ 
+     fun setVideoSize(w: Int, h: Int) {
+@@ -89,12 +102,14 @@
+             var newDisplay: Surface? = null
+             var displayChanged = false
+             var doFrame = false
++            var asked = 0L
+             synchronized(lock) {
+                 while (running && !frameAvailable && !displayDirty) lock.wait()
+                 if (running && displayDirty) {
+                     newDisplay = pendingDisplay
+                     displayChanged = true
+                     displayDirty = false
++                    asked = displayAsked
+                 }
+                 if (running && frameAvailable) {
+                     frameAvailable = false
+@@ -102,7 +117,10 @@
+                 }
+             }
+             if (!running) break
+-            if (displayChanged) _bindDisplay(newDisplay)
++            if (displayChanged) {
++                _bindDisplay(newDisplay)
++                synchronized(lock) { displayBound = asked; lock.notifyAll() }
++            }
+             if (doFrame) _consumeAndDraw()
+         }
+         _releaseGl()
+--- a/PureTV-AirPlay/app/src/main/kotlin/io/github/jqssun/airplay/renderer/VideoRenderer.kt
++++ b/PureTV-AirPlay/app/src/main/kotlin/io/github/jqssun/airplay/renderer/VideoRenderer.kt
+@@ -16,8 +16,19 @@
+     private var avcDecoder: MediaCodecInfo? = null
+     private var hevcDecoder: MediaCodecInfo? = null
+     private var maxFps = 0
+-    private var codec: MediaCodec? = null
++    @Volatile private var codec: MediaCodec? = null
+     private var displaySurface: Surface? = null
++    // PureTV: where the decoder renders. The display surface itself when possible (no GL copy per frame; Amlogic and
++    // similar TV chips then put the video on their video plane), otherwise the pipeline's surface, which repaints the
++    // last frame on a returning display and keeps the decoder running while nothing is shown.
++    @Volatile private var output: Surface? = null
++    // a display that returned while the pipeline showed the last frame: the decoder moves to it with the next frame
++    private var handover: Surface? = null
++    // decoded frames go to the screen as soon as they are ready, not when the next input arrives
++    private var drainer: Thread? = null
++    private val outLock = Object()
++    // the drainer hit a codec error: the next input resets the codec, as a feed error does
++    @Volatile private var drainFailed = false
+     private var currentH265 = false
+     private var videoWidth = 0
+     private var videoHeight = 0
+@@ -55,16 +66,64 @@
+         stopCodec()
+     }
+ 
+-    // doesn't restart codec; decoder renders into pipeline's own persistent surface
++    // doesn't restart codec: the decoder is re-pointed (setOutputSurface) or keeps rendering into the pipeline
+     fun setSurface(surface: Surface) = synchronized(lock) {
+         displaySurface = surface
+-        pipeline.setDisplaySurface(surface)
++        val c = codec
++        if (!_direct()) {
++            pipeline.setDisplaySurface(surface)
++            return@synchronized
++        }
++        if (c == null || output === surface) return@synchronized
++        if (output === pipeline.inputSurface && pipeline.hasFrame) {
++            // show the last frame now; the decoder takes over this surface with the next one
++            synchronized(outLock) { handover = surface }
++            pipeline.setDisplaySurface(surface)
++        } else {
++            _redirect(c, surface)
++        }
+     }
+ 
+     fun clearSurface(surface: Surface) = synchronized(lock) {
+         if (displaySurface !== surface) return@synchronized
+         displaySurface = null
+-        pipeline.setDisplaySurface(null)
++        synchronized(outLock) { if (handover === surface) handover = null }
++        // the surface is going away once this returns: neither GL nor the decoder may still use it
++        pipeline.setDisplaySurface(null, wait = true)
++        val c = codec ?: return@synchronized
++        if (output !== surface) return@synchronized
++        // the last frame was drawn straight to the display: the pipeline's older one must not reappear later
++        pipeline.forgetFrame()
++        _pipelineSurface()?.let { _redirect(c, it) } ?: stopCodec()
++    }
++
++    private fun _direct() = !directFailed && android.os.Build.VERSION.SDK_INT >= 23
++
++    private fun _pipelineSurface(): Surface? {
++        pipeline.start()
++        pipeline.setVideoSize(videoWidth, videoHeight)
++        return pipeline.inputSurface
++    }
++
++    private fun _redirect(c: MediaCodec, surface: Surface) {
++        val moved = synchronized(outLock) {
++            try {
++                c.setOutputSurface(surface)
++                output = surface
++                true
++            } catch (e: Exception) {
++                // never again in this process: the pipeline path works everywhere; video resumes at the next keyframe
++                Log.w(TAG, "setOutputSurface failed; using the GL pipeline", e)
++                directFailed = true
++                handover = null
++                false
++            }
++        }
++        // outside outLock: stopCodec waits for the drainer, which takes outLock
++        if (!moved) {
++            stopCodec()
++            displaySurface?.let { pipeline.setDisplaySurface(it) }
++        }
+     }
+ 
+     fun selectDecoders(w: Int, h: Int, fps: Int, h265: Boolean?): Boolean = synchronized(lock) {
+@@ -124,6 +183,10 @@
+         synchronized(lock) {
+             _updateStats(data.size)
+             if (videoWidth == 0 || videoHeight == 0) return
++            if (drainFailed) {
++                drainFailed = false
++                stopCodec()
++            }
+ 
+             if (codec == null || isH265 != currentH265) {
+                 // a stale reference frame decodes to corruption, so wait for a keyframe to (re)start
+@@ -137,7 +200,6 @@
+             try {
+                 if (codec == null) startCodec(isH265)
+                 _feedToCodec(data, ntpTimeNs)
+-                drainOutput()
+             } catch (e: Exception) {
+                 Log.w(TAG, "Codec error, resetting", e)
+                 stopCodec()
+@@ -159,7 +221,6 @@
+                 firstFrameQueued = true
+                 return
+             }
+-            drainOutput()
+         }
+         droppedFrames++
+         Log.w(TAG, "Decoder input queue full; dropping frame. drops=$droppedFrames")
+@@ -186,9 +247,9 @@
+     }
+ 
+     private fun startCodec(h265: Boolean) {
+-        pipeline.start()
+-        pipeline.setVideoSize(videoWidth, videoHeight)
+-        val s = pipeline.inputSurface ?: return
++        val display = displaySurface?.takeIf { _direct() && it.isValid }
++        if (display != null) pipeline.setDisplaySurface(null, wait = true)
++        val s = display ?: _pipelineSurface() ?: return
+         currentH265 = h265
+         val mime = if (h265) DecoderSelector.HEVC else DecoderSelector.AVC
+         val info = (if (h265) hevcDecoder else avcDecoder) ?: error("no decoder selected for $mime")
+@@ -202,7 +263,11 @@
+             Log.w(TAG, "Hardware decoder failed, trying software fallback", e)
+             _startWithLadder(sw, mime, s, h265)
+         }
+-        Log.i(TAG, "Video codec started: $mime ${videoWidth}x${videoHeight} ($codecName)")
++        output = s
++        val c = codec ?: return
++        drainer = Thread({ _drain(c) }, "VideoDrain").also { it.start() }
++        Log.i(TAG, "Video codec started: $mime ${videoWidth}x${videoHeight} ($codecName) " +
++            if (s === display) "direct" else "via GL")
+     }
+ 
+     private fun _startWithLadder(info: MediaCodecInfo, mime: String, s: Surface, h265: Boolean) {
+@@ -251,39 +316,77 @@
+     }
+ 
+     private fun stopCodec() {
++        val c = codec
++        codec = null
++        // the drainer never takes `lock`; it sees codec gone within one DRAIN_WAIT_US
++        drainer?.let { if (it !== Thread.currentThread()) it.join() }
++        drainer = null
++        drainFailed = false
++        synchronized(outLock) { handover = null }
++        output = null
+         _frameIntervalIdx = 0
+         _frameIntervalCount = 0
+         _lastOutputFrameNs = 0L
+         _ptsBaseUs = Long.MIN_VALUE
+         _wallBaseNs = 0L
+-        codec?.let {
++        c?.let {
+             try {
+                 it.stop()
+                 it.release()
+             } catch (_: Exception) {}
+         }
+-        codec = null
+-    }
+-
+-    private fun drainOutput() {
+-        val c = codec ?: return
++    }
++
++    private fun _drain(c: MediaCodec) {
+         val info = MediaCodec.BufferInfo()
+-        while (true) {
+-            val idx = c.dequeueOutputBuffer(info, 0)
+-            if (idx < 0) break
+-            _recordOutputFrameTime()
+-            if (scheduledOutputBufferRelease) {
+-                // schedule frame at VSYNC matching its NTP presentation time
+-                val ptsUs = info.presentationTimeUs
+-                if (_ptsBaseUs == Long.MIN_VALUE) {
+-                    _ptsBaseUs = ptsUs
+-                    _wallBaseNs = System.nanoTime()
++        while (codec === c) {
++            val idx = try { c.dequeueOutputBuffer(info, DRAIN_WAIT_US) } catch (e: IllegalStateException) {
++                if (codec === c) { Log.w(TAG, "Codec error while draining", e); drainFailed = true }
++                return
++            }
++            if (idx < 0) continue
++            synchronized(outLock) {
++                if (codec !== c) return
++                handover?.let { _takeOver(c, it) }
++                try { _release(c, idx, info) } catch (e: IllegalStateException) {
++                    if (codec === c) drainFailed = true
++                    return
+                 }
+-                c.releaseOutputBuffer(idx, _wallBaseNs + (ptsUs - _ptsBaseUs) * 1000L)
+-            } else {
+-                c.releaseOutputBuffer(idx, true)
+-            }
+-        }
++            }
++        }
++    }
++
++    // the pipeline painted the last frame on the returning display; now the decoder draws there itself
++    private fun _takeOver(c: MediaCodec, surface: Surface) {
++        handover = null
++        pipeline.setDisplaySurface(null, wait = true)
++        try {
++            c.setOutputSurface(surface)
++            output = surface
++        } catch (e: Exception) {
++            Log.w(TAG, "setOutputSurface failed; staying on the GL pipeline", e)
++            directFailed = true
++            pipeline.setDisplaySurface(surface)
++        }
++    }
++
++    private fun _release(c: MediaCodec, idx: Int, info: MediaCodec.BufferInfo) {
++        _recordOutputFrameTime()
++        if (!scheduledOutputBufferRelease) {
++            c.releaseOutputBuffer(idx, true)
++            return
++        }
++        // schedule frame at VSYNC matching its NTP presentation time
++        val ptsUs = info.presentationTimeUs
++        val now = System.nanoTime()
++        var at = _wallBaseNs + (ptsUs - _ptsBaseUs) * 1000L
++        // PureTV: re-anchor when clock drift or a stall puts the frame far off, instead of queueing ever later
++        if (_ptsBaseUs == Long.MIN_VALUE || at > now + MAX_AHEAD_NS || at < now - MAX_BEHIND_NS) {
++            _ptsBaseUs = ptsUs
++            _wallBaseNs = now
++            at = now
++        }
++        c.releaseOutputBuffer(idx, at)
+     }
+ 
+     fun release() = synchronized(lock) {
+@@ -324,5 +427,10 @@
+         private const val FEED_WAIT_US = 20_000L
+         private const val FEED_RETRIES = 10
+         private const val FIRST_FEED_RETRIES = 50
++        private const val DRAIN_WAIT_US = 10_000L
++        private const val MAX_AHEAD_NS = 100_000_000L
++        private const val MAX_BEHIND_NS = 50_000_000L
++        // PureTV: a decoder that rejected setOutputSurface keeps the GL pipeline for the rest of the process
++        @Volatile private var directFailed = false
+     }
+ }
+--- a/PureTV-AirPlay/PURETV-MODIFICATIONS.md
++++ b/PureTV-AirPlay/PURETV-MODIFICATIONS.md
+@@ -1,6 +1,6 @@
+ # PureTV AirPlay receiver source distribution
+ 
+-Product package: io.puretv.airplay; version: 0.0.36-puretv.2; prebuilt engine ABI: armeabi-v7a.
++Product package: io.puretv.airplay; version: 0.0.36-puretv.3; prebuilt engine ABI: armeabi-v7a.
+ Based on jqssun/android-airplay-server v0.0.36, commit a46cca0a6a1274e9e33c0e750f0f1c1eb1d881ea.
+ This remains a separate GPL-3.0 application. The launcher is separately MIT-licensed.
+ 
+@@ -29,6 +29,27 @@
+ The TV layout follows PureTV's settings: the launcher's light or dark choice (sunset/sunrise or its fixed theme),
+ glass navigation and content panels with a hairline rim, filled focus rows with inverted text, and the quick panel's
+ green/grey switches. Mirroring and video playback stay on black.
++
++## Video output (0.0.36-puretv.3)
++
++The mirroring decoder now renders straight into the display surface when Android allows re-pointing a decoder
++(MediaCodec.setOutputSurface, Android 6+), instead of into a SurfaceTexture that a GL thread copied to the screen on
++every frame. TV chips such as Amlogic then show the video on their video plane without a GPU copy. The GL pipeline
++remains for the other cases: no display (the decoder keeps running), a display returning while the sender is still
++(it repaints the last frame, and the decoder takes the display over with the next frame), and decoders that reject
++setOutputSurface (the pipeline is used for the rest of the process).
++
++Decoded frames are released from their own thread as soon as they are ready; before, a frame waited for the next
++input packet, so the last frame of a change could stay hidden while the sender's screen was still. Scheduled
++presentation (a developer option, off by default) re-anchors when a frame would be more than 100 ms ahead or 50 ms behind (clock drift, stalls).
++A codec error seen while draining resets the codec at the next input, like a feed error.
++
++0.0.36-puretv.3 was built (interface only; the six ARMv7 engine libraries are byte-identical to 0.0.36-puretv.2) and
++installed on the Mi Stick: server start/stop from PureTV's quick settings and no idle wake lock were checked,
++and the device owner confirmed Screen Mirroring from an iPhone.
++
++The receiver's default name is now PureTV (it was "Android AirPlay"): senders list the TV as PureTV. An install that
++still has the old default is renamed once when the app starts; a name the owner typed is kept.
+ 
+ ## Interface build
+ 
+--- a/PureTV-AirPlay/PURETV-SOURCE-NOTES.md
++++ b/PureTV-AirPlay/PURETV-SOURCE-NOTES.md
+@@ -1,6 +1,6 @@
+ # PureTV AirPlay receiver source distribution
+ 
+-Product package: io.puretv.airplay; version: 0.0.36-puretv.2; prebuilt engine ABI: armeabi-v7a.
++Product package: io.puretv.airplay; version: 0.0.36-puretv.3; prebuilt engine ABI: armeabi-v7a.
+ Based on jqssun/android-airplay-server v0.0.36, commit a46cca0a6a1274e9e33c0e750f0f1c1eb1d881ea.
+ This remains a separate GPL-3.0 application. The launcher is separately MIT-licensed.
+ 
+@@ -21,6 +21,27 @@
+ All settings > Connections, or this app) and stops itself after 15 minutes without a connected sender
+ (AirPlayService.IDLE_STOP_MS); a sender cancels that timer. Turning Start server at boot on keeps the previous
+ always-on behaviour. Pairing/PIN preferences and the explicit launcher STOP are unchanged.
++
++## Video output (0.0.36-puretv.3)
++
++The mirroring decoder now renders straight into the display surface when Android allows re-pointing a decoder
++(MediaCodec.setOutputSurface, Android 6+), instead of into a SurfaceTexture that a GL thread copied to the screen on
++every frame. TV chips such as Amlogic then show the video on their video plane without a GPU copy. The GL pipeline
++remains for the other cases: no display (the decoder keeps running), a display returning while the sender is still
++(it repaints the last frame, and the decoder takes the display over with the next frame), and decoders that reject
++setOutputSurface (the pipeline is used for the rest of the process).
++
++Decoded frames are released from their own thread as soon as they are ready; before, a frame waited for the next
++input packet, so the last frame of a change could stay hidden while the sender's screen was still. Scheduled
++presentation (a developer option, off by default) re-anchors when a frame would be more than 100 ms ahead or 50 ms behind (clock drift, stalls).
++A codec error seen while draining resets the codec at the next input, like a feed error.
++
++0.0.36-puretv.3 was built (interface only; the six ARMv7 engine libraries are byte-identical to 0.0.36-puretv.2) and
++installed on the Mi Stick: server start/stop from PureTV's quick settings and no idle wake lock were checked,
++and the device owner confirmed Screen Mirroring from an iPhone.
++
++The receiver's default name is now PureTV (it was "Android AirPlay"): senders list the TV as PureTV. An install that
++still has the old default is renamed once when the app starts; a name the owner typed is kept.
+ 
+ ## Interface build
+ 
