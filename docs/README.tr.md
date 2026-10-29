@@ -128,20 +128,22 @@ cihazın kendi eşleştirme yöntemini kullanın. [Android adımlarının tamam�
 
 ### Kolay kurulum: Claude Code veya Codex
 
-Bilgisayarınızda ilgili araç kuruluysa ve hesabınıza giriş yaptıysanız, aşağıdaki **tek satırlık komutlardan birini**
-çalıştırın. Asistan TV platformunuzu ve eksik cihaz bilgilerini sorar, uygun kurulum yolunu izler. TV'deki geliştirici
-modu, bağlantı izni ve gerekiyorsa imzalama adımlarını sizinle birlikte tamamlar.
+Bilgisayarınızda [Claude Code](https://code.claude.com/docs/en/cli-reference) ya da
+[Codex CLI](https://learn.chatgpt.com/docs/codex/cli) kuruluysa ve hesabınıza giriş yaptıysanız, bir klasörde terminal
+açıp aşağıdaki **tek satırlık komutlardan birini** çalıştırın. Asistan sizinle Türkçe konuşur; TV platformunuzu ve
+eksik cihaz bilgilerini sorar, uygun kurulum yolunu izler. Eski bir PureTV kuruluysa yükseltme adımlarını uygular.
+TV'deki geliştirici modu, bağlantı izni ve gerekiyorsa imzalama adımlarını sizinle birlikte tamamlar.
 
 **Claude Code**
 
 ```sh
-claude "Install PureTV on my TV from https://github.com/Heymez0/PureTV. Read the repository AGENTS.md and docs/INSTALL.md, identify my TV platform, ask only for missing device details, then follow the matching installation steps and preserve the original HOME recovery."
+claude "Install PureTV on my TV from https://github.com/Heymez0/PureTV. Read AGENTS.md and docs/INSTALL.md in that repository, identify my TV platform, ask only for missing device details, then follow the matching installation steps. If an older PureTV is already installed, follow the upgrade steps in docs/INSTALL.md, and keep the original HOME recovery working. Talk to me in Turkish."
 ```
 
 **Codex**
 
 ```sh
-codex "Install PureTV on my TV from https://github.com/Heymez0/PureTV. Read the repository AGENTS.md and docs/INSTALL.md, identify my TV platform, ask only for missing device details, then follow the matching installation steps and preserve the original HOME recovery."
+codex "Install PureTV on my TV from https://github.com/Heymez0/PureTV. Read AGENTS.md and docs/INSTALL.md in that repository, identify my TV platform, ask only for missing device details, then follow the matching installation steps. If an older PureTV is already installed, follow the upgrade steps in docs/INSTALL.md, and keep the original HOME recovery working. Talk to me in Turkish."
 ```
 
 ### İlk açılış

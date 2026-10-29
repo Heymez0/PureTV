@@ -147,13 +147,13 @@ With [Claude Code](https://code.claude.com/docs/en/cli-reference) or [Codex CLI]
 **Claude Code**
 
 ```sh
-claude "Install PureTV on my TV from https://github.com/Heymez0/PureTV. Read the repository AGENTS.md and docs/INSTALL.md, identify my TV platform, ask only for missing device details, then follow the matching installation steps and preserve the original HOME recovery."
+claude "Install PureTV on my TV from https://github.com/Heymez0/PureTV. Read AGENTS.md and docs/INSTALL.md in that repository, identify my TV platform, ask only for missing device details, then follow the matching installation steps. If an older PureTV is already installed, follow the upgrade steps in docs/INSTALL.md, and keep the original HOME recovery working."
 ```
 
 **Codex**
 
 ```sh
-codex "Install PureTV on my TV from https://github.com/Heymez0/PureTV. Read the repository AGENTS.md and docs/INSTALL.md, identify my TV platform, ask only for missing device details, then follow the matching installation steps and preserve the original HOME recovery."
+codex "Install PureTV on my TV from https://github.com/Heymez0/PureTV. Read AGENTS.md and docs/INSTALL.md in that repository, identify my TV platform, ask only for missing device details, then follow the matching installation steps. If an older PureTV is already installed, follow the upgrade steps in docs/INSTALL.md, and keep the original HOME recovery working."
 ```
 
 Each line starts an interactive installation assistant. Have your TV model/platform and local IP address ready.
