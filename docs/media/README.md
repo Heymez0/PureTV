@@ -21,7 +21,7 @@ The Features row contains, in order:
 The Light and dark section adds, captured on 2026-10-29 with the same build:
 
 - `theme-home-light-en.png`: the Recommended home in the light theme, background following the first card (the dark
-  counterpart is `recommendations-en.png`).
+  counterpart is `recommendations-en.png`). Retaken the same day after the light-theme header became easier to see.
 - `theme-settings-light-en.png` and `theme-settings-dark-en.png`: Appearance settings in each theme, with Background
   from content.
 
