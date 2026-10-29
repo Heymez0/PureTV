@@ -39,6 +39,8 @@ Android-specific settings, recent-content providers and AirPlay control are not 
 
 ### New in v1.3
 
+- **Keep AirPlay on** (All settings → Connections): AirPlay starts with the TV and stays on instead of stopping after 15
+  minutes without a sender.
 - **AirPlay receiver 0.0.36-puretv.3:** iPhones, iPads and Macs list the TV as **PureTV** (existing receivers are renamed once); mirrored video goes straight
   to the TV's video plane instead of an extra GPU copy, and each frame shows as soon as it is decoded.
 - **Translations:** the 129 texts added since v1 are now in all 24 languages.

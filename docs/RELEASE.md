@@ -1,6 +1,6 @@
 # Release preparation
 
-Current product versions: **Android v1.3 / versionCode 5**, **webOS 1.0.0**, **Tizen 1.0.0**.
+Current product versions: **Android v1.3 / versionCode 6**, **webOS 1.0.0**, **Tizen 1.0.0**.
 v1 was versionCode 2 (its higher code let it update the preceding preview despite the simpler version name).
 Historical commits and third-party protocol/version names are retained.
 
@@ -48,7 +48,7 @@ The v1 signing key is no longer available. From v1.1 the launcher and receiver A
 (certificate SHA-256 `808dd32ee3d027606fbaa586c71755ae2e97957182d7f565f8c777db15c93677`), and both must use it.
 Android cannot update across keys, so v1 installations must uninstall PureTV and PureTV AirPlay before installing
 v1.1, and v1's built-in update check will not offer it to them. Restore preferences afterwards from a settings backup.
-Every later release must use this key and a higher versionCode (v1.1 was 3, v1.2 was 4, v1.3 is 5).
+Every later release must use this key and a higher versionCode (v1.1 was 3, v1.2 was 4, v1.3 is 6; the first v1.3 upload, replaced the same day, was 5).
 
 ## Licences and distribution
 

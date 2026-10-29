@@ -25,7 +25,8 @@ Then:
 3. On an iPhone, iPad or Mac, open Screen Mirroring and choose the receiver name. Enter the TV's PIN if enabled.
 
 From `0.0.36-puretv.2`, AirPlay runs **only when you turn it on**: it no longer starts with the TV, and it stops itself
-after 15 minutes without a connected sender. To keep it always on, open the receiver and turn on **Start server at boot**.
+after 15 minutes without a connected sender. To keep it always on, turn on **Keep AirPlay on** in PureTV (All settings → Connections) or **Start server at boot**
+in the receiver.
 While no sender is connected, the on-demand receiver no longer holds the processor awake, so a TV in standby can sleep.
 Its screens follow PureTV's settings: the same light or dark appearance, glass panels, filled focus and green switches.
 
@@ -36,7 +37,9 @@ For USB/file-transfer/ADB installation, follow the [Android guide](../../docs/IN
 
 Sign launcher and receiver with the same certificate. Launcher commands use
 `io.puretv.airplay.permission.CONTROL` at signature level and verify the component/certificate on every command.
-Only QUERY/START/STOP are accepted under `io.puretv.airplay.control.*`; no network-control port is added.
+Only QUERY/START/STOP are accepted under `io.puretv.airplay.control.*`, plus ALWAYS_ON/ON_DEMAND from
+`0.0.36-puretv.3`, which only switch Start server at boot (PureTV: Connections → Keep AirPlay on); no network-control
+port is added.
 Receiver pairing/PIN settings are not overridden. Do not run multiple receiver editions together.
 
 ## Source and build

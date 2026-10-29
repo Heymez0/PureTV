@@ -26,6 +26,9 @@ final class AirPlayControl {
     private int attempts;
     private Boolean requested;
     private Boolean controlAvailable;
+    // Start server at boot as the receiver reports it: null until known; unsupported by receivers before 0.0.36-puretv.3
+    private Boolean always;
+    private boolean alwaysSupported=true;
     AirPlayControl(Context c, Runnable changed) { context=c.getApplicationContext(); this.changed=changed; }
     boolean running() { return "running".equals(state); }
     boolean busy() { return busy; }
@@ -45,7 +48,25 @@ final class AirPlayControl {
         if("unknown".equals(state))return Ui.tr("Verificando…", "Checking…");
         return running()?Ui.tr("Ligado","On"):Ui.tr("Desligado","Off");
     }
-    void resume() { visible=true;busy=false;requested=null;controlAvailable=null;state="unknown";attempts=0;send("QUERY",++generation); }
+    /** Keep AirPlay on (the receiver's Start server at boot): its value for the Connections row. */
+    String alwaysValue() {
+        if(Boolean.FALSE.equals(controlAvailable)) return "—";
+        if(!alwaysSupported) return Ui.tr("Update the receiver");
+        if(always==null) return Ui.tr("Checking…");
+        return always?Ui.tr("On"):Ui.tr("Off");
+    }
+    /** Older receivers ignore the command (and would read as a failed connection), so it is sent only when supported. */
+    void toggleAlways() {
+        if(!visible || busy || always==null || !alwaysSupported)return;
+        always=!always;busy=true;
+        // "Keep AirPlay on" means on now too: start a stopped receiver (its reply also reports the new setting)
+        boolean start=always && !running();
+        if(start){requested=true;attempts=0;state="starting";}
+        changed.run();
+        send(always?"ALWAYS_ON":"ON_DEMAND",++generation);
+        if(start)send("START",++generation);
+    }
+    void resume() { visible=true;busy=false;requested=null;controlAvailable=null;always=null;alwaysSupported=true;state="unknown";attempts=0;send("QUERY",++generation); }
     void pause() { visible=false;generation++;handler.removeCallbacksAndMessages(null); }
     void toggle() {
         if(!visible || busy || !available() || "unknown".equals(state))return;
@@ -68,7 +89,9 @@ final class AirPlayControl {
                             state=result.optString("state","error");
                             if(!state.equals("running") && !state.equals("starting") && !state.equals("stopped")
                                     && !state.equals("error"))state="error";
-                        } catch(Exception e) {state="error";}
+                            alwaysSupported=result.has("always");
+                            always=alwaysSupported?result.optBoolean("always"):null;
+                        } catch(Exception e) {state="error";always=null;}
                         boolean waiting=requested!=null && !"error".equals(state) && running()!=requested;
                         busy=waiting;
                         changed.run();

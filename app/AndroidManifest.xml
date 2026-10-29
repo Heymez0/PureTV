@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="io.puretv"
-    android:versionCode="5"
+    android:versionCode="6"
     android:versionName="v1.3">
 
     <!-- Install results reach only this app (another app can't fake one and make PureTV open a screen). -->

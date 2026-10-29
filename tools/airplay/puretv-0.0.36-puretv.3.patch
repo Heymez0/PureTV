@@ -6,7 +6,7 @@
          targetSdk = 37
 -        versionCode = 37
 -        versionName = "0.0.36-puretv.2"
-+        versionCode = 38
++        versionCode = 39
 +        versionName = "0.0.36-puretv.3"
  
          externalNativeBuild {
@@ -19,7 +19,7 @@
          targetSdk = 37
 -        versionCode = 37
 -        versionName = "0.0.36-puretv.2"
-+        versionCode = 38
++        versionCode = 39
 +        versionName = "0.0.36-puretv.3"
  
  
@@ -41,6 +41,52 @@
 +        }
 +    }
 +}
+--- a/PureTV-AirPlay/app/src/main/kotlin/io/github/jqssun/airplay/LauncherControlReceiver.kt
++++ b/PureTV-AirPlay/app/src/main/kotlin/io/github/jqssun/airplay/LauncherControlReceiver.kt
+@@ -8,11 +8,15 @@
+ import io.github.jqssun.airplay.service.AirPlayService
+ import org.json.JSONObject
+ 
+-/** Explicit, signature-protected commands. Never accepts preferences, URLs or shell text. */
++/**
++ * Explicit, signature-protected commands. Never accepts preference values, URLs or shell text: ALWAYS_ON and ON_DEMAND
++ * only switch Start server at boot (PureTV's Connections), the one receiver setting the launcher may change.
++ */
+ class LauncherControlReceiver : BroadcastReceiver() {
+     override fun onReceive(context: Context, intent: Intent) {
+         val action = intent.action
+-        if (action != QUERY && action != START && action != STOP) return
++        if (action != QUERY && action != START && action != STOP && action != ALWAYS_ON && action != ON_DEMAND) return
++        val prefs = context.getSharedPreferences(Prefs.NAME, Context.MODE_PRIVATE)
+         var state: String? = null
+         try {
+             when (action) {
+@@ -26,12 +30,15 @@
+                     LauncherControl.setDisabled(context, true)
+                     AirPlayService.launcherInstance?.stopServer()
+                 }
++                // the running service follows the change itself (AirPlayService observes the preference)
++                ALWAYS_ON, ON_DEMAND -> prefs.edit().putBoolean(Prefs.BOOT_AUTO_START.key, action == ALWAYS_ON).commit()
+             }
+             val service = AirPlayService.launcherInstance
+             val actual = service?.serverState?.value?.name?.lowercase() ?: "stopped"
+             setResult(Activity.RESULT_OK, JSONObject().put("state", if (actual == "running") actual else state ?: actual)
+                 .put("connections", service?.connectionCount?.value ?: 0)
+-                .put("disabled", LauncherControl.disabled(context)).toString(), null)
++                .put("disabled", LauncherControl.disabled(context))
++                .put("always", prefs[Prefs.BOOT_AUTO_START]).toString(), null)
+         } catch (_: RuntimeException) {
+             setResult(Activity.RESULT_CANCELED, "{\"state\":\"error\"}", null)
+         }
+@@ -41,6 +48,8 @@
+         const val QUERY = "io.puretv.airplay.control.QUERY"
+         const val START = "io.puretv.airplay.control.START"
+         const val STOP = "io.puretv.airplay.control.STOP"
++        const val ALWAYS_ON = "io.puretv.airplay.control.ALWAYS_ON"
++        const val ON_DEMAND = "io.puretv.airplay.control.ON_DEMAND"
+     }
+ }
+ 
 --- a/PureTV-AirPlay/app/src/main/kotlin/io/github/jqssun/airplay/Prefs.kt
 +++ b/PureTV-AirPlay/app/src/main/kotlin/io/github/jqssun/airplay/Prefs.kt
 @@ -72,7 +72,10 @@
@@ -379,6 +425,33 @@
 +        @Volatile private var directFailed = false
      }
  }
+--- a/PureTV-AirPlay/app/src/main/kotlin/io/github/jqssun/airplay/service/AirPlayService.kt
++++ b/PureTV-AirPlay/app/src/main/kotlin/io/github/jqssun/airplay/service/AirPlayService.kt
+@@ -64,6 +64,7 @@
+ import kotlinx.coroutines.flow.MutableStateFlow
+ import kotlinx.coroutines.flow.asStateFlow
+ import kotlinx.coroutines.flow.debounce
++import kotlinx.coroutines.flow.drop
+ import kotlinx.coroutines.flow.filter
+ import kotlinx.coroutines.launch
+ 
+@@ -363,6 +364,16 @@
+                 _applyClientVol()
+             }
+         }
++        // PureTV: Start server at boot switched while running (here or from PureTV's Connections): the idle stop and the
++        // CPU wake lock follow at once instead of at the next sender disconnect.
++        lifecycleScope.launch {
++            prefs.observe { this[Prefs.BOOT_AUTO_START] }.drop(1).collect { always ->
++                if (_serverState.value == ServerState.RUNNING) {
++                    _holdCpu(always || _connectionCount.value > 0)
++                    if (_connectionCount.value == 0) _scheduleIdleStop()
++                }
++            }
++        }
+         lifecycleScope.launch {
+             prefs.changes()
+                 .filter { Prefs.all[it]?.restart == true }
 --- a/PureTV-AirPlay/PURETV-MODIFICATIONS.md
 +++ b/PureTV-AirPlay/PURETV-MODIFICATIONS.md
 @@ -1,6 +1,6 @@
@@ -389,7 +462,7 @@
  Based on jqssun/android-airplay-server v0.0.36, commit a46cca0a6a1274e9e33c0e750f0f1c1eb1d881ea.
  This remains a separate GPL-3.0 application. The launcher is separately MIT-licensed.
  
-@@ -29,6 +29,28 @@
+@@ -29,6 +29,33 @@
  The TV layout follows PureTV's settings: the launcher's light or dark choice (sunset/sunrise or its fixed theme),
  glass navigation and content panels with a hairline rim, filled focus rows with inverted text, and the quick panel's
  green/grey switches. Mirroring and video playback stay on black.
@@ -415,6 +488,11 @@
 +The receiver's name is now PureTV (the default was "Android AirPlay"): senders list the TV as PureTV. Every earlier
 +install, including one with a name typed by its owner, is renamed to PureTV once when the app first starts after the
 +update; a name chosen after that is kept.
++
++Start server at boot can also be switched from PureTV (All settings > Connections > Keep AirPlay on): the signature-
++protected launcher receiver accepts ALWAYS_ON and ON_DEMAND, which only set that preference, and QUERY reports it as
++"always". A running receiver applies the change at once (idle stop and wake lock), also when it is switched in this
++app's own settings. The versionCode is 39 (the first v1.3 upload was 38 under the same version name).
  
  ## Interface build
  
@@ -428,7 +506,7 @@
  Based on jqssun/android-airplay-server v0.0.36, commit a46cca0a6a1274e9e33c0e750f0f1c1eb1d881ea.
  This remains a separate GPL-3.0 application. The launcher is separately MIT-licensed.
  
-@@ -21,6 +21,28 @@
+@@ -21,6 +21,33 @@
  All settings > Connections, or this app) and stops itself after 15 minutes without a connected sender
  (AirPlayService.IDLE_STOP_MS); a sender cancels that timer. Turning Start server at boot on keeps the previous
  always-on behaviour. Pairing/PIN preferences and the explicit launcher STOP are unchanged.
@@ -454,6 +532,11 @@
 +The receiver's name is now PureTV (the default was "Android AirPlay"): senders list the TV as PureTV. Every earlier
 +install, including one with a name typed by its owner, is renamed to PureTV once when the app first starts after the
 +update; a name chosen after that is kept.
++
++Start server at boot can also be switched from PureTV (All settings > Connections > Keep AirPlay on): the signature-
++protected launcher receiver accepts ALWAYS_ON and ON_DEMAND, which only set that preference, and QUERY reports it as
++"always". A running receiver applies the change at once (idle stop and wake lock), also when it is switched in this
++app's own settings. The versionCode is 39 (the first v1.3 upload was 38 under the same version name).
  
  ## Interface build
  

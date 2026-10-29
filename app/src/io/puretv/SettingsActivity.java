@@ -97,6 +97,8 @@ public class SettingsActivity extends Activity {
             case 4:
                 SettingsPage.Row airplayRow=action("AirPlay",()->airplay.toggle());
                 airplayRow.hint=tr("Press OK to start or stop AirPlay. Left returns to categories.");rows.add(airplayRow);
+                SettingsPage.Row keepOn=adjust("Keep AirPlay on",d->airplay.toggleAlways());
+                keepOn.hint=tr("On: AirPlay starts with the TV and stays on, keeping the processor awake. Off: it runs only after you turn it on and stops after 15 minutes without a sender.");rows.add(keepOn);
                 rows.add(action("AirPlay connection help",()->startActivity(new Intent(this,DeviceStatusActivity.class).putExtra("airplay_help",true))));
                 SettingsPage.Row network=new SettingsPage.Row(tr("Network"),null,false);network.network=true;rows.add(network);
                 rows.add(new SettingsPage.Row("IP",null,false));
@@ -226,11 +228,11 @@ public class SettingsActivity extends Activity {
                 data.rows[3].value=on(Prefs.weather());break;
             case 3:data.rows[1].value=Integer.toString(Prefs.hiddenContent().size());break;
             case 4:
-                data.rows[0].value=airplay.value();NetworkStatus.Snapshot n=page.networkSnapshot();
-                SettingsPage.Row row=data.rows[2];row.state=n.state;row.transport=n.transport;
+                data.rows[0].value=airplay.value();data.rows[1].value=airplay.alwaysValue();NetworkStatus.Snapshot n=page.networkSnapshot();
+                SettingsPage.Row row=data.rows[3];row.state=n.state;row.transport=n.transport;
                 row.value=NetworkStatus.label(n);row.color=n.state==NetworkStatus.ONLINE?0xFF30D158:0xFFFF9F0A;
-                data.rows[3].value=n.addresses.isEmpty()?"—":n.addresses;
-                data.rows[6].value=receiverVersion.isEmpty()?tr("Not installed"):receiverVersion;break;
+                data.rows[4].value=n.addresses.isEmpty()?"—":n.addresses;
+                data.rows[7].value=receiverVersion.isEmpty()?tr("Not installed"):receiverVersion;break;
             case 5:data.rows[0].value=ResourceStatus.value(this,resources.ramAvailable,resources.ramTotal);
                 data.rows[1].value=ResourceStatus.value(this,resources.storageAvailable,resources.storageTotal);
                 data.rows[2].value=on(Prefs.lightweight());data.rows[4].value=on(!Prefs.assistantOff());data.rows[5].value=freeStatus;
