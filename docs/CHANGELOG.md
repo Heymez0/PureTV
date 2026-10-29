@@ -21,6 +21,12 @@
   the screensaver PureTV runs Android's own profile-guided compile for the apps you installed, one at a time, each again
   after an update or a week, and stops when you press a key. Measured on the Mi Stick: YouTube's cold start
   1314 → 1159 ms; Netflix, whose interface runs mostly in native code, barely changes (about 12–14 s of work per app).
+- **Smoother first seconds:** when the posters arrive after the home screen starts, the background cross-fade no longer
+  redraws the header, shelf, drawer and Other apps on every frame on TVs without the Android 13 glass (their panels
+  don't show the photo). On the Mi Stick, moving along the shelf right after a start dropped frames (20–24 ms) in 4
+  of 11 runs before; in 9 runs after, only the very first frame of the start was slow.
+- **Translations:** the texts added since v1 (updates, app lock, hidden apps, sleep timer, memory, screensaver photos,
+  the new settings hints and others, 129 in all) are now in all 23 other languages instead of English.
 
 ## v1.2
 

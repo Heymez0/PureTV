@@ -833,14 +833,18 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
         // drop frames (measured: ~50 ms of GPU per frame). The app tiles have no glass; the top buttons fade out as
         // they rise; the drawer is drawn resting in place; the glass shelf is redrawn once the drawer stops, so the
         // glass shows the background where it ended up.
+        // A background cross-fade changes the glass only where the glass shows the photo (Android 13+). Older TVs draw
+        // flat panels: redrawing the header, shelf, drawer and Other apps layers on each fade frame kept the GPU
+        // behind while posters arrived after a start (Mi Stick: 20–24 ms frames while moving along the shelf).
+        boolean glassFading = bgFading && scene.imageEffects();
         if (tilesMoving || tilesDirty) tiles.invalidate();
-        if (statusMoving || statusDirty || bgFading) status.invalidate();
+        if (statusMoving || statusDirty || glassFading) status.invalidate();
         if (heroMoving || heroDirty || heroFading) heroLayer.invalidate();
-        if (drawerItemsMoving || drawerDirty || bgFading) drawerLayer.invalidate();
-        if (otherMoving || gridDirty || bgFading) otherLayer.invalidate();
+        if (drawerItemsMoving || drawerDirty || glassFading) drawerLayer.invalidate();
+        if (otherMoving || gridDirty || glassFading) otherLayer.invalidate();
         if (gridMoving || gridDirty) sheetLayer.invalidate();
         if (drawerMoving || bgFading) sky.invalidate();
-        if (bgFading || (drawerWasMoving && !drawerMoving)) platter.invalidate();
+        if (glassFading || (drawerWasMoving && !drawerMoving)) platter.invalidate();
         drawerWasMoving = drawerMoving;
         tilesDirty = statusDirty = heroDirty = drawerDirty = gridDirty = motionDirty = false;
         if (updateClock()) {
