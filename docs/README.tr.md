@@ -21,7 +21,7 @@ içindedir.
 - **Ana ekranınızı seçin:** yalnız saat, son izlenenler ya da son izlenenler ve öneriler bir arada.
 - **Uygulamalar elinizin altında:** ayrı uygulama ve kısayol rafları, aşağıda diğer uygulamalar. OK'e basılı tutunca
   açılan menüden rafı düzenleyebilir, uygulamayı gizleyebilir, kaldırabilir ya da zorla durdurabilirsiniz.
-- **Size göre:** açık/koyu tema, yağış olasılığıyla hava durumu, 12/24 saat. Siyah ekran koruyucu ya da TV'deki ve
+- **Size göre:** açık/koyu tema, içeriğe uyan (ya da düz kalan) arka plan, yağış olasılığıyla hava durumu, 12/24 saat. Siyah ekran koruyucu ya da TV'deki ve
   USB bellekteki kendi fotoğraflarınızla ekran koruyucu; saati ekran yanmasına karşı yavaşça kayar.
 - **Kontrol sizde:** sade hızlı ayarlar; bellek için **Boşalt** düğmesi ve **uyku zamanlayıcısı**. İsteğe bağlı hafif
   mod ve otomatik bellek boşaltma, istediğinizde RAM/depolama bilgisi, ayarları yedekleme ve geri yükleme, seçtiğiniz
@@ -60,6 +60,17 @@ afişlerinin dili, içeriği sağlayan uygulamaya bağlıdır. İzleme geçmişi
 ### Son izlenenler ve öneriler
 
 ![Son izlenenler ve öneriler ana ekranı](media/recommendations-en.png)
+
+### Açık ve koyu tema
+
+PureTV'nin açık ve koyu teması var; Otomatik seçilirse gün doğumu ve batımına göre değişir. Son izlenenler ve öneriler
+düzenlerinde arka plan renklerini ilk karttan alır; bunu **Görünüm → İçeriğe göre arka plan** (Appearance →
+Background from content) ile kapatabilirsiniz.
+
+| Açık | Koyu |
+| --- | --- |
+| ![Açık temada öneriler ana ekranı](media/theme-home-light-en.png) | ![Koyu temada öneriler ana ekranı](media/recommendations-en.png) |
+| ![Açık temada Görünüm ayarları](media/theme-settings-light-en.png) | ![Koyu temada Görünüm ayarları](media/theme-settings-dark-en.png) |
 
 ### Saatli ana ekran
 

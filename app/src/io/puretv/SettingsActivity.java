@@ -77,6 +77,9 @@ public class SettingsActivity extends Activity {
                 SettingsPage.Row photos=adjust("Screensaver photos",d->togglePhotos());
                 photos.hint=tr("Your photos on this TV and its USB drives behind the screensaver clock (landscape photos, shuffled). They stay on the TV. Android asks for access to photos the first time.");
                 rows.add(photos);
+                SettingsPage.Row background=adjust("Background from content",d->Prefs.setContentBackground(!Prefs.contentBackground()));
+                background.hint=tr("In the recent and recommended layouts the background takes its colours from the first card. Off keeps the theme's plain background.");
+                rows.add(background);
                 break;
             case 2:
                 rows.add(adjust("Clock format",d->{String[] modes={"auto","12","24"};int i=java.util.Arrays.asList(modes).indexOf(Prefs.clockFormat());Prefs.setClockFormat(modes[(i+d+3)%3]);}));
@@ -206,7 +209,8 @@ public class SettingsActivity extends Activity {
                 data.rows[4].value=Integer.toString(Prefs.hiddenApps().size());data.rows[5].value=editors.startupValue();
                 data.rows[6].value=on(Prefs.detailedWeather());data.rows[7].value=tr(DeviceProfiles.label(Prefs.deviceMode()));break;
             case 1:data.rows[0].value=tr(Prefs.theme().equals("auto")?"Automatic":Prefs.theme().equals("dark")?"Dark":"Light");
-                data.rows[1].value=on(Prefs.sounds());data.rows[2].value=on(Prefs.screensaverPhotos()&&LocalPhotos.permitted(this));break;
+                data.rows[1].value=on(Prefs.sounds());data.rows[2].value=on(Prefs.screensaverPhotos()&&LocalPhotos.permitted(this));
+                data.rows[3].value=on(Prefs.contentBackground());break;
             case 2:
                 data.rows[0].value=Prefs.clockFormat().equals("auto")?tr("Automatic"):Prefs.clockFormat()+"h";
                 data.rows[1].value=Prefs.city();data.rows[2].value=Prefs.temperature().equals("auto")?tr("Automatic"):"°"+Prefs.temperature();

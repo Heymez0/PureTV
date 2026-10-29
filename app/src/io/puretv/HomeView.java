@@ -3157,8 +3157,10 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
         // Images arrive separately from metadata. Polls with identical data never rebuild card text/layout.
         for(ContentCard card:cards)cardBackdrop(card);
         boolean artChanged=cardsArtVersion!=continuing.artVersion();cardsArtVersion=continuing.artVersion();
-        Backdrop background=cards.isEmpty()?null:cardBackdrop(cards.get(0));
-        if(cards.isEmpty() || background!=null || rebindingPosters)showBackdrop(background);
+        // Appearance → Background from content off: the theme's plain background, as in the clock layout.
+        boolean follow=Prefs.contentBackground();
+        Backdrop background=cards.isEmpty() || !follow?null:cardBackdrop(cards.get(0));
+        if(cards.isEmpty() || background!=null || rebindingPosters || !follow)showBackdrop(background);
         if(changed || artChanged)heroDirty=true;
         if(changed)spoken.focusMoved();
     }

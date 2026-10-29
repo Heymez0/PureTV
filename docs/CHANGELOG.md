@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **Background from content** (Appearance): on by default; off keeps the theme's plain background in the recent and
+  recommended layouts instead of colours from the first card. Included in the settings backup.
 - After PureTV updates itself in custom home mode, the new version removes the copied APK from `/data/local/tmp`
   (the old process ended during the install and left it there).
 

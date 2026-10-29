@@ -18,7 +18,16 @@ The Features row contains, in order:
 - `shortcuts-en.png`: home scrolled down one level, showing the Shortcuts shelf and detailed weather.
 - `settings-en.png`: System and about, with Language set to English.
 
-The recommendations screenshot was explicitly requested. It shows app-published recommendation artwork/titles,
+The Light and dark section adds, captured on 2026-10-29 with the same build:
+
+- `theme-home-light-en.png`: the Recommended home in the light theme, background following the first card (the dark
+  counterpart is `recommendations-en.png`).
+- `theme-settings-light-en.png` and `theme-settings-dark-en.png`: Appearance settings in each theme, with Background
+  from content.
+
+The theme was set to Light only for these captures and set back to the owner's Dark afterwards.
+
+The recommendations screenshots were explicitly requested. It shows app-published recommendation artwork/titles,
 not viewing-history titles or playback progress. Source apps determine the language of recommendation content;
 English interface selection does not translate their artwork. App names, logos and content artwork belong to their owners.
 No account credentials, local network addresses or device identifiers appear in the shared captures.

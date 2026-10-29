@@ -23,7 +23,7 @@ running Android TV 9. **LG webOS and Samsung Tizen are experimental ports and ha
 - **Choose your home:** a clock, recent content, or recent content with app recommendations.
 - **Keep apps within reach:** separate app and shortcut shelves, other apps below, long-press shelf reordering, and
   hide, uninstall or force stop from an app's menu.
-- **Make it yours:** light/dark themes, weather with the chance of rain, 12/24-hour time, and a plain black screensaver
+- **Make it yours:** light/dark themes, a background that follows the content (or stays plain), weather with the chance of rain, 12/24-hour time, and a plain black screensaver
   or one with your own photos from the TV and USB drives, with a burn-in guard for its clock.
 - **Stay in control:** compact quick settings with a Free up button for memory and a sleep timer, optional lightweight
   mode and automatic memory cleanup, on-demand RAM/storage snapshots, settings backup and restore, a simple PIN lock for
@@ -70,6 +70,34 @@ Real English-interface screenshots of PureTV v1.1 on a Xiaomi Mi Stick running A
   <a href="docs/media/home-en.png"><img src="docs/media/home-en.png" width="100%" alt="Clock home page with weather and the app shelf"></a>
   <br><strong>Clock home page</strong>
 </p>
+
+### Light and dark
+
+PureTV has a light and a dark theme (or Automatic, by sunrise and sunset). In the recent and recommended layouts the
+background takes its colours from the first card; Appearance → Background from content turns that off.
+
+<table>
+  <tr>
+    <td width="50%" align="center" valign="top">
+      <a href="docs/media/theme-home-light-en.png"><img src="docs/media/theme-home-light-en.png" width="100%" alt="Recommended home in the light theme"></a>
+      <br><strong>Light</strong>
+    </td>
+    <td width="50%" align="center" valign="top">
+      <a href="docs/media/recommendations-en.png"><img src="docs/media/recommendations-en.png" width="100%" alt="Recommended home in the dark theme"></a>
+      <br><strong>Dark</strong>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" align="center" valign="top">
+      <a href="docs/media/theme-settings-light-en.png"><img src="docs/media/theme-settings-light-en.png" width="100%" alt="Appearance settings in the light theme"></a>
+      <br><strong>Light settings</strong>
+    </td>
+    <td width="50%" align="center" valign="top">
+      <a href="docs/media/theme-settings-dark-en.png"><img src="docs/media/theme-settings-dark-en.png" width="100%" alt="Appearance settings in the dark theme"></a>
+      <br><strong>Dark settings</strong>
+    </td>
+  </tr>
+</table>
 
 ### Features
 

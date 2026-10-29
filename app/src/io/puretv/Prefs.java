@@ -237,6 +237,9 @@ final class Prefs {
     /** Screensaver photos from the TV's own pictures and USB drives (needs the photos permission). */
     static boolean screensaverPhotos() { return sp().getBoolean("screensaver_photos", false); }
     static void setScreensaverPhotos(boolean on) { put("screensaver_photos", on); }
+    /** Appearance → Background from content: the home background follows the first content card (on by default). */
+    static boolean contentBackground() { return sp().getBoolean("content_background", true); }
+    static void setContentBackground(boolean on) { put("content_background", on); }
     /** Device and performance → Automatic memory cleanup (off by default). */
     static boolean autoFreeMemory() { return sp().getBoolean("auto_free_memory", false); }
     static void setAutoFreeMemory(boolean on) { put("auto_free_memory", on); }
