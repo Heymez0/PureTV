@@ -46,7 +46,7 @@ public class QuickSettingsActivity extends Activity {
     private final java.util.concurrent.ExecutorService sleepIo=java.util.concurrent.Executors.newSingleThreadExecutor();
     @Override protected void onDestroy(){sleepIo.shutdown();super.onDestroy();}
     private static String sleepValue(android.content.Context c){
-        if(!SleepTimer.available(c))return Ui.tr("Custom home mode only");
+        if(!SleepTimer.available(c))return Ui.tr("Needs PureTV as home screen");
         int left=SleepTimer.minutesLeft(c);
         return left==0?Ui.tr("Off"):Ui.trf("{n} min left","n",left);
     }

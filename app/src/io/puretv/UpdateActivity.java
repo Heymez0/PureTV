@@ -89,7 +89,7 @@ public class UpdateActivity extends Activity {
         data.hint = (status.isEmpty() || working ? "" : status + "\n\n")
                 + (InstallRules.AUTO.equals(mode) ? (quiet()
                     ? Ui.tr("Once a day, while the TV is idle, a newer PureTV release is installed without a prompt; a notice tells you afterwards.")
-                    : Ui.tr("Installing without a prompt needs custom home mode; until then you get a notice and install here."))
+                    : Ui.tr("Installing without a prompt needs PureTV as the default home screen; until then you get a notice and install here."))
                   : InstallRules.OFF.equals(mode) ? Ui.tr("Nothing is checked. Check for updates still works here.")
                   : Ui.tr("Once a day, a notice on the home screen tells you when a newer release is out."))
                 + "\n\n" + Ui.tr("Only PureTV's own release is used, and only a newer build signed like this one; never a downgrade or another app. The AirPlay receiver is updated too when installed.");

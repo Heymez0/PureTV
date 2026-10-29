@@ -172,7 +172,7 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
     private Paint headerTime, headerText, headerGreeting;
     private boolean rebindingPosters;
     private final Rect headerGreetingBounds = new Rect();
-    private final Paint headerLine = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint headerLine = new Paint(Paint.ANTI_ALIAS_FLAG), headerRim = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final RectF headerInfo = new RectF();
     private String headerShortDate = "", headerWeatherText = "", headerWeatherSymbol = "", headerGreetingText = "";
     private float headerTimeX, headerDateX, headerDividerX, headerWeatherX, headerSymbolX;
@@ -743,6 +743,8 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
         headerGreeting = Ui.text(Ui.medium, 26 * k, L_INK);
         headerLine.setStyle(Paint.Style.STROKE);
         headerLine.setStrokeWidth(1.2f * k);
+        headerRim.setStyle(Paint.Style.STROKE);
+        headerRim.setStrokeWidth(1.5f * k);
 
         lightGradient = null;
         buttonPaint = Ui.text(Ui.semibold, 29 * k, INK);
@@ -1358,6 +1360,27 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
         // White glass by day; smoked glass at night.
         scene.liquid(c, bounds, radius, tone(0xFFFFFFFF, SMOKE), tone(0.42f, 0.12f), tone(0.03f, 0.08f),
                 tone(30, 34) * k, tone(22, 28) * k, tone(0.65f, 0.95f), 1);
+    }
+
+    /**
+     * The header's pills (clock and weather on the left, the buttons on the right). By day the shelf's half-clear white
+     * glass vanished on a light or content-tinted background, so here it is fuller, with a fine rim and a soft shadow;
+     * at night it is the shelf's smoked glass, unchanged.
+     */
+    private void drawHeaderSurface(Canvas c, RectF bounds, float radius) {
+        float day = 1 - dark();
+        if (day > 0.001f) {
+            tmp.set(bounds);
+            tmp.offset(0, 4 * k);
+            shadow.setColor(Ui.alpha(0x24000000, day));
+            shadows.draw(c, tmp, radius, SHADOW_BLUR * k, shadow);
+        }
+        scene.liquid(c, bounds, radius, tone(0xFFFFFFFF, SMOKE), tone(0.86f, 0.12f), tone(0.03f, 0.08f),
+                tone(30, 34) * k, tone(22, 28) * k, tone(0.65f, 0.95f), 1);
+        if (day > 0.001f) {
+            headerRim.setColor(Ui.alpha(0x26000000, day));
+            c.drawRoundRect(bounds, radius, radius, headerRim);
+        }
     }
 
     private void drawTiles(Canvas c) {
@@ -3409,7 +3432,7 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
     private void drawLightButtons(Canvas c) {
         applyTone();
         fill.setShader(null);
-        drawShelfSurface(c, headerInfo, 34 * k);
+        drawHeaderSurface(c, headerInfo, 34 * k);
         float cy = L_BUTTON_CY * k;
         c.drawText(clockText, headerTimeX, cy + Ui.halfCap(headerTime), headerTime);
         c.drawText(headerShortDate, headerDateX, cy + Ui.halfCap(headerText), headerText);
@@ -3423,7 +3446,7 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
             float f = Ui.clamp(topFocus[TOP_ACTION + i].value), scale = 1 + 0.06f * f;
             float hw = r.width() * scale / 2, hh = r.height() * scale / 2;
             cell.set(r.centerX() - hw, r.centerY() - hh, r.centerX() + hw, r.centerY() + hh);
-            drawShelfSurface(c, cell, hh);
+            drawHeaderSurface(c, cell, hh);
             if (f > 0.01f) {
                 fill.setColor(Ui.alpha(tone(L_INK,WHITE), f));
                 c.drawRoundRect(cell, hh, hh, fill);

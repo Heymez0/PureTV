@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- **Light theme header:** the clock/weather pill and the buttons opposite it were half-clear white on a light,
+  content-tinted background and hard to see; by day they are now fuller, with a fine rim and a soft shadow. Dark theme
+  unchanged.
+- **Clearer settings:** explanations for Lightweight mode, Weather information, Device mode, Default home screen,
+  Screensaver and Status and notices; hints no longer say "custom home mode" without explaining it, but "needs PureTV as
+  the default home screen"; Optimise apps during the screensaver is described without compiler terms.
+
 - **Faster on TVs:** Android installs an app with only profiled code compiled, and the background compile that should
   follow needs idle-and-charging time a TV stick rarely gets. In custom home mode PureTV now compiles itself and the
   AirPlay receiver ahead of time (`cmd package compile -m speed`) once per installed build: a minute after an update,

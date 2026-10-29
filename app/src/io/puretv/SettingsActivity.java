@@ -68,7 +68,8 @@ public class SettingsActivity extends Activity {
                 startup.hint=tr("Open an app, Live TV or an input when the TV starts, instead of the home screen. Only right after a start; Back returns to the home screen.");rows.add(startup);
                 SettingsPage.Row details=action("Detailed weather",()->Prefs.setDetailedWeather(!Prefs.detailedWeather()));
                 details.hint=tr("Show or hide the forecast below shortcuts. Header weather stays unchanged.");rows.add(details);
-                rows.add(action("Device mode",()->editor("device")));
+                SettingsPage.Row device=action("Device mode",()->editor("device"));
+                device.hint=tr("TV box / stick for a device plugged into a TV. Television when PureTV runs on the TV itself; it adds the TV's inputs and remote shortcuts.");rows.add(device);
                 if(Prefs.television())rows.add(action("TV inputs",()->open(TvInputsActivity.class)));
                 break;
             case 1:
@@ -85,7 +86,8 @@ public class SettingsActivity extends Activity {
                 rows.add(adjust("Clock format",d->{String[] modes={"auto","12","24"};int i=java.util.Arrays.asList(modes).indexOf(Prefs.clockFormat());Prefs.setClockFormat(modes[(i+d+3)%3]);}));
                 rows.add(action("City",()->editor("city")));
                 rows.add(adjust("Temperature",d->{String[] units={"auto","C","F"};int i=java.util.Arrays.asList(units).indexOf(Prefs.temperature());Prefs.setTemperature(units[(i+d+3)%3]);}));
-                rows.add(adjust("Weather information",d->Prefs.setWeather(!Prefs.weather())));
+                SettingsPage.Row weather=adjust("Weather information",d->Prefs.setWeather(!Prefs.weather()));
+                weather.hint=tr("The temperature and weather icon in the header and under the clock. The forecast below the shortcuts is Home screen → Detailed weather.");rows.add(weather);
                 rows.add(action("Refresh weather",()->{HomeData h=HomeData.get(this);h.settingsChanged();h.refreshIfStale();}));
                 break;
             case 3:
@@ -105,10 +107,11 @@ public class SettingsActivity extends Activity {
                 break;
             case 5:
                 rows.add(new SettingsPage.Row("RAM",null,false));rows.add(new SettingsPage.Row(tr("Storage"),null,false));
-                rows.add(adjust("Lightweight mode",d->Prefs.setLightweight(!Prefs.lightweight())));
+                SettingsPage.Row light=adjust("Lightweight mode",d->Prefs.setLightweight(!Prefs.lightweight()));
+                light.hint=tr("For slower TVs: no shadows or glass effects, and screensaver photos stay still. Uses less memory and processor.");rows.add(light);
                 rows.add(action("Refresh status",this::loadResources));
                 SettingsPage.Row assistant=adjust("Voice assistant",d->{if(Prefs.setAssistantOff(!Prefs.assistantOff()))HomeMode.assistant(getApplicationContext());});
-                assistant.hint=tr("Off turns Google Assistant off in custom home mode and frees its memory. The remote's microphone button stops working. Original turns it back on.");
+                assistant.hint=tr("Off turns Google Assistant off and frees its memory (needs PureTV as the default home screen). The remote's microphone button then stops working; choosing Original as the default home screen turns it back on.");
                 rows.add(assistant);
                 SettingsPage.Row free=action("Free up memory",this::freeMemory);   // "Free memory" is the status metric's name
                 free.hint=tr("Closes apps waiting in the background. The app on screen and AirPlay keep running; closed apps start again when you open them.");
@@ -117,7 +120,7 @@ public class SettingsActivity extends Activity {
                 auto.hint=tr("When less than 15% of memory is left, returning to the home screen frees it, at most every 15 minutes. The app you just left starts again from the beginning.");
                 rows.add(auto);
                 SettingsPage.Row optimize=adjust("Optimise apps during the screensaver",d->Prefs.setOptimizeApps(!Prefs.optimizeApps()));
-                optimize.hint=tr("Custom home mode: ten minutes into the screensaver, apps you installed are compiled for how you use them, which Android itself rarely gets to do on a TV. It stops as soon as you press a key.");
+                optimize.hint=tr("Ten minutes into the screensaver, PureTV prepares the apps you installed to open and run faster, as Android itself would but rarely gets to on a TV. Pressing a key stops it. Needs PureTV as the default home screen.");
                 rows.add(optimize);
                 SettingsPage.Row lock=action("App lock",()->AppLock.confirm(this,()->editor("lock")));
                 lock.hint=tr("A PIN for chosen apps when they are opened from PureTV, always or in the evening. A simple household lock: apps opened another way (TV Settings, the remote's app buttons) are not locked.");
@@ -132,16 +135,19 @@ public class SettingsActivity extends Activity {
                 rows.add(action("Remote button test",()->open(RemoteTestActivity.class)));
                 break;
             default:
-                rows.add(action("Default home screen",()->AppLock.confirm(this,()->editor("home"))));
-                rows.add(action("Screensaver",this::showPreview));
+                SettingsPage.Row home=action("Default home screen",()->AppLock.confirm(this,()->editor("home")));
+                home.hint=tr("Custom home: PureTV is the TV's home screen and screensaver; several features need it and say so. Original: the TV's own home screen, as before PureTV.");rows.add(home);
+                SettingsPage.Row saver=action("Screensaver",this::showPreview);
+                saver.hint=tr("OK shows the screensaver now. When it starts and when the TV turns off are set in TV Settings.");rows.add(saver);
                 rows.add(action("TV Settings",()->SettingsLinks.open(this,Settings.ACTION_SETTINGS)));
                 rows.add(action("Language",()->editor("language")));
                 rows.add(new SettingsPage.Row(tr("Version"),null,false));
-                rows.add(action("Status and notices",()->editor("status")));
+                SettingsPage.Row status=action("Status and notices",()->editor("status"));
+                status.hint=tr("What PureTV measured the last time the home screen was switched, and its recent notices. Useful when something doesn't work.");rows.add(status);
                 rows.add(action("Licences",()->Credits.show(this)));
                 rows.add(action("Setup guide",()->WelcomeActivity.open(this)));
                 SettingsPage.Row save=action("Back up settings",()->backup(false));
-                save.hint=tr("Saves layout, shelves, shortcuts, content sources, city, theme and remote buttons. Viewing history and hidden content are not included. In custom home mode a copy also goes to Download/PureTV-settings.json.");
+                save.hint=tr("Saves layout, shelves, shortcuts, content sources, city, theme and remote buttons. Viewing history and hidden content are not included. When PureTV is the default home screen, a copy also goes to Download/PureTV-settings.json.");
                 rows.add(save);
                 SettingsPage.Row load=action("Restore settings",()->backup(true));
                 load.hint=tr("Replaces these settings with the backup. A newer copy in Download is used first.");
