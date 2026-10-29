@@ -18,7 +18,7 @@ from the same release, verify them with **SHA256SUMS** and install the APK after
 
 Then:
 
-1. Senders list the TV as **PureTV** (from `0.0.36-puretv.3`; a name typed in the receiver is kept). Open the receiver
+1. Senders list the TV as **PureTV** (from `0.0.36-puretv.3`, which renames earlier installs once). Open the receiver
    to change the name or the pairing preferences. Keep the sender on the same local network.
 2. Open PureTV's quick settings and select **AirPlay** with OK to start or stop it. The same control is in
    All settings → Connections. Arrow keys move focus without changing the state.

@@ -26,7 +26,7 @@
      }
 --- a/PureTV-AirPlay/app/src/main/kotlin/io/github/jqssun/airplay/AirPlayApp.kt
 +++ b/PureTV-AirPlay/app/src/main/kotlin/io/github/jqssun/airplay/AirPlayApp.kt
-@@ -4,4 +4,14 @@
+@@ -4,4 +4,13 @@
  import dagger.hilt.android.HiltAndroidApp
  
  @HiltAndroidApp
@@ -36,9 +36,8 @@
 +        super.onCreate()
 +        // PureTV: before any service, receiver or screen reads the name
 +        val prefs = getSharedPreferences(Prefs.NAME, MODE_PRIVATE)
-+        val name = prefs.getString(Prefs.SERVER_NAME.key, null)
-+        if (name != null && (name.isBlank() || name == Prefs.OLD_SERVER_NAME)) {
-+            prefs.edit().putString(Prefs.SERVER_NAME.key, Prefs.SERVER_NAME.def).apply()
++        if (!prefs.getBoolean(Prefs.NAME_SET, false)) {
++            prefs.edit().putString(Prefs.SERVER_NAME.key, Prefs.SERVER_NAME.def).putBoolean(Prefs.NAME_SET, true).commit()
 +        }
 +    }
 +}
@@ -49,9 +48,9 @@
      fun forced(v: String) = when (v) { ON -> true; OFF -> false; else -> null }
  
 -    val SERVER_NAME = str("server_name", "Android AirPlay", restart = true)
-+    // PureTV: senders list the TV as "PureTV". A name the owner typed is kept; the upstream default is renamed once
-+    // (AirPlayApp.onCreate), so earlier installs show PureTV too.
-+    const val OLD_SERVER_NAME = "Android AirPlay"
++    // PureTV: senders list the TV as "PureTV". Every earlier install is renamed once (AirPlayApp.onCreate); a name
++    // chosen after that is kept.
++    const val NAME_SET = "puretv_name_set"
 +    val SERVER_NAME = str("server_name", "PureTV", restart = true)
      val SERVER_PORT = int("server_port", 7000, 1..65535, restart = true)
      val AUTO_START = bool("auto_start", true)
@@ -390,7 +389,7 @@
  Based on jqssun/android-airplay-server v0.0.36, commit a46cca0a6a1274e9e33c0e750f0f1c1eb1d881ea.
  This remains a separate GPL-3.0 application. The launcher is separately MIT-licensed.
  
-@@ -29,6 +29,27 @@
+@@ -29,6 +29,28 @@
  The TV layout follows PureTV's settings: the launcher's light or dark choice (sunset/sunrise or its fixed theme),
  glass navigation and content panels with a hairline rim, filled focus rows with inverted text, and the quick panel's
  green/grey switches. Mirroring and video playback stay on black.
@@ -413,8 +412,9 @@
 +installed on the Mi Stick: server start/stop from PureTV's quick settings and no idle wake lock were checked,
 +and the device owner confirmed Screen Mirroring from an iPhone.
 +
-+The receiver's default name is now PureTV (it was "Android AirPlay"): senders list the TV as PureTV. An install that
-+still has the old default is renamed once when the app starts; a name the owner typed is kept.
++The receiver's name is now PureTV (the default was "Android AirPlay"): senders list the TV as PureTV. Every earlier
++install, including one with a name typed by its owner, is renamed to PureTV once when the app first starts after the
++update; a name chosen after that is kept.
  
  ## Interface build
  
@@ -428,7 +428,7 @@
  Based on jqssun/android-airplay-server v0.0.36, commit a46cca0a6a1274e9e33c0e750f0f1c1eb1d881ea.
  This remains a separate GPL-3.0 application. The launcher is separately MIT-licensed.
  
-@@ -21,6 +21,27 @@
+@@ -21,6 +21,28 @@
  All settings > Connections, or this app) and stops itself after 15 minutes without a connected sender
  (AirPlayService.IDLE_STOP_MS); a sender cancels that timer. Turning Start server at boot on keeps the previous
  always-on behaviour. Pairing/PIN preferences and the explicit launcher STOP are unchanged.
@@ -451,8 +451,9 @@
 +installed on the Mi Stick: server start/stop from PureTV's quick settings and no idle wake lock were checked,
 +and the device owner confirmed Screen Mirroring from an iPhone.
 +
-+The receiver's default name is now PureTV (it was "Android AirPlay"): senders list the TV as PureTV. An install that
-+still has the old default is renamed once when the app starts; a name the owner typed is kept.
++The receiver's name is now PureTV (the default was "Android AirPlay"): senders list the TV as PureTV. Every earlier
++install, including one with a name typed by its owner, is renamed to PureTV once when the app first starts after the
++update; a name chosen after that is kept.
  
  ## Interface build
  

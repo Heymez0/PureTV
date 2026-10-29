@@ -7,9 +7,9 @@
   "source_asset": "PureTV-AirPlay-Source.zip",
   "full_native_rebuild_verified": false,
   "release": "v1.3",
-  "status": "Interface build passed; the six ARMv7 engine libraries are byte-identical to 0.0.36-puretv.2. Mirrored video is decoded straight into the display surface (GL pipeline as fallback), frames are released as soon as they are decoded, and the default receiver name is PureTV. On a Mi Stick / Android TV 9 on 2026-10-29 it was started and stopped from PureTV quick settings (no idle wake lock) and the device owner confirmed Screen Mirroring from an iPhone.",
-  "source_sha256": "dc37b7d57d3382e6dc6532b5cc9870b557d7fb1a24f8785f934a6dc3f252efdc",
-  "receiver_apk_sha256": "pending: added when the APK is signed with the production key",
+  "status": "Interface build passed; the six ARMv7 engine libraries are byte-identical to 0.0.36-puretv.2. Mirrored video is decoded straight into the display surface (GL pipeline as fallback), frames are released as soon as they are decoded, and the receiver is named PureTV (earlier installs renamed once). On a Mi Stick / Android TV 9 on 2026-10-29 it was started and stopped from PureTV quick settings (no idle wake lock), the device owner confirmed Screen Mirroring from an iPhone, and the production-signed APK registered as PureTV over a receiver previously named Mi-Stick.",
+  "source_sha256": "0753e594708df25d36a61ab161acc783d83372884f3a37ae5c069f8ceb0d4827",
+  "receiver_apk_sha256": "60006c65c89bc61d60edc5139cdf9e7ccc5ef0e634b5f0b5d5aad8fd9ac5d849",
   "physical_new_identity_tested": true,
   "previous": {
     "version": "0.0.36-puretv.2",

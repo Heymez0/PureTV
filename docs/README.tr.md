@@ -40,7 +40,7 @@ kontrolü LG/Samsung sürümlerinde yoktur.
 
 ### v1.3'teki yenilikler
 
-- **AirPlay alıcısı 0.0.36-puretv.3:** iPhone, iPad ve Mac'te TV **PureTV** adıyla görünür; yansıtılan görüntü fazladan
+- **AirPlay alıcısı 0.0.36-puretv.3:** iPhone, iPad ve Mac'te TV **PureTV** adıyla görünür (kurulu alıcılar bir kez yeniden adlandırılır); yansıtılan görüntü fazladan
   GPU kopyası olmadan doğrudan TV'nin video katmanına gider ve her kare çözülür çözülmez gösterilir.
 - **Çeviriler:** v1'den sonra eklenen 129 metin artık 24 dilin hepsinde.
 - Afişler gelirken ana ekranın **ilk saniyeleri daha akıcı**; ayar açıklamaları daha anlaşılır.
