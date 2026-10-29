@@ -8,7 +8,7 @@
 
 [Install](docs/INSTALL.md) · [Turkish guide](docs/README.tr.md) · [Build](docs/DEVELOPMENT.md#build) · [AirPlay](tools/airplay/README.md) · [Changelog](docs/CHANGELOG.md)
 
-**Current release: [PureTV v1.1](https://github.com/Heymez0/PureTV/releases/tag/v1.1)** · Android 9+
+**Current release: [PureTV v1.2](https://github.com/Heymez0/PureTV/releases/tag/v1.2)** · Android 9+
 
 </div>
 
@@ -36,6 +36,12 @@ running Android TV 9. **LG webOS and Samsung Tizen are experimental ports and ha
 
 Recent content depends on what installed Android apps publish. Optional web catalogue cards use your own TMDB key.
 Android-specific settings, recent-content providers and AirPlay control are not available in the LG/Samsung web edition.
+
+### New in v1.2
+
+- **Background from content** (Appearance): keep the theme's plain background instead of colours from the first card.
+- After PureTV updates itself, the copied update file is removed from the TV.
+- Updates in place from v1.1: System and about → Updates.
 
 ### New in v1.1
 
@@ -126,12 +132,12 @@ The header banner is an illustration. [Capture details](docs/media/README.md).
 
 **Android TV / Google TV:** [Download PureTV.apk](https://github.com/Heymez0/PureTV/releases/latest/download/PureTV.apk) · [Release and SHA256 checksum](https://github.com/Heymez0/PureTV/releases/latest)
 
-The signed v1.1 APK is for **Android 9 or newer**. Download it on your computer, copy it to a USB drive or transfer it
+The signed v1.2 APK is for **Android 9 or newer**. Download it on your computer, copy it to a USB drive or transfer it
 to the TV, then open it with the TV file manager. Follow PureTV's welcome guide after installation.
 [Step-by-step Android instructions](docs/INSTALL.md#android-tv--google-tv).
 
-**Coming from v1?** v1.1 is signed with a new key, so Android won't install it over v1: back up your settings (System
-and about → Back up settings), uninstall PureTV v1 (and PureTV AirPlay), then install v1.1 and restore. From v1.1 on,
+**Coming from v1?** Since v1.1 PureTV is signed with a new key, so Android won't install it over v1: back up your settings (System
+and about → Back up settings), uninstall PureTV v1 (and PureTV AirPlay), then install the latest release and restore. From v1.1 on,
 releases update in place, also from PureTV's own Updates screen.
 
 ### Easy to install

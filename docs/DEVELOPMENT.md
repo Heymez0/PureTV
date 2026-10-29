@@ -193,7 +193,7 @@ GitHub Actions runs the desktop and package checks on pushes and pull requests; 
 2. Commit with your own Git identity and push to your own PureTV repository. Publishing source does not automatically publish a downloadable Release.
 3. Let the first real GitHub Actions run pass; local results are not a remote CI result.
 4. Build with empty credentials and sign with your production key. Keep the same key for later updates and for the optional receiver.
-5. Increase Android versionCode for future releases. The current version is v1.1 / code 3; web package versions are 1.0.0.
+5. Increase Android versionCode for future releases. The current version is v1.2 / code 4; web package versions are 1.0.0.
    In-app updates (`AppUpdate`) offer a release only when its `PureTV.apk` (and `PureTV-AirPlay.apk`) has a higher
    versionCode and the same signing certificate as the installed app; keep those asset names and a plain tag.
 6. Complete first-launch, HOME/Original recovery, screensaver and receiver QA for the new package IDs before production release.

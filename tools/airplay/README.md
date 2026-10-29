@@ -2,8 +2,8 @@
 
 The receiver is a separate **GPL-3.0** Android app; the launcher remains MIT-licensed.
 Package: `io.puretv.airplay`. Source version: `0.0.36-puretv.2`. Supplied native engine: **armeabi-v7a**.
-The [v1.1 release](https://github.com/Heymez0/PureTV/releases/tag/v1.1) distributes `0.0.36-puretv.2`, signed with
-PureTV v1.1's key (v1 distributed `0.0.36-puretv.1` with the previous key).
+Since [v1.1](https://github.com/Heymez0/PureTV/releases/tag/v1.1), releases distribute `0.0.36-puretv.2`, signed with
+PureTV's new key (v1 distributed `0.0.36-puretv.1` with the previous key).
 
 ## Install
 

@@ -6,7 +6,7 @@
 
 [English / ana sayfa](../README.md) · [APK indir](https://github.com/Heymez0/PureTV/releases/latest/download/PureTV.apk) · [Ayrıntılı kurulum](INSTALL.md) · [Kaynak derleme](DEVELOPMENT.md)
 
-**Güncel sürüm: [PureTV v1.1](https://github.com/Heymez0/PureTV/releases/tag/v1.1)** · Android 9+
+**Güncel sürüm: [PureTV v1.2](https://github.com/Heymez0/PureTV/releases/tag/v1.2)** · Android 9+
 
 PureTV; Android TV, Google TV ve Android TV kutuları/stickleri için hafif bir ana ekrandır (başlatıcı).
 LG webOS ve Samsung Tizen için ayrı web sürümleri vardır. **Testlerin yapıldığı gerçek cihaz, Android TV 9 kullanan
@@ -37,6 +37,12 @@ içindedir.
 Son izlenenler ve öneriler, kurulu uygulamaların Android ile paylaştığı içeriğe bağlıdır. Web sürümündeki isteğe bağlı
 katalog kartları için kendi TMDB anahtarınız gerekir. Android'e özgü içerik kaynakları, sistem ayarları ve AirPlay
 kontrolü LG/Samsung sürümlerinde yoktur.
+
+### v1.2'deki yenilikler
+
+- **İçeriğe göre arka plan** (Görünüm): istenirse ilk kartın renkleri yerine temanın düz arka planı kullanılır.
+- PureTV kendini güncelledikten sonra kopyalanan güncelleme dosyası TV'den silinir.
+- v1.1'den doğrudan güncellenir: Sistem ve hakkında → Güncellemeler.
 
 ### v1.1'deki yenilikler
 
@@ -86,15 +92,15 @@ Background from content) ile kapatabilirsiniz.
 
 **[PureTV.apk indir](https://github.com/Heymez0/PureTV/releases/latest/download/PureTV.apk)** · [Sürüm ve SHA256 doğrulaması](https://github.com/Heymez0/PureTV/releases/latest)
 
-Bu, Android 9 ve üzeri için imzalı v1.1 sürümüdür. **PureTV.apk** dosyasını indirin; GitHub'ın kendiliğinden
+Bu, Android 9 ve üzeri için imzalı v1.2 sürümüdür. **PureTV.apk** dosyasını indirin; GitHub'ın kendiliğinden
 eklediği "Source code" ZIP dosyaları geliştiriciler içindir.
 
-**v1 kullanıyorsanız:** v1.1 yeni bir anahtarla imzalandığı için Android onu v1'in üzerine kurmaz.
+**v1 kullanıyorsanız:** PureTV v1.1'den beri yeni bir anahtarla imzalandığı için Android yeni sürümü v1'in üzerine kurmaz.
 
 1. PureTV v1'de ayarlarınızı yedekleyin: **Tüm ayarlar → Sistem ve hakkında → Ayarları yedekle** (All settings →
    System and about → Back up settings). Özel ana ekran modundaysanız önce **Varsayılan ana ekran → Orijinal**'i seçin.
 2. PureTV v1'i (ve kuruluysa PureTV AirPlay'i) kaldırın.
-3. v1.1'i aşağıdaki gibi kurun, ardından **Ayarları geri yükle**'yi (Restore settings) seçin.
+3. En son sürümü aşağıdaki gibi kurun, ardından **Ayarları geri yükle**'yi (Restore settings) seçin.
 
 v1.1'den sonraki sürümler doğrudan güncellenir; PureTV'nin **Güncellemeler** ekranından da kurulabilir.
 

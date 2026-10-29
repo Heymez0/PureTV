@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v1.2
 
 - **Background from content** (Appearance): on by default; off keeps the theme's plain background in the recent and
   recommended layouts instead of colours from the first card. Included in the settings backup.
