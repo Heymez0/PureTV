@@ -8,48 +8,54 @@
 
 **Güncel sürüm: [PureTV v1.1](https://github.com/Heymez0/PureTV/releases/tag/v1.1)** · Android 9+
 
-PureTV; Android TV, Google TV ve Android kutu/stick cihazlar için hafif bir başlatıcıdır.
-LG webOS ve Samsung Tizen için ayrı web sürümleri bulunur. **Gerçek cihaz referansı Android TV 9 kullanan Mi Stick'tir.**
-Ayrı Google TV yazılımı testi kayıtlı değildir. LG/Samsung sürümleri deneysel durumdadır ve gerçek TV donanımında test edilmemiştir.
+PureTV; Android TV, Google TV ve Android TV kutuları/stickleri için hafif bir ana ekrandır (başlatıcı).
+LG webOS ve Samsung Tizen için ayrı web sürümleri vardır. **Testlerin yapıldığı gerçek cihaz, Android TV 9 kullanan
+Xiaomi Mi Stick'tir.** Ayrı bir Google TV yazılımında yapılmış test kaydı yoktur. LG ve Samsung sürümleri deneyseldir,
+gerçek bir TV'de denenmemiştir.
+
+Menü adları bu rehberde PureTV'nin Türkçe arayüzündeki gibi yazılmıştır; İngilizce arayüzdeki karşılıkları parantez
+içindedir.
 
 ## Özellikler
 
-- Saat, son izlenenler veya son izlenenler ve önerilerin birlikte bulunduğu ana ekran seçenekleri.
-- Ana uygulama rafı, kısayollar ve aşağı kaydırarak erişilen diğer uygulamalar.
-- Uzun basma menüsü, raf içinde taşıma; uygulamayı gizleme, kaldırma ve zorla durdurma.
-- Açık/koyu tema, yağış olasılığıyla hava durumu, 12/24 saat; koyu ekran koruyucu ya da TV'deki ve USB'deki kendi
-  fotoğraflarınızla ekran koruyucu (saatte ekran yanmasına karşı kaydırma ile).
-- Kompakt hızlı ayarlar: bellek için Boşalt düğmesi ve uyku zamanlayıcısı. İsteğe bağlı hafif mod ve otomatik bellek
-  boşaltma, açıldığında alınan RAM/depolama bilgisi.
-- Ayar yedekleme/geri yükleme, seçilen uygulamalar için basit PIN kilidi ve özel ana ekran modunda isteğe bağlı sesli
-  asistan kapatma.
-- GitHub sürümlerinden güncelleme: bildirim ya da otomatik kurulum; yalnızca sizinkiyle aynı imzalı daha yeni sürümler.
-- Kutu/stick ve TV profilleri; cihazın sunduğu TV girişleri, desteklenen kumanda tuşları ve TV açılınca açılacak bir
-  uygulama, Canlı TV ya da giriş.
-- İsteğe bağlı, ayrı AirPlay alıcısı: PureTV'den doğrulanarak kurulur, yalnız açtığınızda çalışır ve hızlı panelden yönetilir.
-- 24 arayüz diline ait çeviri katalogları.
+- **Ana ekranınızı seçin:** yalnız saat, son izlenenler ya da son izlenenler ve öneriler bir arada.
+- **Uygulamalar elinizin altında:** ayrı uygulama ve kısayol rafları, aşağıda diğer uygulamalar. OK'e basılı tutunca
+  açılan menüden rafı düzenleyebilir, uygulamayı gizleyebilir, kaldırabilir ya da zorla durdurabilirsiniz.
+- **Size göre:** açık/koyu tema, yağış olasılığıyla hava durumu, 12/24 saat. Siyah ekran koruyucu ya da TV'deki ve
+  USB bellekteki kendi fotoğraflarınızla ekran koruyucu; saati ekran yanmasına karşı yavaşça kayar.
+- **Kontrol sizde:** sade hızlı ayarlar; bellek için **Boşalt** düğmesi ve **uyku zamanlayıcısı**. İsteğe bağlı hafif
+  mod ve otomatik bellek boşaltma, istediğinizde RAM/depolama bilgisi, ayarları yedekleme ve geri yükleme, seçtiğiniz
+  uygulamalar için basit bir PIN kilidi.
+- **Güncellemeler:** bu deponun GitHub sürümlerinden; yalnız bildirim ya da otomatik kurulum. Yalnızca kurulu sürümle
+  aynı anahtarla imzalanmış, daha yeni sürümler kurulur.
+- **TV'nizi kullanın:** kutu/stick ve televizyon modları, TV'nin sunduğu girişler, kumanda tuşu ayarları ve TV açılınca
+  doğrudan açılacak bir uygulama, Canlı TV ya da giriş. Özel ana ekran modunda Google Asistan isteğe bağlı kapatılabilir.
+- **AirPlay:** isteğe bağlı, ayrı bir alıcı uygulaması. PureTV'den doğrulanarak kurulur, yalnız siz açınca çalışır ve
+  hızlı ayarlardan açılıp kapatılır.
+- **24 arayüz dili.**
 
-Son izlenenler ve öneriler, kurulu uygulamaların Android ile paylaştığı içeriklere bağlıdır.
-Web sürümündeki isteğe bağlı katalog kartları kendi TMDB anahtarınızı kullanır.
-Android'e özgü içerik sağlayıcıları, sistem ayarları ve AirPlay kontrolü LG/Samsung sürümlerinde bulunmaz.
+Son izlenenler ve öneriler, kurulu uygulamaların Android ile paylaştığı içeriğe bağlıdır. Web sürümündeki isteğe bağlı
+katalog kartları için kendi TMDB anahtarınız gerekir. Android'e özgü içerik kaynakları, sistem ayarları ve AirPlay
+kontrolü LG/Samsung sürümlerinde yoktur.
 
 ### v1.1'deki yenilikler
 
-- **PureTV içinden güncelleme** (Sistem ve hakkında → Güncellemeler); referans Mi Stick'te uçtan uca denendi.
+- **PureTV içinden güncelleme** (Sistem ve hakkında → Güncellemeler); Mi Stick'te baştan sona denendi.
 - **Hızlı ayarlar:** bellek boşaltma ve 30–120 dakikalık uyku zamanlayıcısı.
-- **Uygulama kilidi, uygulama gizleme, TV açılınca başlatma, kaldır / zorla durdur,** fotoğraflı ekran koruyucu ve
+- **Uygulama kilidi, uygulama gizleme, TV açılınca başlatma, kaldırma / zorla durdurma,** fotoğraflı ekran koruyucu ve
   otomatik bellek boşaltma.
-- **AirPlay alıcısı 0.0.36-puretv.2:** gerektiğinde başlar, PureTV'nin açık/koyu görünümünü izler.
-- **Güvenlik ve düzeltmeler:** kurulum sonuçları artık başka bir uygulama tarafından taklit edilemez; ayar geri
-  yüklemesinden sonra uygulama içerikleri görünür; Android 9–11'de daha akıcı ana ekran kaydırması.
-- **Yeni imza anahtarı:** v1 kullananlar v1.1'i kurmadan önce v1'i bir kez kaldırır (aşağıdaki Kurulum bölümüne bakın).
+- **AirPlay alıcısı 0.0.36-puretv.2:** yalnız gerektiğinde çalışır, PureTV'nin açık/koyu görünümüne uyar.
+- **Güvenlik ve düzeltmeler:** başka bir uygulama artık sahte kurulum sonucu gönderemez; ayarlar geri yüklendikten
+  sonra uygulama içerikleri görünür; Android 9–11'de ana ekran daha akıcı kayar.
+- **Yeni imza anahtarı:** v1 kullananlar, v1.1'i kurmadan önce v1'i bir kez kaldırmalıdır (aşağıdaki Kurulum
+  bölümüne bakın).
 
 [Tüm değişiklikler](CHANGELOG.md)
 
 ## Önizleme
 
-Görseller PureTV v1.1'in gerçek Mi Stick ekran görüntüleridir; arayüz dili İngilizcedir.
-Öneri afişlerinin dili, içeriği sağlayan uygulamaya bağlıdır. İzleme geçmişi gösterilmez.
+Görseller, PureTV v1.1'in Mi Stick'te alınmış gerçek ekran görüntüleridir; arayüz dili İngilizcedir. Öneri
+afişlerinin dili, içeriği sağlayan uygulamaya bağlıdır. İzleme geçmişi gösterilmez.
 
 ### Son izlenenler ve öneriler
 
@@ -69,12 +75,17 @@ Görseller PureTV v1.1'in gerçek Mi Stick ekran görüntüleridir; arayüz dili
 
 **[PureTV.apk indir](https://github.com/Heymez0/PureTV/releases/latest/download/PureTV.apk)** · [Sürüm ve SHA256 doğrulaması](https://github.com/Heymez0/PureTV/releases/latest)
 
-Bu, Android 9 ve üzeri için imzalı v1.1 sürümüdür. **PureTV.apk** dosyasını indirin;
-GitHub'ın otomatik oluşturduğu Source code ZIP dosyaları geliştiriciler içindir.
+Bu, Android 9 ve üzeri için imzalı v1.1 sürümüdür. **PureTV.apk** dosyasını indirin; GitHub'ın kendiliğinden
+eklediği "Source code" ZIP dosyaları geliştiriciler içindir.
 
-**v1 kullanıyorsanız:** v1.1 yeni bir anahtarla imzalandı. Önce ayarlarınızı yedekleyin (Sistem ve hakkında → Ayarları
-yedekle), PureTV v1'i (ve PureTV AirPlay'i) kaldırın, sonra v1.1'i kurup yedeği geri yükleyin. Sonraki sürümler
-doğrudan, PureTV'nin Güncellemeler ekranından da güncellenir.
+**v1 kullanıyorsanız:** v1.1 yeni bir anahtarla imzalandığı için Android onu v1'in üzerine kurmaz.
+
+1. PureTV v1'de ayarlarınızı yedekleyin: **Tüm ayarlar → Sistem ve hakkında → Ayarları yedekle** (All settings →
+   System and about → Back up settings). Özel ana ekran modundaysanız önce **Varsayılan ana ekran → Orijinal**'i seçin.
+2. PureTV v1'i (ve kuruluysa PureTV AirPlay'i) kaldırın.
+3. v1.1'i aşağıdaki gibi kurun, ardından **Ayarları geri yükle**'yi (Restore settings) seçin.
+
+v1.1'den sonraki sürümler doğrudan güncellenir; PureTV'nin **Güncellemeler** ekranından da kurulabilir.
 
 **USB ile:**
 
@@ -84,7 +95,8 @@ doğrudan, PureTV'nin Güncellemeler ekranından da güncellenir.
 4. Android isterse bu dosya yöneticisine uygulama yükleme izni verin ve **Yükle**'yi seçin.
 5. PureTV'yi uygulama listesinden açıp karşılama adımlarını tamamlayın.
 
-USB depolama bağlayamadığınız sticklerde mevcut dosya aktarım uygulamanızla APK'yı TV'ye gönderip açabilir veya ADB kullanabilirsiniz.
+USB bellek takılamayan sticklerde APK'yı kullandığınız bir dosya aktarma uygulamasıyla TV'ye gönderip açabilir ya da
+ADB kullanabilirsiniz.
 
 **ADB ile:** Bilgisayarda Android platform-tools kurulu olmalı; TV'nin geliştirici/ADB erişimi açık ve iki cihaz aynı ağda olmalıdır.
 APK'nın bulunduğu klasörde terminal açın. `TV_IP` yerine TV'nin yerel IP adresini yazın:
@@ -97,11 +109,11 @@ adb install -r PureTV.apk
 TV'de görünen bağlantı iznini onaylayın. Bazı cihazlarda farklı port veya kablosuz eşleştirme gerekir;
 cihazın kendi eşleştirme yöntemini kullanın. [Android adımlarının tamamı](INSTALL.md#android-tv--google-tv).
 
-### Easy to install: Claude Code veya Codex
+### Kolay kurulum: Claude Code veya Codex
 
-Bilgisayarınızda ilgili araç kurulu ve hesabınız açıkken aşağıdaki **tek satırlık komutlardan birini** çalıştırın.
-Asistan TV platformunuzu ve eksik cihaz bilgilerini sorar, uygun kurulum yolunu izler.
-TV'deki geliştirici modu, bağlantı izni ve gerekirse imzalama adımlarını sizinle birlikte tamamlar.
+Bilgisayarınızda ilgili araç kuruluysa ve hesabınıza giriş yaptıysanız, aşağıdaki **tek satırlık komutlardan birini**
+çalıştırın. Asistan TV platformunuzu ve eksik cihaz bilgilerini sorar, uygun kurulum yolunu izler. TV'deki geliştirici
+modu, bağlantı izni ve gerekiyorsa imzalama adımlarını sizinle birlikte tamamlar.
 
 **Claude Code**
 
@@ -117,12 +129,13 @@ codex "Install PureTV on my TV from https://github.com/Heymez0/PureTV. Read the 
 
 ### İlk açılış
 
-1. Karşılama ekranında **Box/stick** veya **TV** seçin.
-2. Açıklanan değişiklikleri okuyun ve TV'de gereken ADB iznini verin.
-3. Ana ekrana geçişi TV üzerinden tamamlayın.
+1. Karşılama ekranında **TV kutusu / stick** ya da **Televizyon**'u seçin (TV box / stick, Television).
+2. Açıklanan değişiklikleri okuyun ve TV'nin sorduğu USB hata ayıklama (ADB) iznini verin.
+3. **PureTV'yi etkinleştir**'i (Enable PureTV) seçip ana ekrana geçişi tamamlayın.
 
-Daha sonra cihaz profili, **All settings → Home screen → Device mode** yolundan değişebilir.
-Stickte TV profilini seçmek fiziksel HDMI girişi oluşturmaz. Girişler, TV'nin desteklediği API'lere bağlıdır.
+Cihaz modunu sonradan **Tüm ayarlar → Ana ekran → Cihaz modu** (All settings → Home screen → Device mode) yolundan
+değiştirebilirsiniz. Stick'te Televizyon modunu seçmek fiziksel bir HDMI girişi eklemez; girişler TV'nin sunduğu
+olanaklara bağlıdır.
 
 ### LG webOS — deneysel
 
@@ -139,7 +152,7 @@ python webos/install.py TV_IP
 
 4. TV'nin gösterdiği parolayı kendi terminalinize girin. Developer Mode süresi dolmadan **EXTEND** kullanın.
 
-[Ayrıntılı LG kurulumu](INSTALL.md#lg-webos). Üreticinin HOME ekranı kullanılabilir kalır.
+[Ayrıntılı LG kurulumu](INSTALL.md#lg-webos). Üreticinin kendi ana ekranı yerinde kalır.
 
 ### Samsung Tizen — deneysel
 
@@ -160,14 +173,15 @@ python tizen/install.py TV_IP
 
 ## Güncelleme ve eski ana ekrana dönüş
 
-PureTV'nin paket adı `io.puretv`'dir. Önceki paket kimliklerinden ayrı kurulur; ayarlar otomatik aktarılmaz.
-Eski bir başlatıcıdan geçerken önce onun **Original** seçeneğiyle üreticinin ana ekranını geri yükleyin.
-Geri dönüş tamamlanana kadar eski uygulamanın verilerini koruyun.
+PureTV'nin paket adı `io.puretv`'dir. Başka paket adlı eski başlatıcılardan ayrı kurulur ve onların ayarlarını kendiliğinden
+almaz. Eski bir başlatıcıdan geçerken önce onun **Orijinal** (Original) seçeneğiyle üreticinin ana ekranını geri getirin
+ve bu tamamlanana kadar eski uygulamayı kaldırmayın.
 
-PureTV içinden üreticinin ana ekranına dönmek için:
-**All settings → System and about → Default home screen → Original**.
-Etkin ana ekranı kaldırmadan önce bu işlemi tamamlayın. Güncellemeler aynı imza anahtarını gerektirir; v1.1'den
-itibaren sürümler yerinde ve PureTV'nin Güncellemeler ekranından güncellenir.
+PureTV'den üreticinin ana ekranına dönmek için:
+**Tüm ayarlar → Sistem ve hakkında → Varsayılan ana ekran → Orijinal**
+(All settings → System and about → Default home screen → Original).
+Etkin ana ekranı kaldırmadan önce bunu mutlaka yapın. Güncellemeler aynı imza anahtarını gerektirir; v1.1'den sonraki
+sürümler doğrudan ve PureTV'nin Güncellemeler ekranından güncellenir.
 [Kimlik ve güncelleme ayrıntıları](INSTALL.md#identity-and-upgrades).
 
 ## Geliştirme ve lisanslar
@@ -176,7 +190,8 @@ Android kaynaklarını derlemek için Python 3.10+, JDK 17 ve Android SDK 34 ger
 LG/Samsung paketleri Python ile hazırlanır; Samsung kurulumu ayrıca imza profili ister.
 [Derleme ve testler](DEVELOPMENT.md).
 
-Ana sayfa İngilizce olan [README.md](../README.md)'dir; bu dosya ayrı Türkçe okuyucu rehberidir.
-PureTV katkıları [MIT](../LICENSE) lisanslıdır. Dahil edilen bileşenlerin [lisans bildirimleri](licenses/NOTICE.md) korunur.
-İsteğe bağlı AirPlay alıcısı ayrı GPL-3.0 uygulamasıdır; [alıcı rehberine](../tools/airplay/README.md) bakın.
+Projenin ana sayfası İngilizce [README.md](../README.md) dosyasıdır; bu dosya Türkçe okuyucular için ayrı bir
+rehberdir. PureTV'ye yapılan katkılar [MIT](../LICENSE) lisanslıdır; projeye dahil edilen bileşenlerin
+[lisans bildirimleri](licenses/NOTICE.md) korunur. İsteğe bağlı AirPlay alıcısı, GPL-3.0 lisanslı ayrı bir
+uygulamadır; [alıcı rehberine](../tools/airplay/README.md) bakın.
 Uygulama adları, logolar ve içerik afişleri sahiplerine aittir.
