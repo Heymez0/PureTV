@@ -6,7 +6,7 @@
          targetSdk = 37
 -        versionCode = 37
 -        versionName = "0.0.36-puretv.2"
-+        versionCode = 39
++        versionCode = 40
 +        versionName = "0.0.36-puretv.3"
  
          externalNativeBuild {
@@ -19,7 +19,7 @@
          targetSdk = 37
 -        versionCode = 37
 -        versionName = "0.0.36-puretv.2"
-+        versionCode = 39
++        versionCode = 40
 +        versionName = "0.0.36-puretv.3"
  
  
@@ -87,6 +87,69 @@
      }
  }
  
+--- a/PureTV-AirPlay/app/src/main/kotlin/io/github/jqssun/airplay/MainActivity.kt
++++ b/PureTV-AirPlay/app/src/main/kotlin/io/github/jqssun/airplay/MainActivity.kt
+@@ -1,6 +1,7 @@
+ package io.github.jqssun.airplay
+ 
+ import android.Manifest
++import android.content.ActivityNotFoundException
+ import android.app.PictureInPictureParams
+ import android.content.ComponentName
+ import android.content.Intent
+@@ -98,6 +99,23 @@
+             }
+         }
+ 
++        // PureTV: when the last sender stops sharing, go to the TV's home screen instead of staying on this screen.
++        // A short wait lets a sender that reconnects at once (rotation, network hiccup) keep the screen.
++        lifecycleScope.launch {
++            repeatOnLifecycle(Lifecycle.State.RESUMED) {
++                var shared = viewModel.connectionCount.value > 0
++                viewModel.connectionCount.collect { count ->
++                    if (count > 0) {
++                        shared = true
++                    } else if (shared) {
++                        shared = false
++                        delay(HOME_AFTER_SHARING_MS)
++                        if (viewModel.connectionCount.value == 0) _leaveAfterSharing()
++                    }
++                }
++            }
++        }
++
+         // auto-enter pre-declared in pip params
+         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+             lifecycleScope.launch {
+@@ -147,6 +165,19 @@
+     private fun _granted(permission: String) =
+         ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
+ 
++    // A picture-in-picture window only closes (the app under it stays); otherwise the home screen comes forward.
++    private fun _leaveAfterSharing() {
++        if (!isInPip.value) {
++            try {
++                startActivity(Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
++                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
++            } catch (_: ActivityNotFoundException) {
++                moveTaskToBack(true)
++            }
++        }
++        finish()
++    }
++
+     private fun _autoStart() {
+         if (LauncherControl.disabled(this)) return
+         val svc = service ?: return
+@@ -238,4 +269,8 @@
+         unbindService(connection)
+         super.onDestroy()
+     }
++
++    private companion object {
++        const val HOME_AFTER_SHARING_MS = 1_500L
++    }
+ }
 --- a/PureTV-AirPlay/app/src/main/kotlin/io/github/jqssun/airplay/Prefs.kt
 +++ b/PureTV-AirPlay/app/src/main/kotlin/io/github/jqssun/airplay/Prefs.kt
 @@ -72,7 +72,10 @@
@@ -462,7 +525,7 @@
  Based on jqssun/android-airplay-server v0.0.36, commit a46cca0a6a1274e9e33c0e750f0f1c1eb1d881ea.
  This remains a separate GPL-3.0 application. The launcher is separately MIT-licensed.
  
-@@ -29,6 +29,33 @@
+@@ -29,6 +29,37 @@
  The TV layout follows PureTV's settings: the launcher's light or dark choice (sunset/sunrise or its fixed theme),
  glass navigation and content panels with a hairline rim, filled focus rows with inverted text, and the quick panel's
  green/grey switches. Mirroring and video playback stay on black.
@@ -493,6 +556,10 @@
 +protected launcher receiver accepts ALWAYS_ON and ON_DEMAND, which only set that preference, and QUERY reports it as
 +"always". A running receiver applies the change at once (idle stop and wake lock), also when it is switched in this
 +app's own settings. The versionCode is 39 (the first v1.3 upload was 38 under the same version name).
++
++When the last sender stops sharing (mirroring, video or audio), the receiver screen goes to the TV's home screen after
++1.5 seconds instead of staying open; a sender that reconnects within that time keeps it. In picture-in-picture only the
++small window closes. versionCode 40.
  
  ## Interface build
  
@@ -506,7 +573,7 @@
  Based on jqssun/android-airplay-server v0.0.36, commit a46cca0a6a1274e9e33c0e750f0f1c1eb1d881ea.
  This remains a separate GPL-3.0 application. The launcher is separately MIT-licensed.
  
-@@ -21,6 +21,33 @@
+@@ -21,6 +21,37 @@
  All settings > Connections, or this app) and stops itself after 15 minutes without a connected sender
  (AirPlayService.IDLE_STOP_MS); a sender cancels that timer. Turning Start server at boot on keeps the previous
  always-on behaviour. Pairing/PIN preferences and the explicit launcher STOP are unchanged.
@@ -537,6 +604,10 @@
 +protected launcher receiver accepts ALWAYS_ON and ON_DEMAND, which only set that preference, and QUERY reports it as
 +"always". A running receiver applies the change at once (idle stop and wake lock), also when it is switched in this
 +app's own settings. The versionCode is 39 (the first v1.3 upload was 38 under the same version name).
++
++When the last sender stops sharing (mirroring, video or audio), the receiver screen goes to the TV's home screen after
++1.5 seconds instead of staying open; a sender that reconnects within that time keeps it. In picture-in-picture only the
++small window closes. versionCode 40.
  
  ## Interface build
  

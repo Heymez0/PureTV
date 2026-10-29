@@ -43,7 +43,8 @@ kontrolü LG/Samsung sürümlerinde yoktur.
 - **AirPlay'i açık tut** (Tüm ayarlar → Bağlantılar): AirPlay TV ile başlar ve 15 dakika gönderici olmadığında
   kapanmak yerine açık kalır.
 - **AirPlay alıcısı 0.0.36-puretv.3:** iPhone, iPad ve Mac'te TV **PureTV** adıyla görünür (kurulu alıcılar bir kez yeniden adlandırılır); yansıtılan görüntü fazladan
-  GPU kopyası olmadan doğrudan TV'nin video katmanına gider ve her kare çözülür çözülmez gösterilir.
+  GPU kopyası olmadan doğrudan TV'nin video katmanına gider ve her kare çözülür çözülmez gösterilir; paylaşım bitince
+  TV ana ekrana döner.
 - **Çeviriler:** v1'den sonra eklenen 129 metin artık 24 dilin hepsinde.
 - Afişler gelirken ana ekranın **ilk saniyeleri daha akıcı**; ayar açıklamaları daha anlaşılır.
 - **TV'de daha hızlı:** PureTV kendini önceden derler; Ekran koruyucuda uygulamaları iyileştir, kurduğunuz uygulamaları

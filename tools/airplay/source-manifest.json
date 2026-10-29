@@ -7,9 +7,9 @@
   "source_asset": "PureTV-AirPlay-Source.zip",
   "full_native_rebuild_verified": false,
   "release": "v1.3",
-  "status": "Interface build passed; the six ARMv7 engine libraries are byte-identical to 0.0.36-puretv.2. Mirrored video is decoded straight into the display surface (GL pipeline as fallback), frames are released as soon as they are decoded, the receiver is named PureTV (earlier installs renamed once), and PureTV can switch Start server at boot (Keep AirPlay on). versionCode 39; switching it from PureTV was checked on the Mi Stick with the production-signed APKs. On a Mi Stick / Android TV 9 on 2026-10-29 it was started and stopped from PureTV quick settings (no idle wake lock), the device owner confirmed Screen Mirroring from an iPhone, and the production-signed APK registered as PureTV over a receiver previously named Mi-Stick.",
-  "source_sha256": "6e4dae263829f6b784561b4c25038580f4aa0e48a814c1d7e404d9e0858d2fd3",
-  "receiver_apk_sha256": "04ef7d311305e2ece8f7c7fa95e2f5a8d7684703c3b0035ccbc875f769969b3d",
+  "status": "Interface build passed; the six ARMv7 engine libraries are byte-identical to 0.0.36-puretv.2. Mirrored video is decoded straight into the display surface (GL pipeline as fallback), frames are released as soon as they are decoded, the receiver is named PureTV (earlier installs renamed once), and PureTV can switch Start server at boot (Keep AirPlay on). Switching it from PureTV was checked on the Mi Stick with the production-signed APKs. When the last sender stops sharing, the receiver screen goes to the home screen (versionCode 40). On a Mi Stick / Android TV 9 on 2026-10-29 it was started and stopped from PureTV quick settings (no idle wake lock), the device owner confirmed Screen Mirroring from an iPhone, and the production-signed APK registered as PureTV over a receiver previously named Mi-Stick.",
+  "source_sha256": "c59577079b16107662a7e1939d14a87c3e587fb823b13beb8cbf69949d32667a",
+  "receiver_apk_sha256": "c0943a38d73b08a988fe197ec0856560b86fa08a9f510365e22af59672107818",
   "physical_new_identity_tested": true,
   "previous": {
     "version": "0.0.36-puretv.2",

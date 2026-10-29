@@ -23,6 +23,7 @@ Then:
 2. Open PureTV's quick settings and select **AirPlay** with OK to start or stop it. The same control is in
    All settings → Connections. Arrow keys move focus without changing the state.
 3. On an iPhone, iPad or Mac, open Screen Mirroring and choose the receiver name. Enter the TV's PIN if enabled.
+   When you stop sharing, the TV returns to its home screen (from `0.0.36-puretv.3`).
 
 From `0.0.36-puretv.2`, AirPlay runs **only when you turn it on**: it no longer starts with the TV, and it stops itself
 after 15 minutes without a connected sender. To keep it always on, turn on **Keep AirPlay on** in PureTV (All settings → Connections) or **Start server at boot**

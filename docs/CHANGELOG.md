@@ -7,7 +7,8 @@
 - **AirPlay receiver 0.0.36-puretv.3:** senders list the TV as **PureTV** (was "Android AirPlay"; earlier installs, also
   ones with a typed name, are renamed once; a name chosen afterwards is kept). Mirrored video is decoded straight into the display surface (no GL copy per frame; Amlogic chips
   use their video plane), and each frame is shown as soon as it is decoded instead of when the next one arrives.
-  Screen Mirroring from an iPhone confirmed on the Mi Stick. Engine libraries unchanged; full GPL source and review
+  When sharing ends, the receiver returns to the home screen instead of staying open. Screen Mirroring from an
+  iPhone confirmed on the Mi Stick. Engine libraries unchanged; full GPL source and review
   patch included.
 
 - **Light theme header:** the clock/weather pill and the buttons opposite it were half-clear white on a light,
