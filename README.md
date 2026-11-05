@@ -37,36 +37,7 @@ running Android TV 9. **LG webOS and Samsung Tizen are experimental ports and ha
 Recent content depends on what installed Android apps publish. Optional web catalogue cards use your own TMDB key.
 Android-specific settings, recent-content providers and AirPlay control are not available in the LG/Samsung web edition.
 
-### New in v1.3
-
-- **Keep AirPlay on** (All settings → Connections): AirPlay starts with the TV and stays on instead of stopping after 15
-  minutes without a sender.
-- **AirPlay receiver 0.0.36-puretv.3:** iPhones, iPads and Macs list the TV as **PureTV** (existing receivers are renamed once); mirrored video goes straight
-  to the TV's video plane instead of an extra GPU copy, and each frame shows as soon as it is decoded; when sharing
-  stops, the TV returns to the home screen.
-- **Translations:** the 129 texts added since v1 are now in all 24 languages.
-- **Smoother first seconds** on the home screen while posters arrive, and clearer settings descriptions.
-- **Faster on TVs:** PureTV compiles itself ahead of time, and Optimise apps during the screensaver speeds up the apps
-  you installed (custom home mode).
-- Light theme: the clock/weather pill and the header buttons are easier to see.
-
-### New in v1.2
-
-- **Background from content** (Appearance): keep the theme's plain background instead of colours from the first card.
-- After PureTV updates itself, the copied update file is removed from the TV.
-- Updates in place from v1.1: System and about → Updates.
-
-### New in v1.1
-
-- **Updates from inside PureTV** (System and about → Updates), tested end to end on the reference Mi Stick.
-- **Quick settings:** Free up memory and a 30–120 minute sleep timer.
-- **App lock, hidden apps, On TV start, uninstall / force stop,** screensaver photos and automatic memory cleanup.
-- **AirPlay receiver 0.0.36-puretv.2:** starts on demand and follows PureTV's light/dark look.
-- **Security and fixes:** install results can no longer be faked by another app; app content appears after a settings
-  restore; smoother home scrolling on Android 9–11.
-- **New signing key:** v1 users uninstall v1 once before installing v1.1 (see [Install](#install)).
-
-[Full changelog](docs/CHANGELOG.md) · [Release checks and testing scope](docs/RELEASE.md)
+[What's new in each release](https://github.com/Heymez0/PureTV/releases) · [Full changelog](docs/CHANGELOG.md) · [Release checks and testing scope](docs/RELEASE.md)
 
 ## Languages
 

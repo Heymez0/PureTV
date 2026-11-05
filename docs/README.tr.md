@@ -38,38 +38,7 @@ Son izlenenler ve öneriler, kurulu uygulamaların Android ile paylaştığı i�
 katalog kartları için kendi TMDB anahtarınız gerekir. Android'e özgü içerik kaynakları, sistem ayarları ve AirPlay
 kontrolü LG/Samsung sürümlerinde yoktur.
 
-### v1.3'teki yenilikler
-
-- **AirPlay'i açık tut** (Tüm ayarlar → Bağlantılar): AirPlay TV ile başlar ve 15 dakika gönderici olmadığında
-  kapanmak yerine açık kalır.
-- **AirPlay alıcısı 0.0.36-puretv.3:** iPhone, iPad ve Mac'te TV **PureTV** adıyla görünür (kurulu alıcılar bir kez yeniden adlandırılır); yansıtılan görüntü fazladan
-  GPU kopyası olmadan doğrudan TV'nin video katmanına gider ve her kare çözülür çözülmez gösterilir; paylaşım bitince
-  TV ana ekrana döner.
-- **Çeviriler:** v1'den sonra eklenen 129 metin artık 24 dilin hepsinde.
-- Afişler gelirken ana ekranın **ilk saniyeleri daha akıcı**; ayar açıklamaları daha anlaşılır.
-- **TV'de daha hızlı:** PureTV kendini önceden derler; Ekran koruyucuda uygulamaları iyileştir, kurduğunuz uygulamaları
-  hızlandırır (özel ana ekran modu).
-- Açık tema: saat/hava durumu kutusu ve üst düğmeler daha belirgin.
-
-### v1.2'deki yenilikler
-
-- **İçeriğe göre arka plan** (Görünüm): istenirse ilk kartın renkleri yerine temanın düz arka planı kullanılır.
-- PureTV kendini güncelledikten sonra kopyalanan güncelleme dosyası TV'den silinir.
-- v1.1'den doğrudan güncellenir: Sistem ve hakkında → Güncellemeler.
-
-### v1.1'deki yenilikler
-
-- **PureTV içinden güncelleme** (Sistem ve hakkında → Güncellemeler); Mi Stick'te baştan sona denendi.
-- **Hızlı ayarlar:** bellek boşaltma ve 30–120 dakikalık uyku zamanlayıcısı.
-- **Uygulama kilidi, uygulama gizleme, TV açılınca başlatma, kaldırma / zorla durdurma,** fotoğraflı ekran koruyucu ve
-  otomatik bellek boşaltma.
-- **AirPlay alıcısı 0.0.36-puretv.2:** yalnız gerektiğinde çalışır, PureTV'nin açık/koyu görünümüne uyar.
-- **Güvenlik ve düzeltmeler:** başka bir uygulama artık sahte kurulum sonucu gönderemez; ayarlar geri yüklendikten
-  sonra uygulama içerikleri görünür; Android 9–11'de ana ekran daha akıcı kayar.
-- **Yeni imza anahtarı:** v1 kullananlar, v1.1'i kurmadan önce v1'i bir kez kaldırmalıdır (aşağıdaki Kurulum
-  bölümüne bakın).
-
-[Tüm değişiklikler](CHANGELOG.md)
+[Sürümlerdeki yenilikler](https://github.com/Heymez0/PureTV/releases) · [Tüm değişiklikler](CHANGELOG.md)
 
 ## Önizleme
 
