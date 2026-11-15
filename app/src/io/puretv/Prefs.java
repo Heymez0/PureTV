@@ -314,6 +314,50 @@ final class Prefs {
         return tmp.renameTo(keysFile());
     }
 
+    // The jobs given to buttons in Remote button test (RemoteKeyRules): the same kind of small shared file.
+    private static File mapFile() {
+        return new File(app.getFilesDir(), "remote-map.txt");
+    }
+
+    private static long mapStamp = Long.MIN_VALUE;
+    private static java.util.Map<Integer, String> keyMap = java.util.Collections.emptyMap();
+
+    /** Key code → job, as saved (unmodifiable). Read again only when the file changes. */
+    static synchronized java.util.Map<Integer, String> keyMap() {
+        if (app == null) return java.util.Collections.emptyMap();
+        File f = mapFile();
+        long stamp = f.lastModified() * 31 + f.length();
+        if (stamp != mapStamp) {
+            mapStamp = stamp;
+            StringBuilder text = new StringBuilder();
+            if (stamp != 0 && f.length() < 8_192) {
+                try (BufferedReader r = new BufferedReader(new FileReader(f))) {
+                    String line;
+                    while ((line = r.readLine()) != null) text.append(line).append('\n');
+                } catch (IOException ignored) {
+                    text.setLength(0);
+                }
+            }
+            keyMap = java.util.Collections.unmodifiableMap(RemoteKeyRules.parse(text.toString()));
+        }
+        return keyMap;
+    }
+
+    static synchronized boolean setKeyMap(java.util.Map<Integer, String> map) {
+        File tmp = new File(app.getFilesDir(), "remote-map." + android.os.Process.myPid() + ".tmp");
+        try (FileOutputStream out = new FileOutputStream(tmp)) {
+            out.write(RemoteKeyRules.encode(map).getBytes(StandardCharsets.UTF_8));
+            out.getFD().sync();
+        } catch (IOException e) {
+            //noinspection ResultOfMethodCallIgnored
+            tmp.delete();
+            return false;
+        }
+        if (!tmp.renameTo(mapFile())) return false;
+        mapStamp = Long.MIN_VALUE;
+        return true;
+    }
+
     /** Choices saved before they moved to the file (in SharedPreferences) are copied there once. */
     private static void migrateKeys() {
         if (keysFile().exists()) return;

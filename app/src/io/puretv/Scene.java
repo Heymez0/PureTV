@@ -15,8 +15,8 @@ import android.graphics.Shader;
  * and only redrawn when it moves (advance, up to ~30 times per second); in the frames between steps the GPU just
  * reuses the layer. The glass reads the frosted aurora computed in Frost or, with a recommendation's image as the
  * background, its blurred version (setFrost).
- * If AGSL fails (it shouldn't on Android 13+), it falls back to a gradient and plain translucent glass: the home screen
- * is never left blank.
+ * Without AGSL (Android 9 to 12, lightweight mode, or a shader that fails to compile) the background is a gradient and
+ * the glass a translucent panel lit from above (flat): the home screen is never left blank.
  */
 final class Scene {
     final Shaders.Palette palette = new Shaders.Palette();
@@ -28,6 +28,14 @@ final class Scene {
     private final Paint flatFill = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint flatRim = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint fallback = new Paint();
+    // The flat glass of older TVs is lit from above: a faint sheen on dark glass and a rim that is brighter at the
+    // top. Both are unit-height gradients placed over each panel by a matrix, so drawing allocates nothing.
+    private final Paint flatSheen = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final android.graphics.Matrix flatMatrix = new android.graphics.Matrix();
+    private final LinearGradient sheenShader = new LinearGradient(0, 0, 0, 1,
+            new int[] {0x0CFFFFFF, 0x03FFFFFF, 0x00FFFFFF}, new float[] {0, 0.5f, 1}, Shader.TileMode.CLAMP);
+    private final LinearGradient rimOnDark = new LinearGradient(0, 0, 0, 1, 0x30FFFFFF, 0x14FFFFFF, Shader.TileMode.CLAMP);
+    private final LinearGradient rimOnLight = new LinearGradient(0, 0, 0, 1, 0xE6FFFFFF, 0x4DFFFFFF, Shader.TileMode.CLAMP);
     private final Recording auroraNode = Recording.create("aurora");
     // The layer is drawn at a quarter size and scaled up: filtered, its soft shapes stay soft instead of stepping.
     private final Paint layerPaint = new Paint(Paint.FILTER_BITMAP_FLAG);
@@ -132,7 +140,6 @@ final class Scene {
         imageGlass = true;
         glassA = fill(glassA, from);
         if (to != null) glassB = fill(glassB, to);
-        if (liquid == null) return;
         glassShaderA = linear(glassA);
         liquid.setInputShader("imageA", glassShaderA);
         liquid.setInputShader("imageB", to != null ? linear(glassB) : glassShaderA);
@@ -199,7 +206,6 @@ final class Scene {
         if (frostImage == null) frostImage = Bitmap.createBitmap(Backdrop.FW, Backdrop.FH, Bitmap.Config.ARGB_8888);
         frostImage.setPixels(pixels, 0, Backdrop.FW, 0, 0, Backdrop.FW, Backdrop.FH);
         imageFrost = true;
-        if (glass == null) return;
         BitmapShader s = new BitmapShader(frostImage, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
         s.setFilterMode(BitmapShader.FILTER_MODE_LINEAR);
         glass.setInputShader("frost", s);
@@ -229,6 +235,41 @@ final class Scene {
         if (glass == null) return;
         if (imageFrost) glass.setFloatUniform("frostScale", (float) Backdrop.FW / w, (float) Backdrop.FH / h);
         else glass.setFloatUniform("frostScale", (float) Frost.W / w, (float) Frost.H / h);
+    }
+
+    /**
+     * Glass without shaders (Android 9 to 12, and lightweight mode): a translucent panel in the glass's tint. Outside
+     * lightweight mode it is lit from above. `alpha` fades the whole panel, as it does for the shader glass.
+     */
+    private void flat(Canvas c, RectF r, float radius, int tint, float tintAlpha, float body, float alpha) {
+        boolean plain = Prefs.lightweight();
+        boolean light = (Color.red(tint) * 299 + Color.green(tint) * 587 + Color.blue(tint) * 114) > 127_500;
+        int a = Math.round(255 * alpha);
+        if (body > 0) {
+            flatFill.setColor(Ui.alpha(tint | 0xFF000000, Math.max(0.35f, tintAlpha) * alpha));
+            c.drawRoundRect(r, radius, radius, flatFill);
+            if (!plain && !light) {
+                flatSheen.setShader(over(sheenShader, r));
+                flatSheen.setAlpha(a);
+                c.drawRoundRect(r, radius, radius, flatSheen);
+            }
+        }
+        if (plain) {
+            flatRim.setShader(null);
+            flatRim.setColor(Ui.alpha(0x33FFFFFF, alpha));
+        } else {
+            flatRim.setShader(over(light ? rimOnLight : rimOnDark, r));
+            flatRim.setAlpha(a);
+        }
+        c.drawRoundRect(r, radius, radius, flatRim);
+    }
+
+    /** Stretches a unit-height gradient from the top of `r` to its bottom. */
+    private LinearGradient over(LinearGradient unit, RectF r) {
+        flatMatrix.setScale(1, Math.max(1, r.height()));
+        flatMatrix.postTranslate(0, r.top);
+        unit.setLocalMatrix(flatMatrix);
+        return unit;
     }
 
     void drawBackground(Canvas c) {
@@ -264,11 +305,7 @@ final class Scene {
     void glass(Canvas c, RectF r, float radius, int tint, float tintAlpha, int glow, float glowAlpha, float lift, float body, float alpha) {
         if (alpha <= 0.004f) return;
         if (glass == null) {
-            if (body > 0) {
-                flatFill.setColor(Ui.alpha(tint | 0xFF000000, Math.max(0.35f, tintAlpha)));
-                c.drawRoundRect(r, radius, radius, flatFill);
-            }
-            c.drawRoundRect(r, radius, radius, flatRim);
+            flat(c, r, radius, tint, tintAlpha, body, Math.min(1, alpha));
             return;
         }
         float hw = r.width() / 2, hh = r.height() / 2, inner = Math.min(hw, hh);

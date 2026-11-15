@@ -1,1 +1,47 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="360" viewBox="0 0 1400 360"><rect width="1400" height="360" rx="24" fill="#14171C"/><g font-family="Arial,Helvetica,sans-serif"><text x="56" y="63" fill="#EFF0F4" font-size="28" font-weight="700">Find your way with the remote.</text><circle cx="220" cy="207" r="105" fill="#252A32" stroke="#535962"/><circle cx="220" cy="207" r="44" fill="#D6AA50"/><text x="220" y="216" text-anchor="middle" fill="#14171C" font-size="23" font-weight="700">OK</text><path d="M208 133l12-12 12 12M208 280l12 12 12-12M147 195l-12 12 12 12M293 195l12 12-12 12" fill="none" stroke="#B8BCC5" stroke-width="4" stroke-linejoin="round"/><text x="430" y="140" font-size="22" font-weight="700" fill="#D6AA50">Arrow keys</text><text x="650" y="140" font-size="22" fill="#BAC0CA">Move between items</text><text x="430" y="192" font-size="22" font-weight="700" fill="#D6AA50">OK</text><text x="650" y="192" font-size="22" fill="#BAC0CA">Open an item / change a value</text><text x="430" y="244" font-size="22" font-weight="700" fill="#D6AA50">Back</text><text x="650" y="244" font-size="22" fill="#BAC0CA">Return / close the menu</text><text x="430" y="296" font-size="22" font-weight="700" fill="#D6AA50">Long OK</text><text x="650" y="296" font-size="22" fill="#BAC0CA">Open an Android card action menu</text></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="440" viewBox="0 0 1400 440" role="img" aria-label="The remote: arrows move, OK opens, hold OK for an app's menu, Back returns, the apps button opens All Apps">
+  <defs>
+    <linearGradient id="bg" x2="1" y2="1"><stop stop-color="#111316"/><stop offset="1" stop-color="#1D1B1E"/></linearGradient>
+    <radialGradient id="warm" cx=".85" cy="0" r=".9"><stop stop-color="#D2AB55" stop-opacity=".16"/><stop offset="1" stop-color="#D2AB55" stop-opacity="0"/></radialGradient>
+    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#2A2B30"/><stop offset="1" stop-color="#18191C"/></linearGradient>
+    <linearGradient id="rim" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#FFFFFF" stop-opacity=".22"/><stop offset="1" stop-color="#FFFFFF" stop-opacity=".04"/></linearGradient>
+  </defs>
+  <rect width="1400" height="440" rx="28" fill="url(#bg)"/>
+  <rect width="1400" height="440" rx="28" fill="url(#warm)"/>
+  <g font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif">
+    <text x="64" y="74" font-size="15" letter-spacing="3.5" fill="#D2AB55">MADE FOR THE REMOTE</text>
+    <text x="64" y="114" font-size="30" font-weight="600" fill="#F5F5F7">Every screen works with a few buttons.</text>
+
+    <!-- the remote, front view -->
+    <rect x="200" y="150" width="150" height="270" rx="64" fill="url(#body)" stroke="url(#rim)" stroke-width="1.5"/>
+    <circle cx="275" cy="232" r="56" fill="#222327" stroke="#3A3B40"/>
+    <path d="M267 190l8-8 8 8M267 274l8 8 8-8M233 224l-8 8 8 8M317 224l8 8-8 8" fill="none" stroke="#AEAEB2" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="275" cy="232" r="23" fill="#D2AB55"/>
+    <text x="275" y="238" text-anchor="middle" font-size="14" font-weight="700" fill="#1B1710">OK</text>
+    <!-- apps · back · home -->
+    <circle cx="232" cy="320" r="15" fill="#2E2F34" stroke="#D2AB55" stroke-width="1.5"/>
+    <g fill="#D2AB55"><circle cx="227" cy="315" r="1.8"/><circle cx="232" cy="315" r="1.8"/><circle cx="237" cy="315" r="1.8"/><circle cx="227" cy="320" r="1.8"/><circle cx="232" cy="320" r="1.8"/><circle cx="237" cy="320" r="1.8"/><circle cx="227" cy="325" r="1.8"/><circle cx="232" cy="325" r="1.8"/><circle cx="237" cy="325" r="1.8"/></g>
+    <circle cx="275" cy="320" r="15" fill="#2E2F34" stroke="#3A3B40"/>
+    <path d="M268 316h8.5a4.5 4.5 0 0 1 0 9h-4.5M271.5 312.5l-3.5 3.5 3.5 3.5" fill="none" stroke="#AEAEB2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="318" cy="320" r="15" fill="#2E2F34" stroke="#3A3B40"/>
+    <circle cx="318" cy="320" r="6" fill="none" stroke="#AEAEB2" stroke-width="2"/>
+    <rect x="262" y="370" width="26" height="4" rx="2" fill="#3A3B40"/>
+
+    <!-- what each does -->
+    <g font-size="21">
+      <text x="440" y="186" font-weight="600" fill="#D2AB55">Arrows</text>
+      <text x="660" y="186" fill="#C7C7CC">Move between apps, rows and settings.</text>
+      <line x1="440" y1="208" x2="1336" y2="208" stroke="#FFFFFF" stroke-opacity=".07"/>
+      <text x="440" y="244" font-weight="600" fill="#D2AB55">OK</text>
+      <text x="660" y="244" fill="#C7C7CC">Open, choose, or switch a setting.</text>
+      <line x1="440" y1="266" x2="1336" y2="266" stroke="#FFFFFF" stroke-opacity=".07"/>
+      <text x="440" y="302" font-weight="600" fill="#D2AB55">Hold OK</text>
+      <text x="660" y="302" fill="#C7C7CC">An app's menu: add to the home screen, move, hide or uninstall.</text>
+      <line x1="440" y1="324" x2="1336" y2="324" stroke="#FFFFFF" stroke-opacity=".07"/>
+      <text x="440" y="360" font-weight="600" fill="#D2AB55">Back</text>
+      <text x="660" y="360" fill="#C7C7CC">Return one step. In Remote button test, hold it to leave.</text>
+      <line x1="440" y1="382" x2="1336" y2="382" stroke="#FFFFFF" stroke-opacity=".07"/>
+      <text x="440" y="418" font-weight="600" fill="#D2AB55">Apps button</text>
+      <text x="660" y="418" fill="#C7C7CC">Open All Apps, from anywhere.</text>
+    </g>
+  </g>
+</svg>

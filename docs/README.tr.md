@@ -6,7 +6,7 @@
 
 [English / ana sayfa](../README.md) · [APK indir](https://github.com/Heymez0/PureTV/releases/latest/download/PureTV.apk) · [Ayrıntılı kurulum](INSTALL.md) · [Kaynak derleme](DEVELOPMENT.md)
 
-**Güncel sürüm: [PureTV v1.3](https://github.com/Heymez0/PureTV/releases/tag/v1.3)** · Android 9+
+**Güncel sürüm: [PureTV v1.4](https://github.com/Heymez0/PureTV/releases/tag/v1.4)** · Android 9+
 
 PureTV; Android TV, Google TV ve Android TV kutuları/stickleri için hafif bir ana ekrandır (başlatıcı).
 LG webOS ve Samsung Tizen için ayrı web sürümleri vardır. **Testlerin yapıldığı gerçek cihaz, Android TV 9 kullanan
@@ -42,49 +42,38 @@ kontrolü LG/Samsung sürümlerinde yoktur.
 
 ## Önizleme
 
-Görseller, PureTV v1.1'in Mi Stick'te alınmış gerçek ekran görüntüleridir; arayüz dili İngilizcedir. Öneri
-afişlerinin dili, içeriği sağlayan uygulamaya bağlıdır. İzleme geçmişi gösterilmez.
-
-### Son izlenenler ve öneriler
+Görseller, PureTV v1.4'ün Mi Stick'te (Android TV 9) alınmış gerçek ekran görüntüleridir; arayüz dili İngilizcedir.
 
 ![Son izlenenler ve öneriler ana ekranı](media/recommendations-en.png)
 
-### Açık ve koyu tema
-
-PureTV'nin açık ve koyu teması var; Otomatik seçilirse gün doğumu ve batımına göre değişir. Son izlenenler ve öneriler
-düzenlerinde arka plan renklerini ilk karttan alır; bunu **Görünüm → İçeriğe göre arka plan** (Appearance →
-Background from content) ile kapatabilirsiniz.
-
-| Açık | Koyu |
-| --- | --- |
-| ![Açık temada öneriler ana ekranı](media/theme-home-light-en.png) | ![Koyu temada öneriler ana ekranı](media/recommendations-en.png) |
-| ![Açık temada Görünüm ayarları](media/theme-settings-light-en.png) | ![Koyu temada Görünüm ayarları](media/theme-settings-dark-en.png) |
-
-### Saatli ana ekran
-
 ![Saatli ana ekran](media/home-en.png)
 
-| Hızlı ayarlar | Kısayollar | Ayarlar |
-| --- | --- | --- |
-| ![Hızlı ayarlar](media/quick-settings-en.png) | ![Kısayollar](media/shortcuts-en.png) | ![Ayarlar](media/settings-en.png) |
+| Tüm uygulamalar | Kurulum rehberi |
+| --- | --- |
+| ![Tüm uygulamalar](media/all-apps-en.png) | ![Kurulum rehberi](media/setup-en.png) |
+
+| Ayarlar | Hızlı ayarlar |
+| --- | --- |
+| ![Ayarlar](media/settings-en.png) | ![Hızlı ayarlar](media/quick-settings-en.png) |
+
+| Kısayollar ve diğer uygulamalar | Ekran koruyucu |
+| --- | --- |
+| ![Kısayollar](media/shortcuts-en.png) | ![Ekran koruyucu](media/screensaver-en.png) |
+
+PureTV'nin açık ve koyu teması var; **Otomatik** seçilirse gün doğumu ve batımına göre değişir.
+
+![Açık tema](media/light-en.png)
 
 ## Kurulum
 
 ### Android TV / Google TV: APK indir
 
-**[PureTV.apk indir](https://github.com/Heymez0/PureTV/releases/latest/download/PureTV.apk)** · [Sürüm ve SHA256 doğrulaması](https://github.com/Heymez0/PureTV/releases/latest)
+**[PureTV.apk indir](https://github.com/Heymez0/PureTV/releases/latest/download/PureTV.apk)** · [Sürüm sayfası](https://github.com/Heymez0/PureTV/releases/latest)
 
-Bu, Android 9 ve üzeri için imzalı v1.3 sürümüdür. **PureTV.apk** dosyasını indirin; GitHub'ın kendiliğinden
+Bu, Android 9 ve üzeri için imzalı v1.4 sürümüdür. **PureTV.apk** dosyasını indirin; GitHub'ın kendiliğinden
 eklediği "Source code" ZIP dosyaları geliştiriciler içindir.
 
-**v1 kullanıyorsanız:** PureTV v1.1'den beri yeni bir anahtarla imzalandığı için Android yeni sürümü v1'in üzerine kurmaz.
-
-1. PureTV v1'de ayarlarınızı yedekleyin: **Tüm ayarlar → Sistem ve hakkında → Ayarları yedekle** (All settings →
-   System and about → Back up settings). Özel ana ekran modundaysanız önce **Varsayılan ana ekran → Orijinal**'i seçin.
-2. PureTV v1'i (ve kuruluysa PureTV AirPlay'i) kaldırın.
-3. En son sürümü aşağıdaki gibi kurun, ardından **Ayarları geri yükle**'yi (Restore settings) seçin.
-
-v1.1'den sonraki sürümler doğrudan güncellenir; PureTV'nin **Güncellemeler** ekranından da kurulabilir.
+**Güncelleme:** yeni PureTV.apk'yı eskisinin üzerine kurun ya da **Sistem ve hakkında → Güncellemeler**'i kullanın; ayarlarınız korunur.
 
 **USB ile:**
 
@@ -181,8 +170,8 @@ ve bu tamamlanana kadar eski uygulamayı kaldırmayın.
 PureTV'den üreticinin ana ekranına dönmek için:
 **Tüm ayarlar → Sistem ve hakkında → Varsayılan ana ekran → Orijinal**
 (All settings → System and about → Default home screen → Original).
-Etkin ana ekranı kaldırmadan önce bunu mutlaka yapın. Güncellemeler aynı imza anahtarını gerektirir; v1.1'den sonraki
-sürümler doğrudan ve PureTV'nin Güncellemeler ekranından güncellenir.
+Etkin ana ekranı kaldırmadan önce bunu mutlaka yapın. Yeni sürümler doğrudan ve PureTV'nin Güncellemeler ekranından
+güncellenir.
 [Kimlik ve güncelleme ayrıntıları](INSTALL.md#identity-and-upgrades).
 
 ## Geliştirme ve lisanslar

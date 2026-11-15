@@ -26,25 +26,25 @@ public class DeviceStatusActivity extends Activity {
     private void show(boolean airplayHelp) {
         if (page != null) page.pause();
         help = airplayHelp;
-        SettingsPage.Row network = new SettingsPage.Row(Ui.tr("Rede", "Network"), null, false);
+        SettingsPage.Row network = new SettingsPage.Row(Ui.tr("Rede", "Network"), null);
         network.network = true;
         if (help) {
             data = new SettingsPage.Data(Ui.tr("Ajuda de conexão AirPlay", "AirPlay connection help"),
                     Ui.tr("Conecte e espelhe", "Connect and mirror"), "network",
-                    network, new SettingsPage.Row(Ui.tr("Receptor", "Receiver"), null, false),
-                    new SettingsPage.Row(Ui.tr("Abrir receptor AirPlay", "Open AirPlay Receiver"), direction -> openReceiver(), false),
-                    new SettingsPage.Row(Ui.tr("Ajustes de Wi-Fi", "Wi-Fi settings"), direction -> openNetwork(), false));
+                    network, new SettingsPage.Row(Ui.tr("Receptor", "Receiver"), null),
+                    new SettingsPage.Row(Ui.tr("Abrir receptor AirPlay", "Open AirPlay Receiver"), direction -> openReceiver()),
+                    new SettingsPage.Row(Ui.tr("Ajustes de Wi-Fi", "Wi-Fi settings"), direction -> openNetwork()));
         } else {
             data = new SettingsPage.Data(Ui.tr("Estado do dispositivo", "Device status"),
                     Ui.tr("Rede, memória e armazenamento", "Network, memory and storage"), "network",
-                    network, new SettingsPage.Row("IP", null, false),
-                    new SettingsPage.Row(Ui.tr("Armazenamento", "Storage"), null, false),
-                    new SettingsPage.Row("RAM", null, false),
-                    new SettingsPage.Row(Ui.tr("Receptor AirPlay", "AirPlay receiver"), null, false),
-                    new SettingsPage.Row(Ui.tr("Ajuda de conexão AirPlay", "AirPlay connection help"), direction -> show(true), false),
+                    network, new SettingsPage.Row("IP", null),
+                    new SettingsPage.Row(Ui.tr("Armazenamento", "Storage"), null),
+                    new SettingsPage.Row("RAM", null),
+                    new SettingsPage.Row(Ui.tr("Receptor AirPlay", "AirPlay receiver"), null),
+                    new SettingsPage.Row(Ui.tr("Ajuda de conexão AirPlay", "AirPlay connection help"), direction -> show(true)),
                     new SettingsPage.Row(Ui.tr("Tela e rede", "Display & Network"),
-                            direction -> startActivity(new Intent(this, DisplaySettingsActivity.class)), false),
-                    new SettingsPage.Row(Ui.tr("Ajustes de Wi-Fi", "Wi-Fi settings"), direction -> openNetwork(), false));
+                            direction -> startActivity(new Intent(this, DisplaySettingsActivity.class))),
+                    new SettingsPage.Row(Ui.tr("Ajustes de Wi-Fi", "Wi-Fi settings"), direction -> openNetwork()));
         }
         page = new SettingsPage(this, data, this::update);
         setContentView(page);
@@ -56,8 +56,7 @@ public class DeviceStatusActivity extends Activity {
         SettingsPage.Row network = data.rows[0];
         network.state = snapshot.state;
         network.transport = snapshot.transport;
-        network.color = snapshot.state == NetworkStatus.ONLINE ? 0xFF30D158
-                : snapshot.state == NetworkStatus.LOCAL ? 0xFFFF9F0A : 0xFFAEAEB2;
+        network.color = NetworkStatus.color(snapshot);
         network.value = help ? snapshot.transport : NetworkStatus.label(snapshot)
                 + (snapshot.transport.isEmpty() ? "" : " · " + snapshot.transport);
         if (help) network.value = (network.value.isEmpty() ? NetworkStatus.label(snapshot) : network.value)

@@ -1,20 +1,20 @@
 # Optional PureTV AirPlay receiver
 
 The receiver is a separate **GPL-3.0** Android app; the launcher remains MIT-licensed.
-Package: `io.puretv.airplay`. Source version: `0.0.36-puretv.3`. Supplied native engine: **armeabi-v7a**.
-[v1.3](https://github.com/Heymez0/PureTV/releases/tag/v1.3) distributes `0.0.36-puretv.3` (v1.1 and v1.2: `0.0.36-puretv.2`), signed with
+Package: `io.puretv.airplay`. Source version: `0.0.36-puretv.4`. Supplied native engine: **armeabi-v7a**.
+[v1.4](https://github.com/Heymez0/PureTV/releases/tag/v1.4) distributes `0.0.36-puretv.4` (v1.3: `0.0.36-puretv.3`; v1.1 and v1.2: `0.0.36-puretv.2`), signed with
 PureTV's new key (v1 distributed `0.0.36-puretv.1` with the previous key).
 
 ## Install
 
 **From PureTV:** the welcome guide's last page offers **Add AirPlay (optional)**, and the same installer is in
-All settings → Connections → **AirPlay receiver**. PureTV downloads `PureTV-AirPlay.apk` from the latest release of this
-repository, checks that it is `io.puretv.airplay` signed with the same certificate as the launcher, and Android asks you to
+All settings → Connections → **AirPlay receiver**. A release `PureTV.apk` carries the receiver inside it
+(`build.py --receiver PureTV-AirPlay.apk`, still a separate GPL-3.0 app), so nothing is downloaded; a build without it
+downloads `PureTV-AirPlay.apk` from the latest release of this repository. Either way PureTV checks that it is `io.puretv.airplay` signed with the same certificate as the launcher, and Android asks you to
 allow installs from PureTV and confirm. Nothing is downloaded or installed without that choice.
 
-**By hand:** download [PureTV-AirPlay.apk](https://github.com/Heymez0/PureTV/releases/latest/download/PureTV-AirPlay.apk)
-and its matching [complete GPL source](https://github.com/Heymez0/PureTV/releases/latest/download/PureTV-AirPlay-Source.zip)
-from the same release, verify them with **SHA256SUMS** and install the APK after **PureTV.apk**.
+From v1.4 the release has no separate receiver download: it comes inside **PureTV.apk**, and its complete GPL source is
+in this repository's [`airplay/`](../../airplay) folder, so every release's Source code archive contains it.
 
 Then:
 
@@ -45,14 +45,16 @@ Receiver pairing/PIN settings are not overridden. Do not run multiple receiver e
 
 ## Source and build
 
-`source-manifest.json` identifies the pinned base and the matching **PureTV-AirPlay-Source.zip** hash; the receiver APK
-hash is added once the APK is signed with the production key. The complete source archive contains the Gradle wrapper,
-interface code, native-source snapshots, licences and build notes. The patches in this folder are for review
+The complete source of the receiver PureTV carries is the [`airplay/`](../../airplay) folder of this repository at the
+same tag: Gradle wrapper, interface code, native-source snapshots, prebuilt ARMv7 engine libraries, licences and build
+notes. `source-manifest.json` identifies the pinned upstream base, the hash of that folder's archive form and the signed
+receiver APK's hash. The patches in this folder are for review
 (`puretv-v0.0.36.patch`: upstream → `0.0.36-puretv.1`; `puretv-0.0.36-puretv.2.patch`: on demand, wake lock and theme; `puretv-0.0.36-puretv.3.patch`: direct video output,
-immediate frame release and the PureTV name); they are not
-a substitute for that full source distribution. Keep each receiver APK together with its matching source archive.
+immediate frame release and the PureTV name; `puretv-0.0.36-puretv.4.patch`: leaving when sharing ends, the current look
+and smaller resources); they are not
+a substitute for that full source distribution. Keep each receiver APK together with its matching source.
 
-Extract the full archive and follow its `PURETV-SOURCE-NOTES.md`. The interface build uses JDK 17+, SDK 37 and its wrapper:
+Open `airplay/` and follow its `PURETV-SOURCE-NOTES.md`. The interface build uses JDK 17+, SDK 37 and its wrapper:
 
 ```sh
 ./gradlew --no-daemon --max-workers=2 -Pkotlin.incremental=false -Pkotlin.compiler.execution.strategy=in-process :app:assembleRelease

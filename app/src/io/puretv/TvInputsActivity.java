@@ -29,7 +29,7 @@ public class TvInputsActivity extends Activity {
         @Override public void onInputStateChanged(String id,int state){changed();}
     };
     private String tr(String value){return Ui.tr(value);}
-    private SettingsPage.Row action(String label,Runnable task){return new SettingsPage.Row(tr(label),d->task.run(),false);}
+    private SettingsPage.Row action(String label,Runnable task){return new SettingsPage.Row(tr(label),d->task.run());}
     @Override protected void onCreate(Bundle state){
         super.onCreate(state);Watchdog.install(this);Ui.init(this);
         manager=(TvInputManager)getSystemService(TV_INPUT_SERVICE);render(0);
@@ -38,25 +38,25 @@ public class TvInputsActivity extends Activity {
         if(page!=null)page.pause();List<SettingsPage.Row> rows=new ArrayList<>();
         if(Prefs.television()){
             SettingsPage.Row show=action("Show inputs on home screen",()->{Prefs.setTvInputs(!Prefs.tvInputs());page.changed();});
-            show.value=tr(Prefs.tvInputs()?"On":"Off");rows.add(show);
+            show.set(Prefs.tvInputs());rows.add(show);
             SettingsPage.Row inactive=action("Show inactive HDMI inputs",()->{Prefs.setInactiveInputs(!Prefs.inactiveInputs());page.changed();});
-            inactive.value=tr(Prefs.inactiveInputs()?"On":"Off");rows.add(inactive);
-            if(live)rows.add(action("Live TV",()->open(HomeApps.action(HomeApps.LIVE_TV,"live",tr("Live TV"),"tv"))));
+            inactive.set(Prefs.inactiveInputs());rows.add(inactive);
+            if(live)rows.add(action("Live TV",()->open(HomeApps.liveItem())));
             for(HomeApps.Item input:inputs){
-                SettingsPage.Row row=new SettingsPage.Row(input.label,d->open(input),false);
+                SettingsPage.Row row=new SettingsPage.Row(input.label,d->open(input));
                 row.value=tr(input.connected?"Connected":"No active signal");rows.add(row);
             }
-            if(inputs.isEmpty()&&!live)rows.add(new SettingsPage.Row(tr(loading?"Checking…":"No physical TV inputs were reported by this device."),null,false));
+            if(inputs.isEmpty()&&!live)rows.add(new SettingsPage.Row(tr(loading?"Checking…":"No physical TV inputs were reported by this device."),null));
             rows.add(action("Refresh inputs",this::changed));
             rows.add(action("Channel setup",()->system(TvInputManager.ACTION_SETUP_INPUTS)));
             rows.add(action("Picture settings",()->system(Settings.ACTION_DISPLAY_SETTINGS)));
             rows.add(action("Sound settings",()->system(Settings.ACTION_SOUND_SETTINGS)));
-        }else rows.add(new SettingsPage.Row(tr("Select Television in Home screen → Device mode to use TV inputs."),null,false));
+        }else rows.add(new SettingsPage.Row(tr("Select Television in Device and performance → Device mode to use TV inputs."),null));
         rows.add(action("TV Settings",()->system(Settings.ACTION_SETTINGS)));
         SettingsPage.Data data=new SettingsPage.Data(tr("TV inputs"),tr("Sources and TV controls"),"hdmi",rows.toArray(new SettingsPage.Row[0]));
         data.hint=tr("Only inputs reported by the device appear. A TV box cannot access the television's HDMI ports. Picture, sound and channels open the TV's own settings.");
         page=new SettingsPage(this,data,()->{
-            if(Prefs.television()){data.rows[0].value=tr(Prefs.tvInputs()?"On":"Off");data.rows[1].value=tr(Prefs.inactiveInputs()?"On":"Off");}
+            if(Prefs.television()){data.rows[0].set(Prefs.tvInputs());data.rows[1].set(Prefs.inactiveInputs());}
         });page.select(selected);setContentView(page);if(visible)page.resume();
     }
     private void open(HomeApps.Item item){

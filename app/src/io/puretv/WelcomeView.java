@@ -19,7 +19,9 @@ import java.util.function.IntConsumer;
 /** Static native welcome surface: no images, backdrop decoding, animation loop or network work. */
 final class WelcomeView extends View {
     static final int NEXT=1,LATER=2,DEVELOPERS=3,ENABLE=4,HOME=5,SETTINGS=6,BACK=7,CHECK=8,LEAVE=9,NETWORK=10;
-    static final int BOX=11,TV=12,AIRPLAY=13;
+    /** The AirPlay page: shown on the flow's READY step, before the last page. */
+    static final int AIRPLAY_STEP=7;
+    static final int BOX=11,TV=12,AIRPLAY=13,LAYOUT_CLOCK=14,LAYOUT_RECENT=15,LAYOUT_COMBINED=16,AIRPLAY_NOW=17,AIRPLAY_SKIP=18;
     static final class Button {
         final int action;final String text;final boolean enabled;
         Button(int action,String text,boolean enabled){this.action=action;this.text=text;this.enabled=enabled;}
@@ -37,14 +39,24 @@ final class WelcomeView extends View {
     private static Button button(int action,String text,boolean enabled){return new Button(action,tr(text),enabled);}
     static Content content(WelcomeFlow flow,boolean loaded,boolean debug,String busy,String error){return content(flow,loaded,debug,busy,error,false);}
     /** `airplay`: the optional receiver isn't installed, so the last page offers it (never required). */
-    static Content content(WelcomeFlow flow,boolean loaded,boolean debug,String busy,String error,boolean airplay){
+    static Content content(WelcomeFlow flow,boolean loaded,boolean debug,String busy,String error,boolean airplay){return content(flow,loaded,debug,busy,error,airplay,false,"",false);}
+    /** `offer`: setup just finished and the receiver PureTV carries isn't installed: its own step, before the last page. */
+    static Content content(WelcomeFlow flow,boolean loaded,boolean debug,String busy,String error,boolean airplay,boolean offer,String airplayStatus,boolean airplayBusy){
+        if(flow.step==WelcomeFlow.READY&&offer){
+            String about=tr("Mirror an iPhone, iPad or Mac to this TV. The receiver comes inside PureTV, so nothing is downloaded. It runs only while you have AirPlay turned on.");
+            return airplay?new Content(AIRPLAY_STEP,tr("Add AirPlay"),about,airplayStatus,button(AIRPLAY_NOW,"Install AirPlay",!airplayBusy),button(AIRPLAY_SKIP,"Not now",!airplayBusy))
+                :new Content(AIRPLAY_STEP,"AirPlay",about,tr("Installed"),button(AIRPLAY_SKIP,"Continue",true));
+        }
         switch(flow.step){
+            case WelcomeFlow.LAYOUT:return new Content(flow.step,tr("Choose your home screen"),
+                tr("You can change it later in Settings → Home screen → Home screen layout."),"",
+                button(LAYOUT_CLOCK,"Clock only",true),button(LAYOUT_RECENT,"Recently watched only",true),button(LAYOUT_COMBINED,"Recent + recommended",true));
             case WelcomeFlow.DEVICE:return new Content(flow.step,tr("Where will you use PureTV?"),
                 tr("Choose TV box / stick for a device connected to your TV. Choose Television when PureTV runs on the TV itself, with its own tuner and HDMI inputs. Your theme and app arrangement stay the same."),
-                tr("You can change this later in Settings → Home screen → Device mode."),
+                tr("You can change this later in Settings → Device and performance → Device mode."),
                 button(BOX,"TV box / stick",true),button(TV,"Television",true),button(LATER,"Set up later",true));
             case WelcomeFlow.CONNECT:return new Content(flow.step,tr("Get your TV ready"),
-                tr("Open your TV's developer options and enable USB debugging. If developer options are hidden, open About and press Build seven times. Then return here with Back."),
+                tr("PureTV uses USB debugging, on this TV only and without a computer, to become the home screen and screensaver; Android TV offers no other way. Open your TV's developer options and enable USB debugging. If they are hidden, open About and press Build seven times. Then return here with Back."),
                 error.isEmpty()?tr(debug?"USB debugging is enabled.":"You can enable USB debugging in TV settings."):error,
                 button(debug?NEXT:DEVELOPERS,debug?"Continue":"Open TV settings",true),
                 button(debug?DEVELOPERS:NEXT,debug?"Open TV settings":"Continue",true),button(LATER,"Set up later",true));
@@ -74,9 +86,14 @@ final class WelcomeView extends View {
     private final Paint fill=new Paint(Paint.ANTI_ALIAS_FLAG),line=new Paint(Paint.ANTI_ALIAS_FLAG);
     private TextPaint brand,hero,caption,title,body,status,label,small;
     private StaticLayout heroLines,bodyLines,statusLines;
+    private final StaticLayout[] layoutLines=new StaticLayout[3];private final RectF mini=new RectF(),part=new RectF();private TextPaint miniClock;
     private Content data;private int focus,width,height;private float k=1;private boolean armed,running;
+    private final android.graphics.drawable.Drawable mark;
     WelcomeView(Context c,IntConsumer action,Runnable back){
         super(c);this.action=action;this.back=back;setFocusable(true);
+        android.graphics.drawable.Drawable icon=null;
+        try{icon=c.getApplicationInfo().loadIcon(c.getPackageManager());}catch(RuntimeException ignored){}
+        mark=icon;
         spoken=new Spoken(this,new Spoken.Source(){
             @Override public void items(List<Integer> out){if(data!=null)for(int i=0;i<data.buttons.length;i++)out.add(i+1);}
             @Override public String text(int id){return valid(id)?data.buttons[id-1].text:"";}
@@ -93,7 +110,10 @@ final class WelcomeView extends View {
         if(next.same(data))return;boolean changedStep=data==null||data.step!=next.step;
         if(changedStep||focus>=next.buttons.length||data.buttons[focus].action!=next.buttons[focus].action)armed=false;
         data=next;
-        if(changedStep)focus=0;focus=Math.min(focus,data.buttons.length-1);
+        if(changedStep)focus=0;
+        // The layout step opens on the layout in use, so OK alone keeps it.
+        if(changedStep&&data.step==WelcomeFlow.LAYOUT){String mode=Prefs.homeContentMode();focus=HomeContentModes.CLOCK.equals(mode)?0:HomeContentModes.COMBINED.equals(mode)?2:1;}
+        focus=Math.min(focus,data.buttons.length-1);
         if(!data.buttons[focus].enabled)for(int i=0;i<data.buttons.length;i++)if(data.buttons[i].enabled){focus=i;break;}
         setContentDescription(data.title+". "+data.body+" "+data.status);rebuild();invalidate();if(running)spoken.readAgain();
     }
@@ -118,31 +138,73 @@ final class WelcomeView extends View {
         body.setColor(surface.dim);status.setColor(surface.ink);small.setColor(surface.dim);
         heroLines=lines(tr("A calmer home.\nMade for your TV."),hero,(int)(650*k),3);
         bodyLines=lines(data.body,body,(int)(818*k),7);statusLines=lines(data.status,status,(int)(818*k),3);
+        String[] layouts={"Show the clock without reading viewing content.","Show viewing progress shared by your selected apps. Recommendations stay off.",
+            "Show Recently watched and Recommended tabs. Recommendations are read only in this layout."};
+        for(int i=0;i<3;i++)layoutLines[i]=data.step==WelcomeFlow.LAYOUT?lines(tr(layouts[i]),body,(int)(338*k),7):null;
+        if(miniClock==null)miniClock=new TextPaint(Ui.numbers(Ui.light,10,surface.ink));miniClock.setLetterSpacing(-.035f);
     }
     private void drawLines(Canvas c,StaticLayout text,float x,float y){if(text!=null){c.save();c.translate(x,y);text.draw(c);c.restore();}}
     @Override protected void onDraw(Canvas c){
         surface.draw(c,width,height);if(data==null||body==null)return;surface.panel(c,panel,34*k);
-        fill.setColor(0xFFD2AB55);box.set(132*k,144*k,204*k,216*k);c.drawRoundRect(box,20*k,20*k,fill);
-        Symbols.draw(getContext(),c,"tv",168*k,180*k,40*k,0xFF222225);c.drawText("PureTV",230*k,205*k,brand);
+        // PureTV's own icon beside its name; the gold tile stands in if the system can't supply it.
+        box.set(132*k,138*k,216*k,222*k);
+        if(mark!=null){mark.setBounds(Math.round(box.left),Math.round(box.top),Math.round(box.right),Math.round(box.bottom));mark.draw(c);}
+        else{fill.setColor(Look.GOLD);c.drawRoundRect(box,22*k,22*k,fill);Symbols.draw(getContext(),c,"tv",box.centerX(),box.centerY(),44*k,Look.ON_GOLD);}
+        c.drawText("PureTV",240*k,205*k,brand);
         drawLines(c,heroLines,132*k,306*k);
         c.drawText(tr("Simple. Familiar. Yours."),132*k,550*k,caption);
-        String[] steps={tr("Welcome"),tr("Device mode"),tr("Connection"),tr("Start")};
-        int current=data.step==WelcomeFlow.INTRO?0:data.step==WelcomeFlow.DEVICE?1:data.step==WelcomeFlow.CONNECT?2:3;
-        for(int i=0;i<4;i++){
-            float y=(700+i*66)*k;fill.setColor(i<=current?0xFFD2AB55:surface.dark?0xFF444247:0xFFD3CFC8);c.drawCircle(148*k,y,15*k,fill);
-            label.setColor(i<=current?surface.ink:surface.dim);c.drawText(steps[i],184*k,y+Ui.halfCap(label),label);
+        String[] steps={tr("Welcome"),tr("Device mode"),tr("Home screen layout"),tr("Connection"),"AirPlay",tr("Start")};
+        int current=data.step==WelcomeFlow.INTRO?0:data.step==WelcomeFlow.DEVICE?1:data.step==WelcomeFlow.LAYOUT?2:data.step==AIRPLAY_STEP?4:data.step==WelcomeFlow.READY?5:3;
+        final float gap=198f/(steps.length-1);
+        // The steps on one line: gold up to the current step, which carries a ring; finished steps a check.
+        int gold=surface.dark?Look.GOLD:Look.GOLD_DEEP,rest=surface.dark?0xFF444247:0xFFD3CFC8;
+        fill.setColor(rest);c.drawRect(146.5f*k,700*k,149.5f*k,898*k,fill);
+        fill.setColor(gold);c.drawRect(146.5f*k,700*k,149.5f*k,(700+current*gap)*k,fill);
+        for(int i=0;i<steps.length;i++){
+            float y=(700+i*gap)*k;
+            if(i==current){fill.setColor(Ui.alpha(gold,.28f));c.drawCircle(148*k,y,20*k,fill);}
+            fill.setColor(i<=current?gold:rest);c.drawCircle(148*k,y,13*k,fill);
+            if(i<current)Symbols.draw(getContext(),c,"check",148*k,y,15*k,Look.ON_GOLD);
+            label.setColor(i<=current?surface.ink:surface.dim);c.drawText(steps[i],190*k,y+Ui.halfCap(label),label);
         }
-        c.drawText(tr("Quick setup"),936*k,180*k,small);c.drawText((current+1)+" / 4",1666*k,180*k,small);
+        c.drawText(tr("Quick setup"),936*k,180*k,small);c.drawText((current+1)+" / "+steps.length,1666*k,180*k,small);
         c.drawText(TextUtils.ellipsize(data.title,title,818*k,TextUtils.TruncateAt.END).toString(),936*k,252*k,title);
-        drawLines(c,bodyLines,936*k,292*k);drawLines(c,statusLines,936*k,550*k);
+        drawLines(c,bodyLines,936*k,292*k);
+        if(data.step==WelcomeFlow.LAYOUT){drawPreview(c,Math.max(0,Math.min(2,focus)));drawLines(c,layoutLines[Math.max(0,Math.min(2,focus))],1416*k,396*k);}
+        else drawLines(c,statusLines,936*k,550*k);
         for(int i=0;i<data.buttons.length;i++){
             Button b=data.buttons[i];RectF r=rows[i];boolean on=i==focus&&b.enabled;
-            fill.setColor(on?surface.focusFill:surface.dark?0xFF2B2A2B:0xFFE5E0D9);c.drawRoundRect(r,18*k,18*k,fill);
+            if(on)surface.focus(c,r,18*k,1);else surface.well(c,r,18*k,0);
             label.setColor(on?surface.focusInk:b.enabled?surface.ink:surface.dim);
             String text=TextUtils.ellipsize(b.text,label,r.width()-56*k,TextUtils.TruncateAt.END).toString();
             c.drawText(text,r.centerX()-label.measureText(text)/2,r.centerY()+Ui.halfCap(label),label);
         }
         String hint=tr("OK selects · Back returns");c.drawText(hint,(width-small.measureText(hint))/2,1020*k,small);
+    }
+    private void piece(Canvas c,float u,float l,float t,float r,float b,float radius,int color){
+        part.set(mini.left+l*u,mini.top+t*u,mini.left+r*u,mini.top+b*u);fill.setColor(color);c.drawRoundRect(part,radius*u,radius*u,fill);
+    }
+    /** The focused layout as a small sketch of the home screen (1920 wide, drawn at `u`): shapes only, no content. */
+    private void drawPreview(Canvas c,int mode){
+        mini.set(936*k,388*k,1384*k,640*k);surface.well(c,mini,20*k,0);
+        float u=mini.width()/1920f;int ink=surface.ink,gold=surface.dark?Look.GOLD:Look.GOLD_DEEP;
+        piece(c,u,128,812,1792,1020,64,Ui.alpha(ink,.10f));
+        for(int i=0;i<6;i++)piece(c,u,170+i*272,852,170+i*272+224,980,22,Ui.alpha(ink,.24f));
+        piece(c,u,1432,69,1500,137,34,Ui.alpha(ink,.16f));piece(c,u,1518,69,1586,137,34,Ui.alpha(ink,.16f));piece(c,u,1600,69,1846,137,34,Ui.alpha(ink,.16f));
+        piece(c,u,1786,77,1838,129,26,gold);
+        if(mode==0){
+            piece(c,u,84,292,430,316,6,Ui.alpha(ink,.34f));
+            miniClock.setTextSize(236*u);miniClock.setColor(ink);c.drawText("12:45",mini.left+76*u,mini.top+536*u,miniClock);
+            piece(c,u,84,598,470,624,6,Ui.alpha(ink,.26f));piece(c,u,490,606,502,618,6,gold);piece(c,u,522,598,700,624,6,Ui.alpha(ink,.18f));
+            return;
+        }
+        piece(c,u,80,69,420,137,34,Ui.alpha(ink,.16f));
+        piece(c,u,80,178,300,206,6,Ui.alpha(ink,.72f));piece(c,u,80,220,112,226,3,gold);
+        if(mode==2)piece(c,u,350,178,540,206,6,Ui.alpha(ink,.30f));
+        for(int i=0;i<3;i++){
+            float l=80+i*600;piece(c,u,l,262,l+560,577,26,Ui.alpha(ink,.18f));
+            piece(c,u,l+28,540,l+532,548,4,Ui.alpha(ink,.22f));piece(c,u,l+28,540,l+28+(160+i*110),548,4,gold);
+        }
     }
     private void activate(){if(data!=null&&data.buttons[focus].enabled)action.accept(data.buttons[focus].action);}
     boolean onKey(KeyEvent e){

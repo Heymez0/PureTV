@@ -18,8 +18,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * The optional AirPlay receiver, installed on request: download from PureTV's release, check, then Android's own
- * install confirmation. OK starts each step; nothing happens on arrows or in the background.
+ * The optional AirPlay receiver, installed on request: the copy inside this APK (or a download from PureTV's
+ * release), a check, then Android's own install confirmation. OK starts each step; nothing happens on arrows or in the background.
  */
 public class AirPlayInstallActivity extends Activity {
     private final Handler main = new Handler(Looper.getMainLooper());
@@ -27,7 +27,7 @@ public class AirPlayInstallActivity extends Activity {
     private SettingsPage page;
     private SettingsPage.Data data;
     private String installed = "", status = "";
-    private boolean working, alive = true, registered;
+    private boolean working, alive = true, registered, bundled;
     private int lastPercent = -1;
 
     private final BroadcastReceiver result = new BroadcastReceiver() {
@@ -54,9 +54,10 @@ public class AirPlayInstallActivity extends Activity {
         Watchdog.install(this);
         Ui.init(this);
         data = new SettingsPage.Data(Ui.tr("AirPlay receiver"), Ui.tr("Optional: mirror an iPhone, iPad or Mac"), "tv",
-                new SettingsPage.Row(Ui.tr("Install AirPlay receiver"), direction -> start(), false),
-                new SettingsPage.Row(Ui.tr("Allow installs from PureTV"), direction -> allowInstalls(), false),
-                new SettingsPage.Row(Ui.tr("Open AirPlay receiver"), direction -> openReceiver(), false));
+                new SettingsPage.Row(Ui.tr("Install AirPlay receiver"), direction -> start()),
+                new SettingsPage.Row(Ui.tr("Allow installs from PureTV"), direction -> allowInstalls()),
+                new SettingsPage.Row(Ui.tr("Open AirPlay receiver"), direction -> openReceiver()));
+        bundled = AirPlayInstall.bundled(this);
         page = new SettingsPage(this, data, this::update);
         setContentView(page);
         AirPlayInstall.listen(this, result, AirPlayInstall.STATUS);
@@ -67,10 +68,11 @@ public class AirPlayInstallActivity extends Activity {
 
     private void update() {
         data.rows[0].value = working ? status : installed.isEmpty() ? Ui.tr("Not installed") : installed;
-        data.rows[1].value = allowedToInstall() ? Ui.tr("On") : Ui.tr("Off");
+        data.rows[1].set(allowedToInstall());
         data.rows[2].value = "";
         data.hint = (status.isEmpty() || working ? "" : status + "\n\n")
-                + Ui.tr("PureTV downloads the receiver (about 9 MB) from its own GitHub release, checks that it is the PureTV receiver signed like this app, and then Android asks you to confirm the installation.") + "\n\n"
+                + (bundled ? Ui.tr("The receiver comes inside this PureTV, so nothing is downloaded. PureTV checks that it is the PureTV receiver signed like this app, and then Android asks you to confirm the installation.")
+                    : Ui.tr("PureTV downloads the receiver (about 9 MB) from its own GitHub release, checks that it is the PureTV receiver signed like this app, and then Android asks you to confirm the installation.")) + "\n\n"
                 + Ui.tr("The receiver is a separate GPL-3.0 app; its complete source is in the same release. It runs only after you turn AirPlay on.");
     }
 
@@ -79,21 +81,29 @@ public class AirPlayInstallActivity extends Activity {
         if (!allowedToInstall()) { status = Ui.tr("First allow installs from PureTV, then press OK again."); allowInstalls(); return; }
         working = true;
         lastPercent = -1;
-        status = Ui.tr("Downloading…");
+        status = bundled ? Ui.tr("Checking the receiver…") : Ui.tr("Downloading…");
         page.changed();
         final Context app = getApplicationContext();
         io.execute(() -> {
             try {
-                File apk = AirPlayInstall.download(app, (done, total) -> {
-                    int percent = total > 0 ? (int) (done * 100 / total) : -1;
-                    if (percent != lastPercent && percent % 5 == 0) {
-                        lastPercent = percent;
-                        main.post(() -> { if (alive && working) { status = Ui.trf("Downloading… {n}%", "n", percent); page.changed(); } });
-                    }
-                });
-                main.post(() -> { if (alive) { status = Ui.tr("Checking the receiver…"); page.changed(); } });
-                String version = AirPlayInstall.verify(app, apk);
-                main.post(() -> { if (alive) { status = Ui.trf("Installing {version}…", "version", version); page.changed(); } });
+                File apk = null;
+                String version = null;
+                // The carried copy first; one that can't be read or isn't signed like this app falls back to the release.
+                if (bundled) try { apk = AirPlayInstall.unpack(app); version = AirPlayInstall.verify(app, apk); }
+                    catch (java.io.IOException unusable) { apk = null; AppLog.w("carried receiver unusable: downloading"); }
+                if (apk == null) {
+                    apk = AirPlayInstall.download(app, (done, total) -> {
+                        int percent = total > 0 ? (int) (done * 100 / total) : -1;
+                        if (percent != lastPercent && percent % 5 == 0) {
+                            lastPercent = percent;
+                            main.post(() -> { if (alive && working) { status = Ui.trf("Downloading… {n}%", "n", percent); page.changed(); } });
+                        }
+                    });
+                    main.post(() -> { if (alive) { status = Ui.tr("Checking the receiver…"); page.changed(); } });
+                    version = AirPlayInstall.verify(app, apk);
+                }
+                final String found = version;
+                main.post(() -> { if (alive) { status = Ui.trf("Installing {version}…", "version", found); page.changed(); } });
                 AirPlayInstall.install(app, apk);
             } catch (Exception e) {
                 AirPlayInstall.clean(app);

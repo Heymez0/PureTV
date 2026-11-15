@@ -62,10 +62,10 @@ public class UpdateActivity extends Activity {
         Ui.init(this);
         try { current = getPackageManager().getPackageInfo(getPackageName(), 0).versionName; } catch (Exception ignored) { }
         data = new SettingsPage.Data(Ui.tr("Updates"), Ui.tr("From PureTV's GitHub releases"), "settings",
-                new SettingsPage.Row(Ui.tr("Check for updates"), d -> check(), false),
-                new SettingsPage.Row(Ui.tr("Install update"), d -> install(), false),
-                new SettingsPage.Row(Ui.tr("Automatic updates"), d -> cycleMode(), true),
-                new SettingsPage.Row(Ui.tr("Allow installs from PureTV"), d -> allowInstalls(), false));
+                new SettingsPage.Row(Ui.tr("Check for updates"), d -> check()),
+                new SettingsPage.Row(Ui.tr("Install update"), d -> install()),
+                new SettingsPage.Row(Ui.tr("Automatic updates"), d -> cycleMode()),
+                new SettingsPage.Row(Ui.tr("Allow installs from PureTV"), d -> allowInstalls()));
         page = new SettingsPage(this, data, this::update);
         setContentView(page);
         AirPlayInstall.listen(this, result, STATUS);
@@ -84,7 +84,8 @@ public class UpdateActivity extends Activity {
         for (AppUpdate.Found f : found) names.add(AppUpdate.label(f));
         data.rows[1].value = names.isEmpty() ? "—" : String.join(", ", names);
         data.rows[2].value = modeLabel(Prefs.updateMode());
-        data.rows[3].value = quiet() ? Ui.tr("Not needed") : getPackageManager().canRequestPackageInstalls() ? Ui.tr("On") : Ui.tr("Off");
+        if (quiet()) { data.rows[3].value = Ui.tr("Not needed"); data.rows[3].toggle = null; }
+        else data.rows[3].set(getPackageManager().canRequestPackageInstalls());
         String mode = Prefs.updateMode();
         data.hint = (status.isEmpty() || working ? "" : status + "\n\n")
                 + (InstallRules.AUTO.equals(mode) ? (quiet()

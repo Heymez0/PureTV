@@ -16,6 +16,13 @@ PATTERNS = [re.compile(p) for p in [
     rb"(?m)^(?:tmdb_key|watchmode_key)\s*=\s*[^\s#]+",
 ]]
 
+# Upstream third-party files in the AirPlay receiver's source, checked by hand: a documentation comment that shows the
+# PEM header format (no key), and an FFmpeg test reference whose name contains "private". Exact paths only.
+UPSTREAM_REVIEWED = {
+    "airplay/app/src/main/cpp/third_party/ffmpeg/libavformat/tls_openssl.c",
+    "airplay/app/src/main/cpp/third_party/ffmpeg/tests/ref/fate/matroska-wavpack-missing-codecprivate",
+}
+
 def check(root, all_files=False):
     paths = []
     indexed = False
@@ -28,6 +35,8 @@ def check(root, all_files=False):
     issues = []
     for p in paths:
         rel = p.relative_to(root).as_posix()
+        if rel in UPSTREAM_REVIEWED:
+            continue
         if p.is_symlink() or p.name in FORBIDDEN or p.suffix.lower() in SUFFIXES or "private" in p.name.lower():
             issues.append(rel + ": private/generated file")
             continue

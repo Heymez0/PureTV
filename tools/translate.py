@@ -160,8 +160,10 @@ def java_calls():
             patterns = [(CALL, True)]
             if re.search(r"\bString\s+tr\(String", text):
                 patterns.append((re.compile(r"(?<![\w.])tr\("), False))
-            if name == "SettingsActivity.java":
+            if name in ("SettingsActivity.java", "TvInputsActivity.java"):
                 patterns.append((re.compile(r"\b(?:action|adjust)\("), False))
+            if name == "WelcomeView.java":   # button(ACTION, "Text", enabled): the text is translated inside
+                patterns.append((re.compile(r"\bbutton\(\w+,"), False))
             for pattern, legacy in patterns:
                 for m in pattern.finditer(text):
                     line = text.count("\n", 0, m.start()) + 1

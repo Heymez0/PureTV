@@ -13,14 +13,14 @@ public class DisplaySettingsActivity extends Activity {
         super.onCreate(state);
         Watchdog.install(this);
         Ui.init(this);
-        SettingsPage.Row network = new SettingsPage.Row(Ui.tr("Rede", "Network"), null, false);
+        SettingsPage.Row network = new SettingsPage.Row(Ui.tr("Rede", "Network"), null);
         network.network = true;
         data = new SettingsPage.Data(Ui.tr("Tela e rede", "Display & Network"),
                 Ui.tr("Conexão, hora e aparência", "Connection, clock and appearance"), "settings",
-                network, new SettingsPage.Row("IP", null, false),
-                new SettingsPage.Row(Ui.tr("Formato da hora", "Clock format"), direction -> changeClock(direction), true),
+                network, new SettingsPage.Row("IP", null),
+                new SettingsPage.Row(Ui.tr("Formato da hora", "Clock format"), direction -> changeClock(direction)),
                 new SettingsPage.Row(Ui.tr("Modo leve", "Lightweight mode"),
-                        direction -> Prefs.setLightweight(!Prefs.lightweight()), true));
+                        direction -> Prefs.setLightweight(!Prefs.lightweight())));
         data.hint = Ui.tr("OK ou as setas mudam o valor.", "OK or the arrows change the value.") + "\n\n"
                 + Ui.tr("O modo leve reduz os efeitos e as animações. Desligado mantém o visual original.",
                 "Lightweight mode reduces effects and animation. Off keeps the original appearance.") + "\n\n"
@@ -44,13 +44,12 @@ public class DisplaySettingsActivity extends Activity {
                 + (snapshot.transport.isEmpty() ? "" : " · " + snapshot.transport);
         network.state = snapshot.state;
         network.transport = snapshot.transport;
-        network.color = snapshot.state == NetworkStatus.ONLINE ? 0xFF30D158
-                : snapshot.state == NetworkStatus.LOCAL ? 0xFFFF9F0A : 0xFFAEAEB2;
+        network.color = NetworkStatus.color(snapshot);
         data.rows[1].value = snapshot.addresses.isEmpty() ? "—" : snapshot.addresses;
         String mode = Prefs.clockFormat();
         data.rows[2].value = ("auto".equals(mode) ? Ui.tr("Automático", "Automatic")
                 : "12".equals(mode) ? "12h" : "24h") + " · " + Ui.clock(System.currentTimeMillis());
-        data.rows[3].value = Prefs.lightweight() ? Ui.tr("Ligado", "On") : Ui.tr("Desligado", "Off");
+        data.rows[3].set(Prefs.lightweight());
     }
 
     @Override protected void onResume() { super.onResume(); page.resume(); }

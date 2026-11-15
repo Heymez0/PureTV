@@ -2,7 +2,7 @@ package io.puretv;
 
 final class WelcomeRegression {
     static void ok(boolean value){if(!value)throw new AssertionError();}
-    static WelcomeFlow review(){WelcomeFlow flow=new WelcomeFlow();flow.next();ok(flow.step==WelcomeFlow.DEVICE);flow.next();flow.next();ok(flow.step==WelcomeFlow.REVIEW);return flow;}
+    static WelcomeFlow review(){WelcomeFlow flow=new WelcomeFlow();flow.next();ok(flow.step==WelcomeFlow.DEVICE);flow.next();ok(flow.step==WelcomeFlow.LAYOUT);flow.next();flow.next();ok(flow.step==WelcomeFlow.REVIEW);return flow;}
     public static void main(String[] args){
         for(int status=0;status<=3;status++)for(boolean active:new boolean[]{false,true})for(boolean legacy:new boolean[]{false,true})for(boolean busy:new boolean[]{false,true}){
             boolean show=WelcomeFlow.shouldShow(status,active,legacy,busy);
@@ -24,7 +24,13 @@ final class WelcomeRegression {
         flow=review();ok(!flow.begin(100,false,true,""));
         flow=new WelcomeFlow();flow.observe(100,false,true,"");ok(flow.step==WelcomeFlow.WORKING);flow.observe(200,false,false,"failed");ok(flow.failed);
         flow=new WelcomeFlow();flow.restore(2);ok(flow.step==2);flow.restore(100);ok(flow.step==0);flow.restore(3);ok(flow.step==0);
-        flow.restore(WelcomeFlow.DEVICE);ok(flow.step==WelcomeFlow.DEVICE);flow.next();ok(flow.step==WelcomeFlow.CONNECT);ok(flow.back()&&flow.step==WelcomeFlow.DEVICE);ok(flow.back()&&flow.step==WelcomeFlow.INTRO);
+        // The guide opened again after setup: Back walks READY → REVIEW → CONNECT → DEVICE → INTRO, and a poll that
+        // still sees PureTV active must not throw the viewer forward to READY again.
+        WelcomeFlow done=new WelcomeFlow();done.observe(0,true,false,"");ok(done.step==WelcomeFlow.READY);
+        ok(done.back()&&done.step==WelcomeFlow.REVIEW);done.observe(500,true,false,"");ok(done.step==WelcomeFlow.REVIEW);
+        ok(done.back()&&done.step==WelcomeFlow.CONNECT&&done.back()&&done.step==WelcomeFlow.LAYOUT&&done.back()&&done.step==WelcomeFlow.DEVICE&&done.back()&&done.step==WelcomeFlow.INTRO&&!done.back());
+        done.next();done.next();done.next();done.next();ok(done.step==WelcomeFlow.REVIEW&&!done.begin(900,true,false,"")&&done.step==WelcomeFlow.READY&&!done.browsing);
+        flow.restore(WelcomeFlow.DEVICE);ok(flow.step==WelcomeFlow.DEVICE);flow.next();ok(flow.step==WelcomeFlow.LAYOUT);flow.next();ok(flow.step==WelcomeFlow.CONNECT);ok(flow.back()&&flow.step==WelcomeFlow.LAYOUT);ok(flow.back()&&flow.step==WelcomeFlow.DEVICE);ok(flow.back()&&flow.step==WelcomeFlow.INTRO);
         System.out.println("PASS: fresh/legacy/deferred/completed routing; interrupted setup; explicit final-confirm gate; double activation blocked; role-before-busy completion; failure/retry; stale-result grace; timeout; restored pages.");
     }
 }

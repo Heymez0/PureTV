@@ -88,6 +88,7 @@ final class DreamView extends View implements Choreographer.FrameCallback, HomeD
     private float k = 1;
     private long minute = -1;
     private String clock = "", date = "";
+    private final Paint accent = new Paint(Paint.ANTI_ALIAS_FLAG);
     private Paint labelPaint, metaPaint;
     private TextPaint titlePaint;
 
@@ -211,13 +212,15 @@ final class DreamView extends View implements Choreographer.FrameCallback, HomeD
         h = height;
         k = w / 1920f;
         fallbackBackground.setShader(null);fallbackBackground.setColor(0xFF000000);
-        datePaint=Ui.text(Ui.medium,36*k,0xFF939399);datePaint.setTextAlign(Paint.Align.CENTER);
-        clockPaint=Ui.numbers(Ui.semibold,280*k,0xFFB8B8BE);clockPaint.setTextAlign(Paint.Align.CENTER);clockPaint.setLetterSpacing(-.01f);
+        // The home screen's clock layout, in the screensaver's dim greys: a tracked uppercase date, light numerals, one gold dot.
+        datePaint=Ui.text(Ui.medium,28*k,0xFF939399);datePaint.setTextAlign(Paint.Align.CENTER);datePaint.setLetterSpacing(.16f);
+        clockPaint=Ui.numbers(Ui.light,280*k,0xFFB8B8BE);clockPaint.setTextAlign(Paint.Align.CENTER);clockPaint.setLetterSpacing(-.035f);
         weatherPaint=Ui.numbers(Ui.semibold,30*k,0xFF9B9BA1);weatherDim=Ui.numbers(Ui.regular,28*k,0xFF78787F);
-        cornerDate=Ui.numbers(Ui.medium,30*k,0xFF939399);cornerClock=Ui.numbers(Ui.semibold,200*k,0xFFB8B8BE);
+        cornerDate=Ui.numbers(Ui.medium,26*k,0xFF939399);cornerDate.setLetterSpacing(.14f);cornerClock=Ui.numbers(Ui.light,200*k,0xFFB8B8BE);cornerClock.setLetterSpacing(-.035f);
+        accent.setColor(0xFF9A7E40);   // the gold accent, dimmed like the rest of the screensaver
         content.setPosition(0, 0, w, h);
         chrome.setPosition(0, 0, w, h);
-        labelPaint=Ui.text(Ui.semibold,23*k,0xFF939399);
+        labelPaint=Ui.text(Ui.semibold,22*k,0xFF9A7E40);labelPaint.setLetterSpacing(.14f);
         titlePaint=new TextPaint(Ui.text(Ui.semibold,52*k,0xFFB8B8BE));
         metaPaint=Ui.text(Ui.medium,26*k,0xFF9B9BA1);
         for(Paint paint:new Paint[]{cornerDate,cornerClock,labelPaint,titlePaint,metaPaint})paint.setShadowLayer(18*k,0,2*k,0x66000000);
@@ -411,7 +414,7 @@ final class DreamView extends View implements Choreographer.FrameCallback, HomeD
         if (minuteChanged || themePrefs!=Prefs.version) {
             minute = now / 60_000;
             clock = Ui.clock(now);
-            date = Ui.date(now);
+            date = Ui.date(now).toUpperCase(Ui.locale());
             fitClocks();
             dirty = true;
             chromeDirty = true;
@@ -534,7 +537,7 @@ final class DreamView extends View implements Choreographer.FrameCallback, HomeD
                     .setIncludePad(false).build();
             float originY = titleBase - t.getLineBaseline(t.getLineCount() - 1);
             float capTop = originY + t.getLineBaseline(0) - Ui.cap(titlePaint);
-            c.drawText(Recs.periodLabel(), x, capTop - 30 * k, labelPaint);
+            c.drawText(Recs.periodLabel().toUpperCase(Ui.locale()), x, capTop - 30 * k, labelPaint);
             c.save();
             c.translate(x - Ui.leftBearing(titlePaint, title), originY);
             t.draw(c);
@@ -613,12 +616,14 @@ final class DreamView extends View implements Choreographer.FrameCallback, HomeD
             String now = HomeData.degrees(wx.temp);
             String range = HomeData.highLow(wx, "   ");
             float sw = Symbols.width(getContext(), symbol, 32 * k);
-            float width = sw + 12 * k + weatherPaint.measureText(now) + 18 * k + weatherDim.measureText(range);
+            float width = sw + 12 * k + weatherPaint.measureText(now) + 44 * k + weatherDim.measureText(range);
             float x = cx - width / 2;
             Symbols.draw(getContext(), c, symbol, x + sw / 2, base - Ui.halfCap(weatherPaint), 32 * k, weatherPaint.getColor());
             x += sw + 12 * k;
             c.drawText(now, x, base, weatherPaint);
-            x += weatherPaint.measureText(now) + 18 * k;
+            x += weatherPaint.measureText(now) + 22 * k;
+            c.drawCircle(x, base - Ui.halfCap(weatherPaint), 3 * k, accent);
+            x += 22 * k;
             c.drawText(range, x, base, weatherDim);
         }
 

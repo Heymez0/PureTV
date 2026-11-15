@@ -32,7 +32,7 @@ final class Symbols {
         synchronized (CACHE) {
             if (CACHE.containsKey(name)) return CACHE.get(name);
             Bitmap b = null;
-            if ("network".equals(name) || "shortcut_edit".equals(name) || "memory".equals(name)) {
+            if ("network".equals(name) || "shortcut_edit".equals(name) || "memory".equals(name) || "remote".equals(name)) {
                 b = localIcon(name);
             } else try (InputStream in = c.getAssets().open("symbols/" + name + ".png")) {
                 b = BitmapFactory.decodeStream(in);
@@ -73,6 +73,11 @@ final class Symbols {
                 c.drawLine(at,30,at,47,p);c.drawLine(at,125,at,142,p);
                 c.drawLine(30,at,47,at,p);c.drawLine(125,at,142,at,p);
             }
+        } else if ("remote".equals(name)) {
+            c.drawRoundRect(56, 22, 116, 150, 22, 22, p);
+            c.drawCircle(86, 58, 13, p);
+            p.setStyle(Paint.Style.FILL);
+            for (int i = 0; i < 4; i++) c.drawCircle(i % 2 == 0 ? 75 : 97, i < 2 ? 98 : 122, 6, p);
         } else {
             for (int i = 0; i < 3; i++) {
                 float y = 48 + i * 38;

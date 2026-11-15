@@ -48,6 +48,15 @@ final class AirPlayControl {
         if("unknown".equals(state))return Ui.tr("Verificando…", "Checking…");
         return running()?Ui.tr("Ligado","On"):Ui.tr("Desligado","Off");
     }
+    /** On or off for a switch; null while it is unknown, changing or out of reach (value() then says which). */
+    Boolean switchState() {
+        if(Boolean.FALSE.equals(controlAvailable)||busy)return null;
+        return "running".equals(state)?Boolean.TRUE:"stopped".equals(state)?Boolean.FALSE:null;
+    }
+    /** Keep AirPlay on as a switch; null while it is unknown or the receiver is too old to say. */
+    Boolean alwaysState() {
+        return Boolean.FALSE.equals(controlAvailable)||!alwaysSupported?null:always;
+    }
     /** Keep AirPlay on (the receiver's Start server at boot): its value for the Connections row. */
     String alwaysValue() {
         if(Boolean.FALSE.equals(controlAvailable)) return "—";

@@ -1,6 +1,6 @@
 # Release preparation
 
-Current product versions: **Android v1.3 / versionCode 6**, **webOS 1.0.0**, **Tizen 1.0.0**.
+Current product versions: **Android v1.4 / versionCode 7**, **webOS 1.0.0**, **Tizen 1.0.0**.
 v1 was versionCode 2 (its higher code let it update the preceding preview despite the simpler version name).
 Historical commits and third-party protocol/version names are retained.
 
@@ -8,7 +8,7 @@ Historical commits and third-party protocol/version names are retained.
 
 - Source is organised under app/, web/, webos/, tizen/, docs/, tools/ and .github/.
 - Generated packages, signing/ADB keys, personal configuration, raw device logs and working folders stay outside the source distribution.
-- Generic builds contain no TMDB or Watchmode credential. Android contains no native receiver engine or runtime libraries.
+- Generic builds contain no TMDB or Watchmode credential. The launcher's own code contains no native receiver engine or runtime libraries.
 - Platform icons have an editable original SVG; their checked-in PNG exports need no extra build dependency.
 - Documentation images are actual unedited English-interface Mi Stick captures. Recommendation art comes from its source app; private viewing history is omitted.
 - Main documentation is English; the Turkish guide is a separate file.
@@ -48,7 +48,7 @@ The v1 signing key is no longer available. From v1.1 the launcher and receiver A
 (certificate SHA-256 `808dd32ee3d027606fbaa586c71755ae2e97957182d7f565f8c777db15c93677`), and both must use it.
 Android cannot update across keys, so v1 installations must uninstall PureTV and PureTV AirPlay before installing
 v1.1, and v1's built-in update check will not offer it to them. Restore preferences afterwards from a settings backup.
-Every later release must use this key and a higher versionCode (v1.1 was 3, v1.2 was 4, v1.3 is 6; the first v1.3 upload, replaced the same day, was 5).
+Every later release must use this key and a higher versionCode (v1.1 was 3, v1.2 was 4, v1.3 was 6, v1.4 is 7; the first v1.3 upload, replaced the same day, was 5).
 
 ## Licences and distribution
 
@@ -64,7 +64,10 @@ The prepared receiver uses the unchanged upstream ARMv7 engine; a full native re
 The renamed `io.puretv.airplay` receiver was tested with the new launcher on Mi Stick / Android TV 9. Settings
 start/stop, quick-panel stop and keeping an explicit stop after reopening the receiver passed. The device owner
 confirmed a new Screen Mirroring session. An unprivileged control broadcast was not accepted.
-Each release distributes the receiver APK and its matching full GPL source together. The main APK contains only the launcher.
+From v1.4 the release PureTV.apk carries the signed receiver APK as an asset (`build.py --receiver`), installed only on
+request; it stays a separate GPL-3.0 program. Its complete source is the repository's `airplay/` folder at the release
+tag, so the release's own Source code archives hold it. Release assets are only PureTV.apk, PureTV-webos.ipk and
+PureTV-tizen.wgt. A build without `--receiver` contains only the launcher.
 
 ## Testing limits
 

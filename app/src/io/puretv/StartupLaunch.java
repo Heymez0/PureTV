@@ -41,14 +41,14 @@ final class StartupLaunch {
     static void check(Activity a, View from) {
         if (checked) return;    // a TV start can't happen while this process lives: one check per process
         checked = true;
-        String choice = Prefs.startup();
+        String choice = FeatureRules.startup(Prefs.startup(), Prefs.television());
         int boot = bootCount(a), last = ui(a).getInt(KEY, 0);
         if (boot <= 0 || boot == last) return;
         ui(a).edit().putInt(KEY, boot).apply();    // once per start, even if the choice can't open
         if (!FeatureRules.launchAtStart(choice, boot, last, SystemClock.elapsedRealtime())) return;
         AppLog.w("on TV start: " + (choice.startsWith(FeatureRules.APP) ? "app" : choice.startsWith(FeatureRules.INPUT) ? "input" : choice));
         if (choice.equals(FeatureRules.LIVE)) {
-            open(a, from, HomeApps.action(HomeApps.LIVE_TV, "live", Ui.tr("Live TV"), "tv"));
+            open(a, from, HomeApps.liveItem());
         } else if (choice.startsWith(FeatureRules.APP)) {
             String pkg = choice.substring(FeatureRules.APP.length());
             String label = pkg;

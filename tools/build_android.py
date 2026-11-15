@@ -78,6 +78,8 @@ def main(argv=None):
     parser.add_argument("--keystore", type=Path, help="Optional existing key; omitted produces an unsigned APK")
     parser.add_argument("--alias", default="puretv")
     parser.add_argument("--output", type=Path)
+    parser.add_argument("--receiver", type=Path,
+                        help="Optional signed PureTV-AirPlay.apk to carry inside the APK (installed from there, not downloaded)")
     args = parser.parse_args(argv)
     sdk = Path(args.sdk) if args.sdk else None
     bt = args.build_tools or (sdk / "build-tools/34.0.0" if sdk else None)
@@ -107,11 +109,20 @@ def main(argv=None):
     gen.mkdir(parents=True)
     classes.mkdir()
     (gen / "Config.java").write_text(generated, encoding="utf-8")
+    # The optional receiver rides along as a compressed asset: a separate GPL-3.0 app, installed only on request.
+    extra = []
+    if args.receiver:
+        if not args.receiver.is_file() or args.receiver.stat().st_size > 32 * 1024 * 1024:
+            parser.error("--receiver must be an existing APK of at most 32 MB")
+        carried = out / "carried/airplay"
+        carried.mkdir(parents=True)
+        shutil.copy2(args.receiver, carried / "PureTV-AirPlay.apk")
+        extra = ["-A", "out/carried"]
     run([bt / ("aapt2" + suffix), "compile", "--dir", "app/res", "-o", "out/res.zip"])
     run([bt / ("aapt2" + suffix), "link", "-o", "out/base.apk", "-I", android,
          "--manifest", "app/AndroidManifest.xml", "--java", "out/gen", "out/res.zip",
-         "--min-sdk-version", "28", "--target-sdk-version", "33", "-A", "app/assets", "-0", "ttf"])
-    with zipfile.ZipFile(out / "base.apk") as src, zipfile.ZipFile(out / "normalized.apk", "w") as dst:
+         "--min-sdk-version", "28", "--target-sdk-version", "33", "-A", "app/assets", "-0", "ttf"] + extra)
+    with zipfile.ZipFile(out / "base.apk") as src, zipfile.ZipFile(out / "normalized.apk", "w", compresslevel=9) as dst:
         for entry in src.infolist():
             payload = src.read(entry)
             entry.filename = entry.filename.replace("\\", "/")
@@ -126,7 +137,7 @@ def main(argv=None):
     (out / "d8.args").write_text("\n".join(p.relative_to(ROOT).as_posix() for p in sorted(classes.rglob("*.class"))), encoding="utf-8")
     run([jdk["java"], "-cp", bt / "lib/d8.jar", "com.android.tools.r8.D8", "--release",
          "--min-api", "28", "--lib", android, "--output", out, "@out/d8.args"])
-    with zipfile.ZipFile(out / "base.apk", "a", zipfile.ZIP_DEFLATED) as apk:
+    with zipfile.ZipFile(out / "base.apk", "a", zipfile.ZIP_DEFLATED, compresslevel=9) as apk:
         for dex in sorted(out.glob("classes*.dex")):
             apk.write(dex, dex.name)
     run([bt / ("zipalign" + suffix), "-f", "-p", "4", out / "base.apk", out / "aligned.apk"])

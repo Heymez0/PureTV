@@ -72,6 +72,7 @@ final class HomeApps {
         float logoInk;      // fraction of the logo with ink (thin logos are drawn larger, with the same "weight")
         float logoScale = 1; // size tweak by eye (compact logos need more)
         boolean connected = true;
+        boolean hidden;     // "All Apps" only: hidden by the person, listed dimmed so it can be shown again
     }
 
     /**
@@ -131,6 +132,7 @@ final class HomeApps {
         PackageManager pm = c.getPackageManager();
         for (String pkg : shelfPackages(c)) {
             if (items.size() >= MAX_SHELF) break;
+            if (AirPlayReceiver.THEMED.equals(pkg)) continue;   // our receiver is never an app tile (see others)
             Intent launch = launchIntent(pm, pkg);
             if (launch == null) continue;
             ResolveInfo ri = pm.resolveActivity(launch, 0);
@@ -180,7 +182,7 @@ final class HomeApps {
         for (String[] d : SHELF) if (launchIntent(pm, d[2]) != null && seen.add(d[2])) out.add(new String[] {d[2], d[1]});
         List<String[]> more = new ArrayList<>();
         for (String[] app : launchable(c)) {
-            if (app[0].equals(c.getPackageName()) || HIDDEN.contains(app[0]) || !seen.add(app[0])) continue;
+            if (app[0].equals(c.getPackageName()) || HIDDEN.contains(app[0]) || AirPlayReceiver.THEMED.equals(app[0]) || !seen.add(app[0])) continue;
             more.add(app);
         }
         Collections.sort(more, (a, b) -> a[1].toLowerCase(Locale.ROOT).compareTo(b[1].toLowerCase(Locale.ROOT)));
@@ -188,18 +190,8 @@ final class HomeApps {
         return out;
     }
 
-    /** Live TV, the HDMI inputs with a device sending a signal, and All Apps. */
-    static List<Item> shortcuts(Context c) {
-        List<Item> items = new ArrayList<>();
-        if (!Prefs.television()) {
-            items.add(tvSettings());
-            items.add(QuickShortcuts.item(c, "status"));
-            return items;
-        }
-        items.add(shortcut(LIVE_TV,"live",Ui.tr("Live TV"),"tv"));
-        items.add(shortcut(INPUTS,"inputs",Ui.tr("TV inputs"),"hdmi"));
-        return items;
-    }
+    /** Live TV, the same wherever it appears: the corner, the inputs row, the remote's TV key, "On TV start". */
+    static Item liveItem() { return shortcut(LIVE_TV, "live", Ui.tr("Live TV"), "live_tv"); }
 
     private static Item shortcut(int kind, String key, String label, String symbol) {
         Item it = new Item();
@@ -242,7 +234,7 @@ final class HomeApps {
     static List<Item> allInputs(Context c) {
         List<Item> items = new ArrayList<>();
         if (!Prefs.television() || !Prefs.tvInputs()) return items;
-        if (liveTv(c) != null) items.add(shortcut(LIVE_TV, "live", Ui.tr("TV ao Vivo", "Live TV"), "tv"));
+        if (liveTv(c) != null) items.add(liveItem());
         List<Item> hdmi=TvInputCatalog.hdmi(c,Prefs.inactiveInputs());
         items.addAll(hdmi.subList(0,Math.min(4,hdmi.size())));
         if(hdmi.size()>4)items.add(action(TV_INPUT_SETTINGS,"more-inputs",Ui.tr("More inputs"),"hdmi"));
@@ -270,11 +262,15 @@ final class HomeApps {
     static List<Item> others(Context c) {
         PackageManager pm = c.getPackageManager();
         Set<String> skip = new HashSet<>();
-        // A built-in app is skipped only while it is on the shelf: one the person took off must still be listed here.
+        // Whatever is on the home screen is not repeated here (built-in or added by the person); an app taken off the
+        // home screen is listed here again.
         List<String> onShelf = shelfPackages(c);
-        for (String[] d : SHELF) if (onShelf.contains(d[2])) skip.add(d[2]);
+        for (int i = 0; i < onShelf.size() && i < MAX_SHELF; i++) skip.add(onShelf.get(i));
         skip.addAll(java.util.Arrays.asList(LIVE_TV_APPS));
         skip.add(c.getPackageName());
+        // PureTV's own AirPlay receiver is a part of PureTV, not an app to arrange: it is never listed, not even in
+        // All Apps, and opens from Connections → Open AirPlay receiver. Only this package is treated so.
+        skip.add(AirPlayReceiver.THEMED);
         try {
             pm.getPackageInfo(AirPlayReceiver.THEMED, 0);
             skip.add(AirPlayReceiver.ORIGINAL); // keep the rollback app installed, without a duplicate tile
@@ -299,12 +295,46 @@ final class HomeApps {
         synchronized (HomeApps.class) {
             TILES.keySet().removeIf(k -> k.contains(".") && !seen.contains(k));
         }
-        items.add(special(c, SETTINGS, "puretv-settings", Ui.tr("Ajustes", "Settings"), "sparkles"));
+        items.add(special(c, SETTINGS, "puretv-settings", Ui.tr("Ajustes", "Settings"), "settings"));
         List<String> saved = Prefs.otherAppsOrder();
         if (!saved.isEmpty()) Collections.sort(items, (a, b) -> {
             int ai = saved.indexOf(a.key), bi = saved.indexOf(b.key);
             return Integer.compare(ai < 0 ? Integer.MAX_VALUE : ai, bi < 0 ? Integer.MAX_VALUE : bi);
         });
+        return items;
+    }
+
+    /**
+     * "All Apps": the home screen's apps, then the other apps, then the ones the person hid (dimmed; the menu shows
+     * them again). `shelf` and `others` are the lists just loaded, so nothing is read twice.
+     */
+    static List<Item> all(Context c, List<Item> shelf, List<Item> others) {
+        List<Item> items = new ArrayList<>();
+        PackageManager pm = c.getPackageManager();
+        for (Item s : shelf) {
+            Item it = app(s.pkg, s.label);
+            String[] d = known(s.pkg);
+            it.tile = s.tile != null ? s.tile : d == null ? appTile(c, null, s.pkg, 0)
+                    : appTile(c, d[0], d[2], 0xFF000000 | Integer.parseInt(d[3], 16));
+            items.add(it);
+        }
+        items.addAll(others);
+        List<Item> hidden = new ArrayList<>();
+        for (String pkg : Prefs.hiddenApps()) {
+            if (AirPlayReceiver.THEMED.equals(pkg) || pkg.equals(c.getPackageName())) continue;
+            Intent launch = launchIntent(pm, pkg);
+            if (launch == null) continue;
+            boolean listed = false;
+            for (Item it : items) if (pkg.equals(it.pkg)) { listed = true; break; }
+            if (listed) continue;   // on the home screen: it shows there whatever the hidden list says
+            ResolveInfo ri = pm.resolveActivity(launch, 0);
+            Item it = app(pkg, ri != null ? String.valueOf(ri.loadLabel(pm)) : pkg);
+            it.tile = appTile(c, null, pkg, 0);
+            it.hidden = true;
+            hidden.add(it);
+        }
+        Collections.sort(hidden, (a, b) -> a.label.toLowerCase(Locale.ROOT).compareTo(b.label.toLowerCase(Locale.ROOT)));
+        items.addAll(hidden);
         return items;
     }
 

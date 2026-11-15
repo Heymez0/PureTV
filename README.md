@@ -2,187 +2,181 @@
 
 <img src="docs/media/hero.svg" width="100%" alt="PureTV — a quieter TV experience">
 
-# PureTV
+**A calm home screen for your TV, built around your apps.**
 
-**A quieter TV home screen, built around your apps.**
+[**Download PureTV.apk**](https://github.com/Heymez0/PureTV/releases/latest/download/PureTV.apk) &nbsp;·&nbsp; [Install guide](docs/INSTALL.md) &nbsp;·&nbsp; [What's new](https://github.com/Heymez0/PureTV/releases/latest) &nbsp;·&nbsp; [Turkish guide](docs/README.tr.md)
 
-[Install](docs/INSTALL.md) · [Turkish guide](docs/README.tr.md) · [Build](docs/DEVELOPMENT.md#build) · [AirPlay](tools/airplay/README.md) · [Changelog](docs/CHANGELOG.md)
-
-**Current release: [PureTV v1.3](https://github.com/Heymez0/PureTV/releases/tag/v1.3)** · Android 9+
+<sub>v1.4 · Android TV & Google TV (Android 9+) · LG webOS & Samsung Tizen (experimental) · 24 languages · open source</sub>
 
 </div>
 
-PureTV brings a simple home screen to Android TVs, streaming boxes and sticks.
-A native Java/Canvas launcher runs on Android; LG and Samsung use a lightweight web app.
-
-**Hardware testing is limited to the Android TV / Google TV edition.** The reference device is a Xiaomi Mi Stick
-running Android TV 9. **LG webOS and Samsung Tizen are experimental ports and have not been tested on real TV hardware.**
-
-## Features
-
-- **Choose your home:** a clock, recent content, or recent content with app recommendations.
-- **Keep apps within reach:** separate app and shortcut shelves, other apps below, long-press shelf reordering, and
-  hide, uninstall or force stop from an app's menu.
-- **Make it yours:** light/dark themes, a background that follows the content (or stays plain), weather with the chance of rain, 12/24-hour time, and a plain black screensaver
-  or one with your own photos from the TV and USB drives, with a burn-in guard for its clock.
-- **Stay in control:** compact quick settings with a Free up button for memory and a sleep timer, optional lightweight
-  mode and automatic memory cleanup, on-demand RAM/storage snapshots, settings backup and restore, a simple PIN lock for
-  chosen apps, and updates from this repository's releases (notify or install automatically; only newer builds signed
-  like yours).
-- **Use your TV:** box/stick and TV profiles, available TV inputs, remote-button settings, and an app, Live TV or an
-  input that opens when the TV starts.
-- **Receive AirPlay:** optional separate Android receiver, installed and verified from PureTV, running only when you turn
-  it on, with protected quick-panel on/off control.
-
-Recent content depends on what installed Android apps publish. Optional web catalogue cards use your own TMDB key.
-Android-specific settings, recent-content providers and AirPlay control are not available in the LG/Samsung web edition.
-
-[What's new in each release](https://github.com/Heymez0/PureTV/releases) · [Full changelog](docs/CHANGELOG.md) · [Release checks and testing scope](docs/RELEASE.md)
-
-## Languages
-
-PureTV includes **24 interface language catalogues**: English, Czech, Danish, Dutch, Finnish, French, German,
-Greek, Hindi, Indonesian, Italian, Japanese, Korean, Norwegian Bokmål, Polish, Portuguese, Romanian, Russian,
-Simplified Chinese, Spanish, Swedish, Turkish, Ukrainian and Vietnamese.
-
-## Preview
-
-Real English-interface screenshots of PureTV v1.1 on a Xiaomi Mi Stick running Android TV 9.
-
-### Home Screens
+<br>
 
 <p align="center">
-  <a href="docs/media/recommendations-en.png"><img src="docs/media/recommendations-en.png" width="100%" alt="PureTV recent and recommended home screen"></a>
-  <br><strong>Recent + recommended</strong>
+  <a href="docs/media/home-en.png"><img src="docs/media/home-en.png" width="100%" alt="PureTV clock layout: a large clock, today's weather and the app shelf"></a>
 </p>
 
-<p align="center">
-  <a href="docs/media/home-en.png"><img src="docs/media/home-en.png" width="100%" alt="Clock home page with weather and the app shelf"></a>
-  <br><strong>Clock home page</strong>
-</p>
+PureTV replaces the busy, ad-filled home screen of Android TVs and streaming sticks with a quiet one: your apps, the
+time and the weather, and nothing you didn't ask for. It is a small native app — about 1.7 MB on its own — that stays
+quick on a 1 GB stick, and every screen is made for the remote.
 
-### Light and dark
-
-PureTV has a light and a dark theme (or Automatic, by sunrise and sunset). In the recent and recommended layouts the
-background takes its colours from the first card; Appearance → Background from content turns that off.
+## Highlights
 
 <table>
   <tr>
-    <td width="50%" align="center" valign="top">
-      <a href="docs/media/theme-home-light-en.png"><img src="docs/media/theme-home-light-en.png" width="100%" alt="Recommended home in the light theme"></a>
-      <br><strong>Light</strong>
+    <td width="50%" valign="top">
+      <h4>🍿 What to watch next, up front</h4>
+      Recently watched and Recommended tabs bring your streaming apps' own picks to the home screen as big artwork
+      cards, and the background takes its colours from them. OK opens the title in its app.
     </td>
-    <td width="50%" align="center" valign="top">
-      <a href="docs/media/recommendations-en.png"><img src="docs/media/recommendations-en.png" width="100%" alt="Recommended home in the dark theme"></a>
-      <br><strong>Dark</strong>
+    <td width="50%" valign="top">
+      <h4>📱 AirPlay, built in</h4>
+      Mirror an iPhone, iPad or Mac. The receiver comes inside PureTV.apk, runs only while AirPlay is on, and the TV
+      returns home the moment you stop sharing.
     </td>
   </tr>
   <tr>
-    <td width="50%" align="center" valign="top">
-      <a href="docs/media/theme-settings-light-en.png"><img src="docs/media/theme-settings-light-en.png" width="100%" alt="Appearance settings in the light theme"></a>
-      <br><strong>Light settings</strong>
+    <td width="50%" valign="top">
+      <h4>🗂 Every app in one place</h4>
+      All Apps shows the home screen's apps, the rest and the ones you hid. Hold OK to add an app to the home screen,
+      hide it, or bring it back.
     </td>
-    <td width="50%" align="center" valign="top">
-      <a href="docs/media/theme-settings-dark-en.png"><img src="docs/media/theme-settings-dark-en.png" width="100%" alt="Appearance settings in the dark theme"></a>
-      <br><strong>Dark settings</strong>
+    <td width="50%" valign="top">
+      <h4>🎛 A remote that does what you say</h4>
+      The remote's apps button opens All Apps, and Remote button test lets you give other buttons a job. Nothing
+      changes until you save; OK, Back and the arrows always stay put.
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <h4>✨ Quietly beautiful</h4>
+      Dark obsidian or light, one gold accent, a backdrop that follows the time of day, and a matching screensaver
+      with your own photos if you like.
+    </td>
+    <td width="50%" valign="top">
+      <h4>⚙️ In control, without the clutter</h4>
+      Quick settings for AirPlay, memory and a sleep timer; app lock; backup and restore; updates from this
+      repository; and a one-step way back to your TV's original home screen.
     </td>
   </tr>
 </table>
 
-### Features
+<p align="center">
+  <a href="docs/media/recommendations-en.png"><img src="docs/media/recommendations-en.png" width="100%" alt="PureTV home screen with the Recommended tab: large artwork cards from your streaming apps above the app shelf"></a>
+  <br><sub><b>Recently watched and Recommended</b> — what to watch next, straight from the apps you use; OK opens it in the app</sub>
+</p>
+
+## A closer look
 
 <table>
   <tr>
-    <td width="33%" align="center" valign="top">
-      <a href="docs/media/quick-settings-en.png"><img src="docs/media/quick-settings-en.png" width="100%" alt="Compact quick settings with AirPlay control, RAM with a Free up button and the sleep timer"></a>
-      <br><strong>Quick settings</strong>
+    <td width="50%" align="center" valign="top">
+      <a href="docs/media/all-apps-en.png"><img src="docs/media/all-apps-en.png" width="100%" alt="All Apps with home, other and hidden apps"></a>
+      <br><sub><b>All Apps</b> — everything installed, hidden apps included</sub>
     </td>
-    <td width="34%" align="center" valign="top">
-      <a href="docs/media/shortcuts-en.png"><img src="docs/media/shortcuts-en.png" width="100%" alt="Home scrolled down once to the Shortcuts shelf and detailed weather"></a>
-      <br><strong>Shortcuts</strong>
+    <td width="50%" align="center" valign="top">
+      <a href="docs/media/setup-en.png"><img src="docs/media/setup-en.png" width="100%" alt="Setup guide choosing the home screen layout with a preview"></a>
+      <br><sub><b>Setup guide</b> — choose your home screen from previews</sub>
     </td>
-    <td width="33%" align="center" valign="top">
-      <a href="docs/media/settings-en.png"><img src="docs/media/settings-en.png" width="100%" alt="Settings with English selected as the interface language"></a>
-      <br><strong>Settings</strong>
+  </tr>
+  <tr>
+    <td width="50%" align="center" valign="top">
+      <a href="docs/media/settings-en.png"><img src="docs/media/settings-en.png" width="100%" alt="Settings: Home screen category"></a>
+      <br><sub><b>Settings</b> — eight clear categories</sub>
+    </td>
+    <td width="50%" align="center" valign="top">
+      <a href="docs/media/quick-settings-en.png"><img src="docs/media/quick-settings-en.png" width="100%" alt="Quick settings with AirPlay, RAM and the sleep timer"></a>
+      <br><sub><b>Quick settings</b> — AirPlay, memory and a sleep timer</sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" align="center" valign="top">
+      <a href="docs/media/shortcuts-en.png"><img src="docs/media/shortcuts-en.png" width="100%" alt="Shortcuts and other apps below the shelf"></a>
+      <br><sub><b>Shortcuts and other apps</b> — one press down</sub>
+    </td>
+    <td width="50%" align="center" valign="top">
+      <a href="docs/media/screensaver-en.png"><img src="docs/media/screensaver-en.png" width="100%" alt="Screensaver with a light clock and the weather on black"></a>
+      <br><sub><b>Screensaver</b> — quiet, and kind to the panel</sub>
     </td>
   </tr>
 </table>
 
-Open any screenshot to see it at full resolution. The combined home shows app-published recommendations;
-viewing-history titles and progress are not shown. Recommendation titles and artwork follow the source app's language.
-The header banner is an illustration. [Capture details](docs/media/README.md).
+<p align="center">
+  <a href="docs/media/light-en.png"><img src="docs/media/light-en.png" width="100%" alt="The home screen in the light theme"></a>
+  <br><sub><b>Light theme</b> — or Automatic, by sunrise and sunset</sub>
+</p>
+
+<sub>Real screenshots of PureTV v1.4 on a Xiaomi Mi Stick (Android TV 9), English interface. Open any image for full size. [About these captures](docs/media/README.md).</sub>
 
 ## Install
 
-**Android TV / Google TV:** [Download PureTV.apk](https://github.com/Heymez0/PureTV/releases/latest/download/PureTV.apk) · [Release and SHA256 checksum](https://github.com/Heymez0/PureTV/releases/latest)
+**Android TV / Google TV** — [download **PureTV.apk**](https://github.com/Heymez0/PureTV/releases/latest/download/PureTV.apk),
+copy it to a USB drive or send it to the TV, open it with the TV's file manager, and follow the setup guide.
+Already using PureTV? Install it over your version, or use **System and about → Updates**; your settings stay.
+[Step-by-step guide](docs/INSTALL.md#android-tv--google-tv).
 
-The signed v1.3 APK is for **Android 9 or newer**. Download it on your computer, copy it to a USB drive or transfer it
-to the TV, then open it with the TV file manager. Follow PureTV's welcome guide after installation.
-[Step-by-step Android instructions](docs/INSTALL.md#android-tv--google-tv).
+| Platform | Download | Status |
+| --- | --- | --- |
+| Android TV · Google TV | **PureTV.apk** | Tested on a Xiaomi Mi Stick (Android TV 9) |
+| LG webOS | **PureTV-webos.ipk** · needs Developer Mode | Experimental, not yet tried on a TV — [steps](docs/INSTALL.md#lg-webos) |
+| Samsung Tizen | **PureTV-tizen.wgt** · sign with your TV certificate | Experimental, not yet tried on a TV — [steps](docs/INSTALL.md#samsung-tizen) |
 
-**Coming from v1?** Since v1.1 PureTV is signed with a new key, so Android won't install it over v1: back up your settings (System
-and about → Back up settings), uninstall PureTV v1 (and PureTV AirPlay), then install the latest release and restore. From v1.1 on,
-releases update in place, also from PureTV's own Updates screen.
+Changed your mind? **Settings → System and about → Default home screen → TV's original home screen** brings your TV's
+own home screen back, with PureTV still installed.
 
-### Easy to install
+<details>
+<summary><b>Let an assistant install it for you</b></summary>
 
-With [Claude Code](https://code.claude.com/docs/en/cli-reference) or [Codex CLI](https://learn.chatgpt.com/docs/codex/cli) installed and signed in, run **one** of these commands in a folder on your computer.
+<br>
 
-**Claude Code**
+With [Claude Code](https://code.claude.com/docs/en/cli-reference) or [Codex CLI](https://learn.chatgpt.com/docs/codex/cli) signed in, run **one** of these in a folder on your computer and keep your TV's model and IP address at hand:
 
 ```sh
 claude "Install PureTV on my TV from https://github.com/Heymez0/PureTV. Read AGENTS.md and docs/INSTALL.md in that repository, identify my TV platform, ask only for missing device details, then follow the matching installation steps. If an older PureTV is already installed, follow the upgrade steps in docs/INSTALL.md, and keep the original HOME recovery working."
 ```
 
-**Codex**
-
 ```sh
 codex "Install PureTV on my TV from https://github.com/Heymez0/PureTV. Read AGENTS.md and docs/INSTALL.md in that repository, identify my TV platform, ask only for missing device details, then follow the matching installation steps. If an older PureTV is already installed, follow the upgrade steps in docs/INSTALL.md, and keep the original HOME recovery working."
 ```
 
-Each line starts an interactive installation assistant. Have your TV model/platform and local IP address ready.
-Developer Mode, device authorization and any required signing follow the platform guide below.
-LG/Samsung ports remain experimental and hardware-untested.
+</details>
 
-### Choose your platform
+## Using it
 
-| Platform | What to install | Instructions |
-| --- | --- | --- |
-| Android TV / Google TV | Signed **PureTV.apk**, by USB/file transfer or ADB | [Download and setup](docs/INSTALL.md#android-tv--google-tv) |
-| LG webOS | Build an **IPK**; Developer Mode is required | [LG steps](docs/INSTALL.md#lg-webos) · experimental, hardware-untested |
-| Samsung Tizen | Build and sign a **WGT** with your TV certificate | [Samsung steps](docs/INSTALL.md#samsung-tizen) · experimental, hardware-untested |
+<p align="center"><img src="docs/media/remote.svg" width="100%" alt="The remote: arrows move, OK opens, hold OK for an app's menu, Back returns, the apps button opens All Apps"></p>
 
-Android APKs are for Android devices. LG and Samsung use the separate packages listed above.
-On Android, the welcome guide lets you choose Box/stick or TV. Use **Original** in All settings → System and about →
-Default home screen to return to the manufacturer's HOME before removing an active replacement launcher.
-[Updates and package identity](docs/INSTALL.md#identity-and-upgrades) · [Platform testing scope](docs/INSTALL.md#compatibility).
+Recently watched and recommendations come from what your installed apps share with Android. PureTV becomes the home
+screen through your TV's own USB debugging, without a computer — the setup guide explains each step. LG and Samsung run
+a lighter web edition without the Android-only parts (AirPlay, TV inputs, remote buttons).
 
-## Build
+**Languages:** English, Czech, Danish, Dutch, Finnish, French, German, Greek, Hindi, Indonesian, Italian, Japanese,
+Korean, Norwegian Bokmål, Polish, Portuguese, Romanian, Russian, Simplified Chinese, Spanish, Swedish, Turkish,
+Ukrainian and Vietnamese.
 
-Android needs Python 3.10+, JDK 17 and Android SDK 34. Web packages need Python only; Samsung installation also needs a signing profile.
-Choose the command for your platform:
+## For developers
 
 ```sh
+# Android: Python 3.10+, JDK 17, Android SDK 34
 python build.py --config config.example.properties
+# LG webOS and Samsung Tizen: Python only (Samsung also needs a signing profile)
 python webos/build.py --generic
 python tizen/build.py --generic --sign YOUR_PROFILE
 ```
 
-The default Android APK is unsigned. [Build, signing and configuration](docs/DEVELOPMENT.md#build).
-The signed Android APK is available under [Install](#install). Private keys and personal configuration are excluded.
-
-## Source layout
-
 ```text
-app/       Native Android launcher and assets
-web/       Shared web interface
-webos/     LG packaging and installer
-tizen/     Samsung packaging and installer
-tools/     Build helpers, tests and optional AirPlay integration
-docs/      Installation, development, artwork and licences
+app/       Native Android launcher (Java, Canvas; no libraries)
+web/       Shared LG / Samsung interface
+webos/     LG packaging
+tizen/     Samsung packaging
+airplay/   The AirPlay receiver's complete source (GPL-3.0)
+tools/     Build, translation, tests and audits
+docs/      Install, development, licences and media
 ```
 
-[Contributing](.github/CONTRIBUTING.md) · [Security](.github/SECURITY.md) · [Development and tests](docs/DEVELOPMENT.md)
+[Development and tests](docs/DEVELOPMENT.md) · [Changelog](docs/CHANGELOG.md) · [Release checks](docs/RELEASE.md) · [Contributing](.github/CONTRIBUTING.md) · [Security](.github/SECURITY.md)
 
-PureTV contributions are [MIT](LICENSE). Incorporated code retains its [third-party notices](docs/licenses/NOTICE.md).
-The optional AirPlay receiver is a separate GPL-3.0 application. App names and logos belong to their owners.
+## License
+
+PureTV is [MIT](LICENSE); incorporated code keeps its [third-party notices](docs/licenses/NOTICE.md). The AirPlay
+receiver PureTV carries is a separate **GPL-3.0** app; its complete source is in [`airplay/`](airplay), so each
+release's Source code archive includes it. App names and logos belong to their owners.

@@ -80,6 +80,18 @@ final class FeatureRegression {
         for(String v:new String[]{"","live","app:com.netflix.ninja","input:input:com.mediatek.tvinput/.hdmi.HDMIInputService/HW5",
                 "input:input:com.tv/.Hdmi$Service/HW2"})ok(FeatureRules.startup(v).equals(v));
         for(String v:new String[]{"app:","app:rm -rf","input:a b","input:$(reboot)","input:x;y","shell","app:com.x;reboot",null})ok(FeatureRules.startup(v).isEmpty());
+        // Buttons given a job: OK, Back, the arrows, Home, power and volume never; only known actions; bounded.
+        for(int key:new int[]{3,4,19,20,21,22,23,66,160,24,25,26,164,0,-1,20000})ok(!RemoteKeyRules.remappable(key));
+        ok(RemoteKeyRules.remappable(284)&&RemoteKeyRules.remappable(82)&&RemoteKeyRules.remappable(186));
+        java.util.Map<Integer,String> keys=RemoteKeyRules.parse("284=\n82=quick\n4=all\n23=app:com.x.y\n186=app:com.netflix.ninja\n187=rm -rf\nabc=all\n");
+        ok(keys.size()==4&&!keys.containsKey(4)&&!keys.containsKey(23)&&keys.get(187).isEmpty());
+        ok(RemoteKeyRules.resolve(keys,284)==null&&"quick".equals(RemoteKeyRules.resolve(keys,82))&&"app:com.netflix.ninja".equals(RemoteKeyRules.resolve(keys,186)));
+        ok("all".equals(RemoteKeyRules.resolve(new java.util.HashMap<>(),284))&&RemoteKeyRules.resolve(new java.util.HashMap<>(),82)==null&&RemoteKeyRules.resolve(keys,4)==null);
+        ok(RemoteKeyRules.parse(RemoteKeyRules.encode(keys)).equals(keys));
+        StringBuilder many=new StringBuilder();for(int i=0;i<60;i++)many.append(300+i).append("=all\n");ok(RemoteKeyRules.parse(many.toString()).size()==RemoteKeyRules.MAX);
+        // Live TV and inputs only start in Television mode; an app starts in both.
+        ok(FeatureRules.startup("live",true).equals("live")&&FeatureRules.startup("live",false).isEmpty());
+        ok(FeatureRules.startup("input:a/.B/HW1",false).isEmpty()&&FeatureRules.startup("app:com.netflix.ninja",false).equals("app:com.netflix.ninja"));
         // Once per start and only in its first minutes.
         ok(FeatureRules.launchAtStart("live",12,11,60_000));
         ok(!FeatureRules.launchAtStart("live",12,12,60_000));                       // this start already handled

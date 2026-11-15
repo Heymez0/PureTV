@@ -3,7 +3,6 @@ package io.puretv;
 import android.app.Activity;
 import android.app.Dialog;
 import android.graphics.Canvas;
-import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.ColorDrawable;
@@ -56,7 +55,6 @@ final class QuickActionDialog extends Dialog {
     }
     private final class Menu extends View {
         private final SettingsSurface surface = new SettingsSurface();
-        private final Paint fill = new Paint(Paint.ANTI_ALIAS_FLAG), rim = new Paint(Paint.ANTI_ALIAS_FLAG);
         private final RectF panel = new RectF(), row = new RectF();
         private final Spoken spoken;
         private TextPaint heading, text;
@@ -96,7 +94,6 @@ final class QuickActionDialog extends Dialog {
             panel.set(x,y,x+panelWidth,y+panelHeight);
             heading = new TextPaint(Ui.text(Ui.semibold, 25 * k, surface.dim));
             text = new TextPaint(Ui.text(Ui.medium, 26 * k, surface.ink));
-            rim.setStyle(Paint.Style.STROKE);rim.setStrokeWidth(2*k);
             shownTitle = TextUtils.ellipsize(title, heading, panel.width() - 48 * k, TextUtils.TruncateAt.END).toString();
             shownLabels = new String[options.size()];
             for (int i = 0; i < options.size(); i++) shownLabels[i] = TextUtils.ellipsize(
@@ -109,18 +106,14 @@ final class QuickActionDialog extends Dialog {
         }
         @Override protected void onDraw(Canvas c) {
             if (heading == null) return;
-            c.drawColor(0x28000000);
+            c.drawColor(0x40000000);
             surface.popup(c,panel,24*k);
             c.drawText(shownTitle, panel.left + 24 * k, panel.top + 37 * k, heading);
-            fill.setColor(surface.dark?0x26FFFFFF:0x20000000);
-            c.drawRect(panel.left+24*k,panel.top+50*k,panel.right-24*k,panel.top+51*k,fill);
+            surface.hairline(c,panel.left+24*k,panel.right-24*k,panel.top+50*k,1);
             for (int i = 0; i < options.size(); i++) {
                 rowBounds(i);
-                if (i == focus) {
-                    fill.setColor(surface.dark?0xFF303034:surface.focusFill);c.drawRoundRect(row,14*k,14*k,fill);
-                    rim.setColor(surface.dark?0xCCF5F5F7:surface.focusFill);c.drawRoundRect(row,14*k,14*k,rim);
-                }
-                text.setColor(i==focus&&!surface.dark?surface.focusInk:surface.ink);
+                surface.focus(c,row,14*k,i==focus?1:0);
+                text.setColor(i==focus?surface.focusInk:surface.ink);
                 c.drawText(shownLabels[i], row.left + 20 * k, row.centerY() + Ui.halfCap(text), text);
             }
         }

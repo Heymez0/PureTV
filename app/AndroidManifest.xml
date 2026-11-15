@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="io.puretv"
-    android:versionCode="6"
-    android:versionName="v1.3">
+    android:versionCode="7"
+    android:versionName="v1.4">
 
     <!-- Install results reach only this app (another app can't fake one and make PureTV open a screen). -->
     <permission android:name="io.puretv.permission.INSTALL_STATUS" android:protectionLevel="signature" />
@@ -92,7 +92,7 @@
             android:excludeFromRecents="true"
             android:screenOrientation="landscape"
             android:configChanges="keyboard|keyboardHidden|navigation|orientation|screenSize|screenLayout|smallestScreenSize|uiMode|density|fontScale|locale|layoutDirection"
-            android:theme="@style/Launcher.Home">
+            android:theme="@style/Launcher.Page">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
@@ -102,46 +102,46 @@
 
         <activity android:name=".WelcomeActivity" android:process=":home" android:exported="false"
             android:screenOrientation="landscape" android:launchMode="singleTop"
-            android:taskAffinity="io.puretv.settings" android:excludeFromRecents="true" android:theme="@style/Launcher.Home" />
+            android:taskAffinity="io.puretv.settings" android:excludeFromRecents="true" android:theme="@style/Launcher.Page" />
 
         <activity android:name=".QuickSettingsActivity" android:process=":home" android:exported="false"
             android:screenOrientation="landscape" android:theme="@style/Launcher.Quick" />
         <activity android:name=".TvInputsActivity" android:process=":home" android:exported="false"
-            android:screenOrientation="landscape" android:theme="@style/Launcher.Home" />
+            android:screenOrientation="landscape" android:theme="@style/Launcher.Page" />
         <activity android:name=".RemoteTestActivity" android:process=":home" android:exported="false"
-            android:screenOrientation="landscape" android:theme="@style/Launcher.Home" />
+            android:screenOrientation="landscape" android:theme="@style/Launcher.Page" />
         <activity
             android:name=".DisplaySettingsActivity"
             android:process=":home"
             android:exported="false"
             android:screenOrientation="landscape"
-            android:theme="@style/Launcher.Home" />
+            android:theme="@style/Launcher.Page" />
 
         <activity
             android:name=".AirPlayActivity"
             android:process=":home"
             android:exported="false"
             android:screenOrientation="landscape"
-            android:theme="@style/Launcher.Home" />
+            android:theme="@style/Launcher.Page" />
         <activity
             android:name=".AirPlayInstallActivity"
             android:process=":home"
             android:exported="false"
             android:screenOrientation="landscape"
-            android:theme="@style/Launcher.Home" />
+            android:theme="@style/Launcher.Page" />
         <activity
             android:name=".UpdateActivity"
             android:process=":home"
             android:exported="false"
             android:screenOrientation="landscape"
-            android:theme="@style/Launcher.Home" />
+            android:theme="@style/Launcher.Page" />
 
         <activity
             android:name=".ContinueSettingsActivity"
             android:process=":home"
             android:exported="false"
             android:screenOrientation="landscape"
-            android:theme="@style/Launcher.Home" />
+            android:theme="@style/Launcher.Page" />
 
         <!-- The home screen. Its own process (:home): if it ever crashes, the safety net in the main process still
              works. It only becomes the TV's home screen in custom home mode (cmd package set-home-activity). -->
@@ -150,21 +150,21 @@
             android:process=":home"
             android:exported="false"
             android:screenOrientation="landscape"
-            android:theme="@style/Launcher.Home" />
+            android:theme="@style/Launcher.Page" />
 
         <activity
             android:name=".HomeEditActivity"
             android:process=":home"
             android:exported="false"
             android:screenOrientation="landscape"
-            android:theme="@style/Launcher.Home" />
+            android:theme="@style/Launcher.Page" />
 
         <activity
             android:name=".DeviceStatusActivity"
             android:process=":home"
             android:exported="false"
             android:screenOrientation="landscape"
-            android:theme="@style/Launcher.Home" />
+            android:theme="@style/Launcher.Page" />
 
         <activity
             android:name=".HomeActivity"

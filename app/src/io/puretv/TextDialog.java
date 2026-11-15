@@ -65,7 +65,7 @@ final class TextDialog extends Dialog {
 
     private final class Box extends ViewGroup {
         private final SettingsSurface surface = new SettingsSurface();
-        private final Paint fill = new Paint(Paint.ANTI_ALIAS_FLAG), rim = new Paint(Paint.ANTI_ALIAS_FLAG);
+        private final Paint rim = new Paint(Paint.ANTI_ALIAS_FLAG);
         private final RectF panel = new RectF(), box = new RectF();
         private TextPaint heading;
         private String shownTitle = "";
@@ -102,9 +102,8 @@ final class TextDialog extends Dialog {
             c.drawColor(0x66000000);
             surface.popup(c, panel, 28 * k);
             c.drawText(shownTitle, panel.left + 40 * k, panel.top + 60 * k, heading);
-            fill.setColor(surface.dark ? 0x14FFFFFF : 0x10000000);
-            c.drawRoundRect(box, 16 * k, 16 * k, fill);
-            rim.setColor(surface.dark ? 0xCCF5F5F7 : surface.focusFill);   // the field always has the focus
+            surface.well(c, box, 16 * k, 0);
+            rim.setColor(surface.dark ? Look.GOLD : Look.GOLD_DEEP);   // the field always has the focus: it is the one being typed in
             c.drawRoundRect(box, 16 * k, 16 * k, rim);
         }
     }

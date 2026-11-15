@@ -9,9 +9,8 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 
 /**
- * Uninstall and Force stop from an app's long-press menu. Uninstall is only offered for apps the person installed and
- * always goes through Android's own confirmation. Force stop uses the TV's ADB grant (custom home mode), never with a
- * new prompt, and never for the packages HomeMode protects (picture, sound, inputs, remote, Android itself).
+ * Uninstall from an app's long-press menu: only offered for apps the person installed, and always through Android's
+ * own confirmation.
  */
 final class AppActions {
     private AppActions() {}
@@ -32,24 +31,6 @@ final class AppActions {
             a.startActivity(new Intent(Intent.ACTION_DELETE, Uri.parse("package:" + pkg)));
             return true;
         } catch (ActivityNotFoundException | SecurityException e) {
-            return false;
-        }
-    }
-
-    /** Custom home mode (the TV already allows this app's ADB key) and a package that may be stopped. */
-    static boolean canForceStop(Context c, String pkg) {
-        return pkg != null && !pkg.equals(c.getPackageName()) && HomeMode.mayStop(pkg)
-                && HomeMode.custom(c);
-    }
-
-    /** Background thread. True when Android stopped the app. */
-    static boolean forceStop(Context c, String pkg) {
-        if (!WatchNextRules.packageName(pkg) || !canForceStop(c, pkg)) return false;
-        try (Adb adb = Adb.connect(c, -1, null)) {
-            adb.shell("am force-stop " + pkg);
-            return true;
-        } catch (java.io.IOException | RuntimeException e) {
-            AppLog.w("force stop: " + e.getMessage());
             return false;
         }
     }

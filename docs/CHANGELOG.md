@@ -1,5 +1,86 @@
 # Changelog
 
+## v1.4
+
+Built, covered by the regression suite and checked on a Mi Stick (Android TV 9) in the dark and the light theme:
+settings, home (content and clock layouts), quick panel and bottom drawer. Not yet seen there: the weather line of the
+clock layout, the PIN keypad, the text field and the welcome guide. The screenshots in `docs/media` still show the
+previous look.
+
+- **One look, from the icon:** obsidian surfaces, paper-white text and a single gold accent for what is on, selected
+  or in progress (`Look`). The focus is the same bright surface with a soft shadow on every screen; the quick panel
+  and the long-press menu used a different one from the settings.
+- **A backdrop that follows the day:** without a title's photo, the home screen, the settings and the welcome guide sit
+  on a deep surface lit by a warm and a cool light whose colours change through morning, day, evening and night
+  (`Ambient`). It is computed once into a small dithered bitmap and stretched, so it costs one textured rectangle and
+  shows no banding. On Android 13+ the glass reads this backdrop.
+- **Home screen:** the clock layout shows a small tracked date, the time large and light, and the weather on one line
+  with the city; the header no longer repeats the time, date and weather beside it. The open content tab carries a
+  gold mark, watch progress is gold, the focused tile takes a bright ring at night too, and black tiles get a hairline
+  of light on the smoked shelf.
+- **Glass on older TVs (Android 9 to 12):** panels are lit from above (a faint sheen and a rim brighter at the top)
+  instead of a flat fill with an even outline. Lightweight mode keeps the plain panels.
+- **Settings:** each category has its symbol and the open one a gold mark; on/off values are switches and the choice in
+  use a gold check; rows that only report something (RAM, IP, version) are quieter; long lists show where you are.
+- **Settings, regrouped:** rows now sit where you would look for them. Detailed weather is with the rest of the
+  weather; the screensaver and its photos are together under Appearance; App lock is next to Hidden apps under Home
+  screen; Device mode is under Device and performance; the AirPlay rows are together, before the network ones; System
+  and about starts with what you change and ends with what you only read. The redundant Refresh status row is gone
+  (the values refresh when the screen opens and after freeing memory).
+- **AirPlay inside PureTV.apk:** a release build carries the signed receiver as a compressed asset
+  (`build.py --receiver`), so Connections → AirPlay receiver installs it without a download; Android still asks once
+  to confirm. A build without it, or a carried copy that fails the package and certificate check, downloads from the
+  release as before. The receiver stays a separate GPL-3.0 app. Receiver `0.0.36-puretv.4` (on the Mi Stick: screens and start/stop checked, return to the home screen after
+  mirroring confirmed by the device owner; the in-app install was not tried there)
+  leaves for the home screen 0.6 s after sharing ends, from the engine's own events instead of a polled connection
+  count, wears the current look (gold switches, lit panels, two-light backdrop) and is smaller.
+- **The remote's apps button works:** Android sends that button only to the TV's own launcher, which is off in custom
+  home mode, so it did nothing. PureTV's key service now answers it with All Apps (Xiaomi remotes and any remote that
+  reports the key; custom home mode). Confirmed by the device owner on a Mi Stick remote on 2026-11-15.
+- **Remote button test, and jobs for buttons:** Back no longer leaves the test (hold it for two seconds; Home still
+  leaves). A pressed button can be given a job there (All Apps, quick settings, settings or an app) and nothing
+  changes until Save changes. OK, Back, the arrows, Home, power and volume can never be reassigned.
+- **Setup guide:** a step to choose the home screen layout with a small preview of each, an AirPlay step when setup
+  finishes (installed without a prompt in custom home mode, from the copy inside PureTV), and the USB debugging step
+  says why it is asked for. Its buttons were English outside Turkish and are now translated.
+- **Other apps:** an app added to the home screen is no longer listed there too.
+- **Header:** a hairline separates the weather from the date.
+- **All Apps shows everything:** the home screen's apps, then the other apps, then the apps you hid, dimmed and named
+  so. The long-press menu adds an app to the home screen or removes it, and hides or shows it; Force stop is gone.
+  PureTV's own AirPlay receiver is never listed as an app (it opens from Connections); no other app is treated so.
+- **Screensaver:** light numerals, a tracked uppercase date and a dimmed gold dot and label, still on black.
+- **Setup guide from Settings:** Back walks the steps back before it closes, also after setup is done.
+- **Default home screen:** the choices are PureTV home screen and TV's original home screen, and the hint says how to
+  go back to the TV's own.
+- **No white flash:** settings and the other pages open without a starting window.
+- **Translations:** 160 texts (the setup guide, Television mode, TV inputs, AirPlay help, accessibility phrases) had no
+  translation outside Turkish; they are now in all 23 languages (18 of them machine-translated in one pass and
+  checked only for structure, not proofread by a speaker).
+- **Weather:** the header shows a small icon and temperature beside its clock (no city); the clock layout has one small
+  line under the clock. Weather information switches both. Detailed weather below the shortcuts is unchanged.
+- **Quieter glass on Android 9 to 12:** the sheen and the top of the rim on dark glass are about half as bright; the
+  header buttons looked washed out towards the top.
+- **Television mode:** on a TV with no tuner or TV app, the corner keeps TV Settings instead of a Live TV button
+  that could only say it can't open. The corner button and the page it opens share one name (TV inputs), Live TV has
+  the same icon everywhere (it shared AirPlay's in the inputs row), and the remote test names the HDMI port. A Live TV
+  or input choice for "On TV start" left from Television mode no longer applies in box mode, and the settings show
+  Home screen for it. Removed an unused shortcut list.
+- **Move sound:** at an edge of the Other apps grid the focus doesn't move, and the sound no longer plays.
+- **Popups and welcome guide:** the quick panel, long-press menu, PIN keypad and text field share the settings look;
+  the welcome guide shows PureTV's icon and its four steps on one line.
+
+Under the hood:
+
+- Flat glass ignored its opacity, so both the day and the night panel were drawn in full during the day ⇄ night
+  transition on older TVs.
+- The clock layout built its high/low text per language in code; it now uses the catalogues like the forecast card.
+- Removed code that could no longer run: the old hero (hourly picks) and the corner capsule, including a shortcut list
+  that was still loaded on every catalogue refresh and never shown.
+- The network status colour was decided in four places with two different rules; it is now one
+  (`NetworkStatus.color`). An unused constructor argument of every settings row is gone.
+- Each settings row now carries its own value; the values were written by row number in a separate method, which broke
+  silently whenever a row was added or moved.
+
 ## v1.3
 
 - **Keep AirPlay on** (All settings → Connections): AirPlay starts with the TV and stays on instead of stopping after 15

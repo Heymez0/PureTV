@@ -1,0 +1,32 @@
+[
+  {
+    "project": "FDH2/UxPlay",
+    "commit": "df67c212a433cf6dda3676dd40c097900d24e645",
+    "url": "https://codeload.github.com/FDH2/UxPlay/zip/df67c212a433cf6dda3676dd40c097900d24e645",
+    "sha256": "52fcbcae8d2f386f4b04cd5e6ce858b98a695ec641485f0ea33d215c6d4c6856"
+  },
+  {
+    "project": "libimobiledevice/libplist",
+    "commit": "f41b1ea67045e0c09339974d83e389972d84f166",
+    "url": "https://codeload.github.com/libimobiledevice/libplist/zip/f41b1ea67045e0c09339974d83e389972d84f166",
+    "sha256": "2ed470afee117778ce36cf32f3a16a0bffb73c59b6cc959b26d2cab2e5d50ea6"
+  },
+  {
+    "project": "viaduck/openssl-cmake",
+    "commit": "4edd36a8dab5f85a8f92650b5bdf6e0cab13aab8",
+    "url": "https://codeload.github.com/viaduck/openssl-cmake/zip/4edd36a8dab5f85a8f92650b5bdf6e0cab13aab8",
+    "sha256": "91200ba1fdd6a470319abb41b6b4983e03681a7f0ca18a016088e12c1ecc44e7"
+  },
+  {
+    "project": "FFmpeg/FFmpeg",
+    "commit": "38b88335f99e76ed89ff3c93f877fdefce736c13",
+    "url": "https://codeload.github.com/FFmpeg/FFmpeg/zip/38b88335f99e76ed89ff3c93f877fdefce736c13",
+    "sha256": "c3453fbfc7ca25423f4984a83ceda01949d458a8bc04f9d68fab7c392f75b3ab"
+  },
+  {
+    "project": "openssl/openssl",
+    "version": "3.4.4",
+    "url": "https://github.com/openssl/openssl/releases/download/openssl-3.4.4/openssl-3.4.4.tar.gz",
+    "sha256": "7bdf55ac20f2779e99e5eca306f824fad2b37dee5a06cc35ed5a8b85a6060010"
+  }
+]

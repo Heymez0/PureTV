@@ -9,6 +9,11 @@
         <item name="android:windowShowWallpaper">false</item>
         <item name="android:colorBackgroundCacheHint">@null</item>
     </style>
+    <!-- Settings and the other pages: no starting window, so the previous screen stays until the page's first frame. -->
+    <style name="Launcher.Page" parent="Launcher.Home">
+        <item name="android:windowDisablePreview">true</item>
+        <item name="android:windowBackground">@android:color/black</item>
+    </style>
     <style name="Launcher.Quick" parent="Launcher.Home">
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowBackground">@android:color/transparent</item>

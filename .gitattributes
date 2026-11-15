@@ -12,3 +12,6 @@
 *.xml text eol=lf
 *.properties text eol=lf
 *.patch -whitespace
+# The AirPlay receiver's complete GPL source, kept byte for byte as built (no line-ending changes), and not
+# counted as this project's language on GitHub.
+airplay/** -text linguist-vendored

@@ -129,15 +129,15 @@ final class PinDialog extends Dialog {
             int slots = Math.max(4, digits.length());
             float step = 34 * k, x = panel.centerX() - (slots - 1) * step / 2, y = panel.top + 116 * k;
             for (int i = 0; i < slots; i++) {
-                if (i < digits.length()) { fill.setColor(surface.ink); c.drawCircle(x + i * step, y, 9 * k, fill); }
+                if (i < digits.length()) { fill.setColor(surface.dark ? Look.GOLD : Look.GOLD_DEEP); c.drawCircle(x + i * step, y, 9 * k, fill); }
                 else { rim.setColor(surface.dim); c.drawCircle(x + i * step, y, 8 * k, rim); }
             }
             for (int i = 0; i < 12; i++) {
                 keyBounds(i);
                 boolean focused = i == focus;
                 // Focus filled like the settings rows: the one key the remote is on reads from across the room.
-                fill.setColor(focused ? surface.focusFill : surface.dark ? 0x14FFFFFF : 0x10000000);
-                c.drawRoundRect(key, 16 * k, 16 * k, fill);
+                if (focused) surface.focus(c, key, 16 * k, 1);
+                else surface.well(c, key, 16 * k, 0);
                 int ink = focused ? surface.focusInk : surface.ink;
                 if (i == DELETE) drawDelete(c, ink);
                 else if (i == CONFIRM) drawConfirm(c, digits.length() < MIN ? (focused ? surface.focusDim : surface.dim) : ink);

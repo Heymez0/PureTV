@@ -17,8 +17,8 @@ import java.util.function.IntConsumer;
 /** A small, static popover below the home header. RAM is one snapshot; its Free up button (OK on the row) frees memory. */
 final class QuickSettingsView extends View {
     private final SettingsSurface surface=new SettingsSurface();
-    private final Paint fill=new Paint(Paint.ANTI_ALIAS_FLAG),rim=new Paint(Paint.ANTI_ALIAS_FLAG);
-    private final RectF panel=new RectF(),box=new RectF(),track=new RectF(),pill=new RectF();
+    private final Paint fill=new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final RectF panel=new RectF(),box=new RectF(),pill=new RectF();
     private static final int ROWS=6,RAM=3,SLEEP=4;
     private final RectF[] rows={new RectF(),new RectF(),new RectF(),new RectF(),new RectF(),new RectF()};
     private final String[] labels={"AirPlay",Ui.tr("Edit home screen"),Ui.tr("Device status"),"RAM",Ui.tr("Sleep timer"),Ui.tr("All settings")};
@@ -60,7 +60,7 @@ final class QuickSettingsView extends View {
     }
     void resources(ResourceStatus.Snapshot value){
         ramUsed=value.ramTotal>0&&value.ramAvailable>=0?Ui.clamp(1-value.ramAvailable/(float)value.ramTotal):-1;
-        labels[3]=ramUsed<0?"RAM":"RAM "+LocaleFormats.percent(ramUsed,Ui.locale());
+        labels[RAM]=ramUsed<0?"RAM":"RAM "+LocaleFormats.percent(ramUsed,Ui.locale());
         ramValue=ResourceStatus.value(getContext(),value.ramAvailable,value.ramTotal);
         cacheText();invalidate();spoken.focusMoved();
     }
@@ -81,7 +81,6 @@ final class QuickSettingsView extends View {
         text=new TextPaint(Ui.text(Ui.semibold,26*k,surface.ink));
         detail=new TextPaint(Ui.text(Ui.regular,20*k,surface.dim));
         button=new TextPaint(Ui.text(Ui.semibold,19*k,surface.ink));freeWidth=button.measureText(freeLabel)+36*k;
-        rim.setStyle(Paint.Style.STROKE);rim.setStrokeWidth(2*k);
         for(String symbol:symbols)Symbols.get(getContext(),symbol);
         cacheText();
     }
@@ -96,26 +95,21 @@ final class QuickSettingsView extends View {
     }
     @Override protected void onDraw(Canvas c){
         if(text==null)return;
-        c.drawColor(0x18000000);surface.popup(c,panel,28*k);
+        c.drawColor(0x40000000);surface.popup(c,panel,28*k);
         for(int i=0;i<ROWS;i++){
-            RectF row=rows[i];
-            if(i==ROWS-1){fill.setColor(surface.dark?0x30FFFFFF:0x26000000);c.drawRect(row.left+12*k,row.top-3*k,row.right-12*k,row.top-2*k,fill);}
-            if(i==focus){
-                fill.setColor(surface.dark?0xFF303034:surface.focusFill);c.drawRoundRect(row,18*k,18*k,fill);
-                rim.setColor(surface.dark?0xCCF5F5F7:surface.focusFill);c.drawRoundRect(row,18*k,18*k,rim);
-            }
+            RectF row=rows[i];boolean focused=i==focus;float f=focused?1:0;
+            // The same focus as the settings rows: the bright surface, with everything on it in its dark ink.
+            if(i==ROWS-1)surface.hairline(c,row.left+12*k,row.right-12*k,row.top-3*k,focused||focus==i-1?0:1);
+            surface.focus(c,row,18*k,f);
             box.set(row.left+12*k,row.centerY()-25*k,row.left+62*k,row.centerY()+25*k);
-            fill.setColor(surface.dark?0xFF353539:0xFFD6D3CE);c.drawRoundRect(box,14*k,14*k,fill);
-            Symbols.draw(getContext(),c,symbols[i],box.centerX(),box.centerY(),29*k,surface.ink);
+            surface.well(c,box,14*k,f);
+            Symbols.draw(getContext(),c,symbols[i],box.centerX(),box.centerY(),29*k,focused?surface.focusInk:surface.ink);
             float x=row.left+80*k;
-            boolean inverse=i==focus&&!surface.dark;
-            text.setColor(inverse?surface.focusInk:surface.ink);detail.setColor(inverse?surface.focusDim:surface.dim);
+            text.setColor(focused?surface.focusInk:surface.ink);detail.setColor(focused?surface.focusDim:surface.dim);
             if(i==0){
                 c.drawText(shown[i],x,row.centerY()-7*k,text);
                 c.drawText(shownAirplay,x,row.centerY()+20*k,detail);
-                track.set(row.right-62*k,row.centerY()-13*k,row.right-14*k,row.centerY()+13*k);
-                fill.setColor(on&&!busy?0xFF68B67B:surface.dark?0xFF5B5B60:0xFFAAA7A0);c.drawRoundRect(track,13*k,13*k,fill);
-                fill.setColor(0xFFF5F5F7);c.drawCircle(on?track.right-13*k:track.left+13*k,track.centerY(),10*k,fill);
+                surface.toggle(c,row.right-14*k,row.centerY(),on,!busy,f);
             }else if(i==SLEEP){
                 c.drawText(shown[i],x,row.centerY()+Ui.halfCap(text),text);
                 c.drawText(shownSleep,row.right-22*k-detail.measureText(shownSleep),row.centerY()+Ui.halfCap(detail),detail);
@@ -123,17 +117,16 @@ final class QuickSettingsView extends View {
                 c.drawText(shown[i],x,row.top+28*k,text);
                 c.drawText(shownRam,x,row.top+54*k,detail);
                 // Free up: always shown, so the row says what OK does; lit like a focused control when the row is.
-                boolean lit=i==focus&&!freeing;
+                boolean lit=focused&&!freeing;
                 pill.set(row.right-14*k-freeWidth,row.top+6*k,row.right-14*k,row.top+37*k);   // on the label's line
-                fill.setColor(lit?0xFFF5F5F7:surface.dark?0xFF353539:0xFFD6D3CE);c.drawRoundRect(pill,15.5f*k,15.5f*k,fill);
-                button.setColor(lit?0xFF1C1C1E:freeing?surface.dim:surface.ink);
+                if(lit){fill.setColor(Look.GOLD);c.drawRoundRect(pill,15.5f*k,15.5f*k,fill);}
+                else surface.well(c,pill,15.5f*k,f);
+                button.setColor(lit?Look.ON_GOLD:freeing?focused?surface.focusDim:surface.dim:surface.ink);
                 c.drawText(freeLabel,pill.left+18*k,pill.centerY()+Ui.halfCap(button),button);   // freeWidth = text + 2 × 18
-                track.set(x,row.top+70*k,row.right-22*k,row.top+76*k);
-                fill.setColor(surface.dark?0xFF515156:0xFFCDCAC5);c.drawRoundRect(track,3*k,3*k,fill);
-                if(ramUsed>=0){track.right=track.left+track.width()*ramUsed;fill.setColor(0xFFD2AB55);c.drawRoundRect(track,3*k,3*k,fill);}
+                surface.meter(c,x,row.right-22*k,row.top+73*k,ramUsed,f);
             }else{
                 c.drawText(shown[i],x,row.centerY()+Ui.halfCap(text),text);
-                Symbols.draw(getContext(),c,"chevron_right",row.right-20*k,row.centerY(),20*k,inverse?surface.focusDim:surface.dim);
+                Symbols.draw(getContext(),c,"chevron_right",row.right-20*k,row.centerY(),20*k,focused?surface.focusDim:surface.dim);
             }
         }
     }

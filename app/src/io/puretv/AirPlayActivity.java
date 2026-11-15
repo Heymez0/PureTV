@@ -18,12 +18,12 @@ public class AirPlayActivity extends Activity {
         Watchdog.install(this);
         Ui.init(this);
         control=new AirPlayControl(this,()->{if(page!=null)page.changed();});
-        SettingsPage.Row network = new SettingsPage.Row(Ui.tr("Rede", "Network"), null, false);
+        SettingsPage.Row network = new SettingsPage.Row(Ui.tr("Rede", "Network"), null);
         network.network = true;
         data = new SettingsPage.Data("AirPlay", Ui.tr("Espelhe seu dispositivo Apple", "Mirror your Apple device"), "tv",
-                new SettingsPage.Row("AirPlay", direction -> control.toggle(), false),
-                new SettingsPage.Row(Ui.tr("Abrir receptor AirPlay", "Open AirPlay Receiver"), direction -> openReceiver(), false),
-                new SettingsPage.Row(Ui.tr("Receptor", "Receiver"), null, false), network);
+                new SettingsPage.Row("AirPlay", direction -> control.toggle()),
+                new SettingsPage.Row(Ui.tr("Abrir receptor AirPlay", "Open AirPlay Receiver"), direction -> openReceiver()),
+                new SettingsPage.Row(Ui.tr("Receptor", "Receiver"), null), network);
         page = new SettingsPage(this, data, this::update);
         setContentView(page);
     }
@@ -32,14 +32,13 @@ public class AirPlayActivity extends Activity {
 
     private void update() {
         String version = receiverVersion;
-        data.rows[0].value=control.value();
+        data.rows[0].value=control.value();data.rows[0].toggle=control.switchState();
         data.rows[2].value = version == null || version.isEmpty() ? Ui.tr("Não instalado", "Not installed") : version;
         NetworkStatus.Snapshot snapshot = page.networkSnapshot();
         SettingsPage.Row network = data.rows[3];
         network.state = snapshot.state;
         network.transport = snapshot.transport;
-        network.color = snapshot.state == NetworkStatus.ONLINE ? 0xFF30D158
-                : snapshot.state == NetworkStatus.LOCAL ? 0xFFFF9F0A : 0xFFAEAEB2;
+        network.color = NetworkStatus.color(snapshot);
         network.value = snapshot.transport.isEmpty() ? NetworkStatus.label(snapshot) : snapshot.transport;
         if (!snapshot.addresses.isEmpty()) network.value += " · " + snapshot.addresses;
         data.hint = (!error.isEmpty() ? error + "\n\n" : version.isEmpty() ? missing() + "\n\n" : "")

@@ -82,6 +82,10 @@ final class NetworkStatus {
         }
     }
     private static Snapshot unknown() { return new Snapshot(UNKNOWN, "", ""); }
+    /** The network symbol's colour: connected, connected without verified internet, or neither. */
+    static int color(Snapshot snapshot) {
+        return snapshot.state == ONLINE ? Look.GOOD : snapshot.state == LOCAL ? Look.WARN : Look.MUTED;
+    }
     static String label(Snapshot snapshot) {
         switch (snapshot.state) {
             case ONLINE: return Ui.tr("Internet disponível", "Internet available");

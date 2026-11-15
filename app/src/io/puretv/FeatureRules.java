@@ -44,6 +44,12 @@ final class FeatureRules {
         return HOME;
     }
 
+    /** Live TV and the inputs belong to Television mode: a choice left from it means the home screen on a box. */
+    static String startup(String v, boolean television) {
+        v = startup(v);
+        return television || v.startsWith(APP) ? v : HOME;
+    }
+
     /** Once per TV start, and only soon after it. */
     static boolean launchAtStart(String choice, int bootCount, int lastBoot, long sinceBootMs) {
         return !HOME.equals(startup(choice)) && bootCount > 0 && bootCount != lastBoot

@@ -1,0 +1,372 @@
+diff -ruN --strip-trailing-cr a/app/build.gradle.kts b/app/build.gradle.kts
+--- a/app/build.gradle.kts	2026-11-14 17:00:39.092143500 +0300
++++ b/app/build.gradle.kts	2026-11-14 17:00:39.255625100 +0300
+@@ -33,8 +33,8 @@
+         applicationId = "io.puretv.airplay"
+         minSdk = 23
+         targetSdk = 37
+-        versionCode = 40
+-        versionName = "0.0.36-puretv.3"
++        versionCode = 41
++        versionName = "0.0.36-puretv.4"
+ 
+ 
+     }
+@@ -47,6 +47,7 @@
+         }
+         release {
+             isMinifyEnabled = true
++            isShrinkResources = true
+             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+             signingConfigs.findByName("release")?.let { signingConfig = it }
+             ndk { abiFilters += allAbis }
+@@ -63,6 +64,11 @@
+         }
+     }
+ 
++    // PureTV: the receiver's own texts are English and Turkish; the libraries' other locales only add size.
++    androidResources {
++        localeFilters += listOf("en", "tr")
++    }
++
+     dependenciesInfo {
+         includeInApk = false
+         includeInBundle = false
+diff -ruN --strip-trailing-cr a/app/src/main/kotlin/io/github/jqssun/airplay/MainActivity.kt b/app/src/main/kotlin/io/github/jqssun/airplay/MainActivity.kt
+--- a/app/src/main/kotlin/io/github/jqssun/airplay/MainActivity.kt	2026-11-14 16:59:48.311282600 +0300
++++ b/app/src/main/kotlin/io/github/jqssun/airplay/MainActivity.kt	2026-11-14 17:00:39.255625100 +0300
+@@ -42,6 +42,7 @@
+     private val style = mutableStateOf(Triple(0xFF302A23.toInt(), 0xFF111113.toInt(), true))
+     private val logCallback: (String) -> Unit = { viewModel.addLog(it) }
+     private val pinCallback: (String?) -> Unit = { viewModel.showPin(it) }
++    private val sharingEnded: () -> Unit = { _leaveAfterSharing() }
+ 
+     private val connection = object : ServiceConnection {
+         override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
+@@ -49,6 +50,7 @@
+             service = svc
+             svc.logCallback = logCallback
+             svc.pinCallback = pinCallback
++            svc.sharingEndedCallback = sharingEnded
+             viewModel.bindService(svc)
+             if (lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) _refreshForeground()
+             _autoStart()
+@@ -99,23 +101,6 @@
+             }
+         }
+ 
+-        // PureTV: when the last sender stops sharing, go to the TV's home screen instead of staying on this screen.
+-        // A short wait lets a sender that reconnects at once (rotation, network hiccup) keep the screen.
+-        lifecycleScope.launch {
+-            repeatOnLifecycle(Lifecycle.State.RESUMED) {
+-                var shared = viewModel.connectionCount.value > 0
+-                viewModel.connectionCount.collect { count ->
+-                    if (count > 0) {
+-                        shared = true
+-                    } else if (shared) {
+-                        shared = false
+-                        delay(HOME_AFTER_SHARING_MS)
+-                        if (viewModel.connectionCount.value == 0) _leaveAfterSharing()
+-                    }
+-                }
+-            }
+-        }
+-
+         // auto-enter pre-declared in pip params
+         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+             lifecycleScope.launch {
+@@ -165,17 +150,24 @@
+     private fun _granted(permission: String) =
+         ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
+ 
+-    // A picture-in-picture window only closes (the app under it stays); otherwise the home screen comes forward.
++    // PureTV: called by the service (main thread) when sharing has ended. On screen, the TV's home screen comes
++    // forward; a picture-in-picture window only closes (the app under it stays), and so does a screen the viewer
++    // already left, so nobody is pulled out of another app.
+     private fun _leaveAfterSharing() {
+-        if (!isInPip.value) {
++        if (isFinishing || isDestroyed) return
++        if (!isInPip.value && lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
+             try {
+                 startActivity(Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
+-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
++                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_ANIMATION))
+             } catch (_: ActivityNotFoundException) {
+                 moveTaskToBack(true)
++            } catch (_: SecurityException) {
++                moveTaskToBack(true)
+             }
+         }
+         finish()
++        @Suppress("DEPRECATION")
++        overridePendingTransition(0, 0)
+     }
+ 
+     private fun _autoStart() {
+@@ -265,12 +257,9 @@
+         service?.let {
+             if (it.logCallback === logCallback) it.logCallback = null
+             if (it.pinCallback === pinCallback) it.pinCallback = null
++            if (it.sharingEndedCallback === sharingEnded) it.sharingEndedCallback = null
+         }
+         unbindService(connection)
+         super.onDestroy()
+     }
+-
+-    private companion object {
+-        const val HOME_AFTER_SHARING_MS = 1_500L
+-    }
+ }
+diff -ruN --strip-trailing-cr a/app/src/main/kotlin/io/github/jqssun/airplay/service/AirPlayService.kt b/app/src/main/kotlin/io/github/jqssun/airplay/service/AirPlayService.kt
+--- a/app/src/main/kotlin/io/github/jqssun/airplay/service/AirPlayService.kt	2026-11-14 16:59:48.315918700 +0300
++++ b/app/src/main/kotlin/io/github/jqssun/airplay/service/AirPlayService.kt	2026-11-14 17:00:39.255625100 +0300
+@@ -173,6 +173,24 @@
+     lateinit var dacpPlayer: DacpPlayer
+         private set
+     private val _mainHandler = Handler(Looper.getMainLooper())
++    // PureTV: the receiver screen leaves for the home screen when sharing ends. The engine reports the end of a
++    // mirroring stream at once, while the sender's control connection can stay open for many seconds, so the
++    // connection count alone was late or never came. A short grace keeps a sender that restarts at once.
++    @Volatile var sharingEndedCallback: (() -> Unit)? = null
++    @Volatile private var _mirrorSession = false
++    @Volatile private var _musicAudio = false
++    private val _leaveScreen = Runnable {
++        val videoPending = !_videoPollSuppressed &&
++            SystemClock.elapsedRealtime() - _lastVideoPollAt < VIDEO_POLL_PENDING_TIMEOUT_MS
++        if (_mirrorSession || _videoPlaybackActive.value || videoPending) return@Runnable
++        if (_musicAudio && _connectionCount.value > 0) return@Runnable   // music is still playing
++        sharingEndedCallback?.invoke()
++    }
++    private fun _scheduleLeave() {
++        _mainHandler.removeCallbacks(_leaveScreen)
++        _mainHandler.postDelayed(_leaveScreen, LEAVE_AFTER_SHARING_MS)
++    }
++
+     // PureTV on demand (start at boot off): no sender for IDLE_STOP_MS stops the server; a sender cancels it.
+     private val _idleStop = Runnable {
+         if (_serverState.value == ServerState.RUNNING && _connectionCount.value == 0 && !prefs[Prefs.BOOT_AUTO_START]) {
+@@ -696,6 +714,7 @@
+         _videoPlaybackSize.value = null
+         _videoTitle.value = ""
+         _videoPlaybackActive.value = true
++        _mainHandler.removeCallbacks(_leaveScreen)
+         airPlayVideoPlayer.play(location, startPositionSeconds)
+         // claim media-button routing for keys that arrive as media-session events
+         mediaSession?.isActive = true
+@@ -717,6 +736,7 @@
+         audioRenderer.start()
+         audioRenderer.setFormat(ct, spf)
+         if (!usingScreen) _setPlaying(true)
++        if (!usingScreen) _musicAudio = true
+         if (!usingScreen && !_audioOnly.value) {
+             // pure music streaming (not screen mirroring audio)
+             _setAudioOnly(true)
+@@ -867,6 +887,9 @@
+             _updateMediaNotification()
+             _scheduleIdleStop()
+             _holdCpu(_connectionCount.value > 0 || prefs[Prefs.BOOT_AUTO_START])
++            _mirrorSession = false
++            _musicAudio = false
++            _scheduleLeave()
+         }
+         log("Sender disconnected (${_connectionCount.value})")
+     }
+@@ -925,9 +948,18 @@
+     }
+ 
+     override fun onMirrorRunning(running: Boolean) {
+-        if (running) videoRenderer.startSession() else {
++        if (running) {
++            _mirrorSession = true
++            _musicAudio = false
++            _mainHandler.removeCallbacks(_leaveScreen)
++            videoRenderer.startSession()
++        } else {
+             videoRenderer.stopSession()
+             _mirroringActive.value = false
++            if (_mirrorSession) {
++                _mirrorSession = false
++                _scheduleLeave()
++            }
+         }
+         _setAudioOnly(!running)
+     }
+@@ -1231,6 +1263,7 @@
+         const val ACTION_START_SERVER = "io.github.jqssun.airplay.START_SERVER"
+         /** PureTV on demand: how long a running server waits for a sender before it stops itself. */
+         const val IDLE_STOP_MS = 15 * 60_000L
++        const val LEAVE_AFTER_SHARING_MS = 600L
+         // shared with dpad/double-tap seeks
+         const val VIDEO_SEEK_STEP_MS = 10_000L
+         const val VIDEO_POLL_PENDING_TIMEOUT_MS = 3_000L
+diff -ruN --strip-trailing-cr a/app/src/main/kotlin/io/github/jqssun/airplay/ui/MainScreen.kt b/app/src/main/kotlin/io/github/jqssun/airplay/ui/MainScreen.kt
+--- a/app/src/main/kotlin/io/github/jqssun/airplay/ui/MainScreen.kt	2026-11-14 16:59:48.311282600 +0300
++++ b/app/src/main/kotlin/io/github/jqssun/airplay/ui/MainScreen.kt	2026-11-14 17:00:47.499230500 +0300
+@@ -45,12 +45,12 @@
+ import androidx.compose.ui.text.style.TextAlign
+ import androidx.compose.ui.text.style.TextOverflow
+ import androidx.compose.ui.unit.dp
++import androidx.compose.ui.unit.sp
+ import androidx.core.view.WindowCompat
+ import androidx.core.view.WindowInsetsCompat
+ import androidx.core.view.WindowInsetsControllerCompat
+ import io.github.jqssun.airplay.Prefs
+ import io.github.jqssun.airplay.ui.theme.LocalPureTv
+-import io.github.jqssun.airplay.ui.theme.LocalTvBackdrop
+ import io.github.jqssun.airplay.R
+ import io.github.jqssun.airplay.service.AirPlayService.ServerState
+ import io.github.jqssun.airplay.ui.gestures.BrightnessState
+@@ -521,15 +521,18 @@
+         // the launcher's settings layout: navigation panel and content panel on its backdrop
+         val style = LocalPureTv.current
+         val panelShape = RoundedCornerShape(18.dp)
+-        Row(Modifier.fillMaxSize().background(LocalTvBackdrop.current).padding(40.dp)) {
+-            Column(Modifier.weight(0.3f).fillMaxHeight().tvPanel(panelShape).padding(20.dp),
+-                verticalArrangement = Arrangement.Center) {
+-                Icon(Icons.Default.Cast, contentDescription = null, modifier = Modifier.padding(start = 16.dp).size(56.dp),
+-                    tint = MaterialTheme.colorScheme.onSurfaceVariant)
+-                Spacer(Modifier.height(18.dp))
+-                Text("AirPlay", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.SemiBold,
+-                    color = MaterialTheme.colorScheme.onBackground, modifier = Modifier.padding(start = 16.dp))
+-                Spacer(Modifier.height(26.dp))
++        Row(Modifier.fillMaxSize().tvBackdrop().padding(40.dp)) {
++            Column(Modifier.weight(0.3f).fillMaxHeight().tvPanel(panelShape).padding(20.dp)) {
++                Row(Modifier.padding(start = 12.dp, top = 10.dp), verticalAlignment = Alignment.CenterVertically) {
++                    Box(Modifier.size(46.dp).background(style.selected, CircleShape), contentAlignment = Alignment.Center) {
++                        Icon(Icons.Default.Cast, contentDescription = null, modifier = Modifier.size(24.dp),
++                            tint = MaterialTheme.colorScheme.tertiary)
++                    }
++                    Spacer(Modifier.width(14.dp))
++                    Text("AirPlay", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold,
++                        color = MaterialTheme.colorScheme.onBackground)
++                }
++                Spacer(Modifier.height(24.dp))
+                 Tab.entries.forEach { t ->
+                     var focused by remember { mutableStateOf(false) }
+                     Surface(shape = RoundedCornerShape(12.dp),
+@@ -537,13 +540,25 @@
+                         contentColor = if (focused) style.focusInk else MaterialTheme.colorScheme.onBackground,
+                         modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp)
+                             .onFocusChanged { focused = it.hasFocus }.clickable { tab = t }) {
+-                        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
++                        Row(Modifier.padding(top = 16.dp, bottom = 16.dp, end = 16.dp), verticalAlignment = Alignment.CenterVertically) {
++                            // the open tab's gold mark, while the focus is elsewhere
++                            Box(Modifier.width(3.dp).height(22.dp).background(
++                                if (tab == t && !focused) MaterialTheme.colorScheme.tertiary else Color.Transparent,
++                                RoundedCornerShape(2.dp)))
++                            Spacer(Modifier.width(13.dp))
+                             Icon(t.icon, contentDescription = null, modifier = Modifier.size(24.dp))
+                             Spacer(Modifier.width(14.dp))
+                             Text(stringResource(t.labelRes), style = MaterialTheme.typography.titleMedium)
+                         }
+                     }
+                 }
++                Spacer(Modifier.weight(1f))
++                Row(Modifier.padding(start = 16.dp, bottom = 8.dp), verticalAlignment = Alignment.CenterVertically) {
++                    Box(Modifier.size(6.dp).background(MaterialTheme.colorScheme.tertiary, CircleShape))
++                    Spacer(Modifier.width(10.dp))
++                    Text("PURETV", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold,
++                        letterSpacing = 3.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
++                }
+             }
+             Spacer(Modifier.width(24.dp))
+             // rows draw on the glass panel itself (no opaque list background)
+diff -ruN --strip-trailing-cr a/app/src/main/kotlin/io/github/jqssun/airplay/ui/Tv.kt b/app/src/main/kotlin/io/github/jqssun/airplay/ui/Tv.kt
+--- a/app/src/main/kotlin/io/github/jqssun/airplay/ui/Tv.kt	2026-11-14 16:59:48.311282600 +0300
++++ b/app/src/main/kotlin/io/github/jqssun/airplay/ui/Tv.kt	2026-11-14 17:00:39.255625100 +0300
+@@ -21,7 +21,11 @@
+ import androidx.compose.ui.draw.clip
+ import androidx.compose.ui.focus.FocusDirection
+ import androidx.compose.ui.focus.onFocusChanged
++import androidx.compose.ui.draw.drawBehind
++import androidx.compose.ui.geometry.Offset
++import androidx.compose.ui.graphics.Brush
+ import androidx.compose.ui.graphics.Color
++import androidx.compose.ui.graphics.SolidColor
+ import androidx.compose.ui.graphics.Shape
+ import androidx.compose.ui.input.key.Key
+ import androidx.compose.ui.input.key.KeyEventType
+@@ -52,10 +56,24 @@
+         .border(2.dp, if (focused) MaterialTheme.colorScheme.primary else Color.Transparent, shape)
+ }
+ 
+-/** The launcher's glass panel: translucent fill and a hairline rim (SettingsSurface.panel). */
++/** The launcher's panel: a deep fill and a hairline rim that is brighter at the top (SettingsSurface.panel). */
+ fun Modifier.tvPanel(shape: Shape = RoundedCornerShape(18.dp)): Modifier = composed {
+     val s = LocalPureTv.current
+-    background(s.panel, shape).border(Dp.Hairline, s.rim, shape)
++    val rim = if (s.dark) Brush.verticalGradient(listOf(Color(0x30FFFFFF), s.rim)) else SolidColor(s.rim)
++    background(s.panel, shape).border(1.dp, rim, shape)
++}
++
++/** The launcher's backdrop: a deep surface lit by a warm light from the top right and a cool one from the bottom left. */
++fun Modifier.tvBackdrop(): Modifier = composed {
++    val dark = LocalPureTv.current.dark
++    drawBehind {
++        drawRect(if (dark) Color(0xFF0B0B0E) else Color(0xFFF2F0EC))
++        val reach = maxOf(size.width, size.height)
++        drawRect(Brush.radialGradient(listOf(if (dark) Color(0x66584426) else Color(0xB3F0DFC0), Color.Transparent),
++            center = Offset(size.width * 0.86f, size.height * 0.04f), radius = reach * 0.75f))
++        drawRect(Brush.radialGradient(listOf(if (dark) Color(0x6612283C) else Color(0x99D6E2EA), Color.Transparent),
++            center = Offset(size.width * 0.08f, size.height * 0.96f), radius = reach * 0.7f))
++    }
+ }
+ 
+ /** A focusable settings row, rounded like the launcher's; reports focus for [tvRowColors]. */
+@@ -72,7 +90,7 @@
+     else ListItemDefaults.colors(containerColor = Color.Transparent)
+ }
+ 
+-/** The quick panel's switch: green when on, grey when off, light thumb. */
++/** The launcher's switch: gold when on, grey when off, light thumb. */
+ @Composable
+ fun tvSwitchColors(): SwitchColors {
+     val s = LocalPureTv.current
+diff -ruN --strip-trailing-cr a/app/src/main/kotlin/io/github/jqssun/airplay/ui/theme/Theme.kt b/app/src/main/kotlin/io/github/jqssun/airplay/ui/theme/Theme.kt
+--- a/app/src/main/kotlin/io/github/jqssun/airplay/ui/theme/Theme.kt	2026-11-14 16:59:48.304833400 +0300
++++ b/app/src/main/kotlin/io/github/jqssun/airplay/ui/theme/Theme.kt	2026-11-14 17:00:39.255625100 +0300
+@@ -43,7 +43,7 @@
+     outline = Color(0xFFAAA7A0), outlineVariant = Color(0xFFD3CFC8)
+ )
+ 
+-/** Launcher surfaces the Material scheme has no slot for: glass panel, hairline rim, filled focus and the "on" green. */
++/** Launcher surfaces the Material scheme has no slot for: lit panel, hairline rim, filled focus and the gold "on". */
+ @Immutable
+ data class PureTvStyle(
+     val dark: Boolean,
+@@ -53,29 +53,24 @@
+ )
+ 
+ private val DarkStyle = PureTvStyle(true,
+-    panel = Color(0xB9111113), rim = Color(0x33FFFFFF), selected = Color(0x22FFFFFF),
+-    focusFill = Color(0xFFF5F5F7), focusInk = Color(0xFF1C1C1E), focusDim = Color(0xFF505056),
+-    on = Color(0xFF68B67B), off = Color(0xFF5B5B60))
++    panel = Color(0xD9161618), rim = Color(0x14FFFFFF), selected = Color(0x1AFFFFFF),
++    focusFill = Color(0xFFF5F5F7), focusInk = Color(0xFF1D1D1F), focusDim = Color(0xFF505056),
++    on = Color(0xFFD2AB55), off = Color(0xFF48484D))
+ 
+ private val LightStyle = PureTvStyle(false,
+     panel = Color(0x9FFFFFFF), rim = Color(0x26000000), selected = Color(0x20000000),
+     focusFill = Color(0xFF28282D), focusInk = Color(0xFFF5F5F7), focusDim = Color(0xFFD4D4DC),
+-    on = Color(0xFF68B67B), off = Color(0xFFAAA7A0))
++    on = Color(0xFFD2AB55), off = Color(0xFFAAA7A0))
+ 
+ val LocalPureTv = staticCompositionLocalOf { DarkStyle }
+ 
+-val LocalTvBackdrop = staticCompositionLocalOf<Brush> {
+-    Brush.linearGradient(listOf(Color(0xFF302A23), Color(0xFF111113)))
+-}
+-
+ @Composable
+ fun AirPlayTheme(top: Int, bottom: Int, dark: Boolean = true, content: @Composable () -> Unit) {
+-    // diagonal, like the launcher's settings background
+-    val backdrop = remember(top, bottom) { Brush.linearGradient(listOf(Color(top), Color(bottom))) }
++    // top/bottom: the launcher's former two-colour sky; the backdrop is now drawn by Modifier.tvBackdrop().
+     MaterialTheme(colorScheme = if (dark) TvDark else TvLight, shapes = Shapes(
+         small = RoundedCornerShape(12.dp), medium = RoundedCornerShape(18.dp),
+         large = RoundedCornerShape(24.dp))) {
+-        CompositionLocalProvider(LocalTvBackdrop provides backdrop,
++        CompositionLocalProvider(
+             LocalPureTv provides if (dark) DarkStyle else LightStyle, content = content)
+     }
+ }

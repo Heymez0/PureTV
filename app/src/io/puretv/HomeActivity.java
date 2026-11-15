@@ -43,6 +43,7 @@ public class HomeActivity extends Activity {
         home.restoreContentState(savedInstanceState);
         setContentView(home);
         if (getIntent().getBooleanExtra("browse_other_apps", false)) home.browseOtherApps();
+        if (getIntent().getBooleanExtra("all_apps", false)) home.openAllApps();
         getWindow().setBackgroundDrawable(null);
     }
 
@@ -86,6 +87,7 @@ public class HomeActivity extends Activity {
         boolean alreadyHome=homeFocused&&(intent.getFlags()&Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT)==0;
         if (home != null) home.reset(true,alreadyHome);
         if (home != null && intent.getBooleanExtra("browse_other_apps", false)) home.browseOtherApps();
+        if (home != null && intent.getBooleanExtra("all_apps", false)) home.openAllApps();
     }
 
     @Override protected void onDestroy() {

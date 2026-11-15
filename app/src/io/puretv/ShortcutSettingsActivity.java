@@ -32,7 +32,7 @@ public class ShortcutSettingsActivity extends Activity {
         SettingsPage.Row[] rows = new SettingsPage.Row[ids.size()];
         for (int i = 0; i < rows.length; i++) {
             final String id = ids.get(i);
-            rows[i] = new SettingsPage.Row(labels.get(i), "all".equals(id) ? null : direction -> toggle(id), false);
+            rows[i] = new SettingsPage.Row(labels.get(i), "all".equals(id) ? null : direction -> toggle(id));
         }
         data = new SettingsPage.Data(Ui.tr("Editar atalhos", "Edit shortcuts"),
                 Ui.tr("Atalhos da gaveta inferior", "Bottom drawer shortcuts"), "shortcut_edit", rows);

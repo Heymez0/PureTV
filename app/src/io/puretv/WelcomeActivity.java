@@ -19,21 +19,51 @@ public class WelcomeActivity extends Activity {
     private final ExecutorService io=Executors.newSingleThreadExecutor();
     private final Runnable poll=this::readState;
     private WelcomeView page;
-    private boolean visible,alive=true,loading,loaded,active,debug,airplayMissing;
+    private boolean visible,alive=true,loading,loaded,active,debug,airplayMissing,bundled,airplayPage,airplaySeen,airplayBusy;
+    private String airplayStatus="";
     private int requests;
     private String busy="",error="";
     static void open(Activity from){from.startActivity(new Intent(from,WelcomeActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP));}
     @Override protected void onCreate(Bundle state){
         super.onCreate(state);Watchdog.install(this);Ui.applyLanguage();Ui.init(this);
         if(WelcomeStore.status(this)==WelcomeFlow.NEW)WelcomeStore.status(this,WelcomeFlow.STARTED);
-        if(state!=null)flow.restore(state.getInt("step",WelcomeFlow.INTRO));
+        if(state!=null){flow.restore(state.getInt("step",WelcomeFlow.INTRO));airplaySeen=state.getBoolean("airplay_seen");}
+        bundled=AirPlayInstall.bundled(this);
         page=new WelcomeView(this,this::choose,this::back);setContentView(page);render();
     }
-    @Override protected void onSaveInstanceState(Bundle out){out.putInt("step",flow.step);super.onSaveInstanceState(out);}
+    @Override protected void onSaveInstanceState(Bundle out){out.putInt("step",flow.step);out.putBoolean("airplay_seen",airplaySeen);super.onSaveInstanceState(out);}
     @Override protected void onResume(){super.onResume();visible=true;page.resume();readState();}
     @Override protected void onPause(){visible=false;main.removeCallbacks(poll);page.pause();super.onPause();}
     @Override protected void onDestroy(){alive=false;main.removeCallbacksAndMessages(null);io.shutdownNow();super.onDestroy();}
-    private void render(){page.bind(WelcomeView.content(flow,loaded,debug,busy,error,airplayMissing));}
+    /**
+     * The AirPlay step. It comes up by itself once, when setup finishes and the carried receiver isn't installed;
+     * Back from the last page shows it again (installed or not), so it is always there to find.
+     */
+    private boolean offerAirplay(){return flow.step==WelcomeFlow.READY&&airplayPage;}
+    private void render(){page.bind(WelcomeView.content(flow,loaded,debug,busy,error,airplayMissing,offerAirplay(),airplayStatus,airplayBusy));}
+    private void layout(String value){
+        if(flow.step!=WelcomeFlow.LAYOUT)return;
+        if(!HomeContentModes.CLOCK.equals(value))Prefs.setViewingInformation(true);
+        Prefs.setHomeContentMode(value);flow.next();render();
+    }
+    /** Without a prompt where PureTV is already the home screen; otherwise (or if that fails) Android's own installer. */
+    private void installAirplay(){
+        if(airplayBusy)return;
+        if(!HomeMode.custom(this)){startActivity(new Intent(this,AirPlayInstallActivity.class));return;}
+        airplayBusy=true;airplayStatus=Ui.tr("Installing AirPlay…");render();
+        final android.content.Context app=getApplicationContext();
+        io.execute(()->{
+            boolean done=false;
+            try{java.io.File apk=AirPlayInstall.unpack(app);AirPlayInstall.verify(app,apk);done=AirPlayInstall.installQuietly(app,apk);}
+            catch(java.io.IOException|RuntimeException failed){AppLog.w("receiver from the guide: "+failed.getMessage());}
+            AirPlayInstall.clean(app);final boolean ok=done;
+            main.post(()->{
+                if(!alive)return;airplayBusy=false;airplayStatus="";
+                if(ok){airplayMissing=false;airplayPage=false;}else if(visible)startActivity(new Intent(this,AirPlayInstallActivity.class));
+                render();
+            });
+        });
+    }
     private void readState(){
         main.removeCallbacks(poll);if(!alive||!visible||loading)return;loading=true;
         final android.content.Context context=getApplicationContext();
@@ -48,6 +78,7 @@ public class WelcomeActivity extends Activity {
                 busy=WelcomeStore.busyText(state,SystemClock.elapsedRealtime());error=state.optString("error");
                 flow.observe(SystemClock.elapsedRealtime(),active,!busy.isEmpty(),error);
                 if(flow.step==WelcomeFlow.READY)WelcomeStore.status(context,WelcomeFlow.DONE);
+                if(flow.step==WelcomeFlow.READY&&!airplaySeen){airplaySeen=true;airplayPage=airplayMissing&&bundled;}
                 if(!visible)return;render();if(flow.waiting||!busy.isEmpty())main.postDelayed(poll,500);
             });
         });
@@ -59,6 +90,11 @@ public class WelcomeActivity extends Activity {
                 if(flow.step!=WelcomeFlow.DEVICE)return;
                 Prefs.setDeviceMode(action==WelcomeView.TV?DeviceProfiles.TV:DeviceProfiles.BOX);flow.next();render();break;
             case WelcomeView.BACK:back();break;
+            case WelcomeView.LAYOUT_CLOCK:layout(HomeContentModes.CLOCK);break;
+            case WelcomeView.LAYOUT_RECENT:layout(HomeContentModes.RECENT);break;
+            case WelcomeView.LAYOUT_COMBINED:layout(HomeContentModes.COMBINED);break;
+            case WelcomeView.AIRPLAY_NOW:installAirplay();break;
+            case WelcomeView.AIRPLAY_SKIP:airplayPage=false;render();break;
             case WelcomeView.DEVELOPERS:
                 if(!SettingsLinks.openDeveloperSettings(this)){
                     error=Ui.tr("Could not open TV settings. Open About on your TV to enable developer options.");render();
@@ -68,7 +104,7 @@ public class WelcomeActivity extends Activity {
             case WelcomeView.ENABLE:
                 if(!loaded)return;
                 active=WelcomeStore.active(this);
-                if(active&&busy.isEmpty()&&error.isEmpty()){flow.observe(SystemClock.elapsedRealtime(),true,false,"");WelcomeStore.status(this,WelcomeFlow.DONE);render();return;}
+                if(active&&busy.isEmpty()&&error.isEmpty()){flow.browsing=false;flow.observe(SystemClock.elapsedRealtime(),true,false,"");WelcomeStore.status(this,WelcomeFlow.DONE);render();return;}
                 if(!flow.begin(SystemClock.elapsedRealtime(),active,!busy.isEmpty(),error))return;
                 WelcomeStore.status(this,WelcomeFlow.STARTED);render();
                 try{requests++;HomeMode.request(getApplicationContext(),HomeMode.FREE);readState();}
@@ -86,7 +122,12 @@ public class WelcomeActivity extends Activity {
         }
     }
     private void openSettings(){startActivity(new Intent(this,SettingsActivity.class).putExtra("home_settings",true).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));finish();}
-    private void back(){if(flow.back())render();else finish();}
+    private void back(){
+        if(airplayBusy)return;
+        if(flow.step==WelcomeFlow.READY&&!airplayPage&&(bundled||!airplayMissing)){airplayPage=true;render();return;}   // last page → AirPlay
+        airplayPage=false;
+        if(flow.back())render();else finish();
+    }
     @Override public boolean dispatchKeyEvent(KeyEvent event){return page.onKey(event)||super.dispatchKeyEvent(event);}
     @Override public void dump(String prefix,java.io.FileDescriptor fd,java.io.PrintWriter out,String[] args){
         super.dump(prefix,fd,out,args);out.println(prefix+"Welcome: step="+flow.step+" loaded="+loaded+" active="+active+" waiting="+flow.waiting+" status="+WelcomeStore.status(this)+" requests="+requests);

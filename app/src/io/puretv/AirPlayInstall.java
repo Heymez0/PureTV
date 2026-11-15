@@ -20,9 +20,10 @@ import java.util.Arrays;
 import java.util.HashSet;
 
 /**
- * Installs the optional AirPlay receiver for you: downloads it from PureTV's own GitHub release, checks that it is
- * io.puretv.airplay signed with the same certificate as this launcher (the one its quick control needs), then hands it
- * to Android's installer, which asks you to confirm. Only when you choose it; nothing runs in the background.
+ * Installs the optional AirPlay receiver for you: takes the copy carried inside this APK (or, in a build without
+ * one, downloads it from PureTV's own GitHub release), checks that it is io.puretv.airplay signed with the same
+ * certificate as this launcher (the one its quick control needs), then hands it to Android's installer, which asks you
+ * to confirm. Only when you choose it; nothing runs in the background.
  * The receiver stays a separate GPL-3.0 app with its complete source in the same release.
  */
 final class AirPlayInstall {
@@ -52,6 +53,37 @@ final class AirPlayInstall {
     }
 
     interface Progress { void update(long done, long total); }
+
+    /** The receiver carried inside this APK (build.py --receiver); builds without it download it instead. */
+    static final String BUNDLED = "airplay/" + InstallRules.RECEIVER_ASSET;
+
+    static boolean bundled(Context c) {
+        try (InputStream in = c.getAssets().open(BUNDLED)) { return in.read() >= 0; }
+        catch (IOException | RuntimeException e) { return false; }
+    }
+
+    /** Copies the carried receiver into the app's cache (the same bounded file a download leaves). Background thread. */
+    static File unpack(Context c) throws IOException {
+        File dir = new File(c.getCacheDir(), "airplay");
+        if (!dir.isDirectory() && !dir.mkdirs()) throw new IOException("no space for the receiver");
+        File apk = new File(dir, InstallRules.RECEIVER_ASSET), part = new File(dir, InstallRules.RECEIVER_ASSET + ".part");
+        try (InputStream in = c.getAssets().open(BUNDLED); FileOutputStream out = new FileOutputStream(part)) {
+            byte[] buffer = new byte[64 * 1024];
+            long done = 0;
+            int n;
+            while ((n = in.read(buffer)) > 0) {
+                done += n;
+                if (done > MAX_BYTES) throw new IOException("the receiver is too large");
+                out.write(buffer, 0, n);
+            }
+            out.getFD().sync();
+            if (!part.renameTo(apk)) throw new IOException("could not save the receiver");
+            return apk;
+        } finally {
+            //noinspection ResultOfMethodCallIgnored
+            part.delete();
+        }
+    }
 
     /** Downloads into the app's cache (bounded size, release hosts only: InstallRules). Background thread. */
     static File download(Context c, Progress progress) throws IOException {
@@ -164,6 +196,27 @@ final class AirPlayInstall {
         } catch (IOException | RuntimeException e) {
             installer.abandonSession(id);
             throw e;
+        }
+    }
+
+    private static final String REMOTE = "/data/local/tmp/puretv-airplay.apk";
+
+    /**
+     * Custom home mode only: installs the checked file with the TV's own shell (the grant PureTV already has, never a
+     * new prompt). True when Android reported success. Background thread.
+     */
+    static boolean installQuietly(Context c, File apk) {
+        if (!HomeMode.custom(c)) return false;
+        try (Adb adb = Adb.connect(c, -1, null)) {
+            adb.shell("rm -f " + REMOTE);
+            adb.push(apk, REMOTE);
+            String out = adb.shell("pm install -r " + REMOTE);
+            adb.shell("rm -f " + REMOTE);
+            if (!out.contains("Success")) AppLog.w("receiver install: " + out.trim());
+            return out.contains("Success");
+        } catch (IOException | RuntimeException e) {
+            AppLog.w("receiver install: " + e.getMessage());
+            return false;
         }
     }
 

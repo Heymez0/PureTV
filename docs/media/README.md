@@ -1,48 +1,24 @@
 # Preview media
 
-## Device screenshots
+`hero.svg` and `remote.svg` are illustrations. Every PNG is a genuine 1920 × 1080 screenshot of PureTV v1.4 on a
+Xiaomi Mi Stick (MiTV-AESP0), Android TV 9, with the interface set to English for the capture.
 
-Captured on 2026-10-28 from the installed PureTV v1.1 app on a Xiaomi Mi Stick (MiTV-AESP0), Android TV 9.
-The interface language is English. These are genuine full-resolution 1920 x 1080 device screenshots,
-copied without image edits. Select an image in the README to open its original file.
+| File | What it shows |
+| --- | --- |
+| `recommendations-en.png` | Recent + recommended layout, Recommended tab, focus on the first card (see below). |
+| `home-en.png` | The clock layout: date, clock, today's weather and the app shelf. |
+| `all-apps-en.png` | All Apps, with the home screen's apps, the other apps and a hidden app (dimmed). |
+| `setup-en.png` | The setup guide's home screen layout step, with its preview. |
+| `settings-en.png` | Settings → Home screen. |
+| `quick-settings-en.png` | The quick panel over the clock layout. |
+| `shortcuts-en.png` | One press down: the Shortcuts row and Other apps. |
+| `screensaver-en.png` | The screensaver's clock and weather on black. |
+| `light-en.png` | The home screen in the light theme. |
 
-The Home Screens section contains:
-
-- `recommendations-en.png`: Recent + recommended home, featured first at full width.
-- `home-en.png`: clock-only home, weather and the app shelf, displayed below at full width.
-
-The Features row contains, in order:
-
-- `quick-settings-en.png`: the compact quick panel over the clock home, with AirPlay, the RAM row's Free up button
-  and the sleep timer.
-- `shortcuts-en.png`: home scrolled down one level, showing the Shortcuts shelf and detailed weather.
-- `settings-en.png`: System and about, with Language set to English.
-
-The Light and dark section adds, captured on 2026-10-29 with the same build:
-
-- `theme-home-light-en.png`: the Recommended home in the light theme, background following the first card (the dark
-  counterpart is `recommendations-en.png`). Retaken the same day after the light-theme header became easier to see.
-- `theme-settings-light-en.png` and `theme-settings-dark-en.png`: Appearance settings in each theme, with Background
-  from content.
-
-The theme was set to Light only for these captures and set back to the owner's Dark afterwards.
-
-The recommendations screenshots were explicitly requested. It shows app-published recommendation artwork/titles,
-not viewing-history titles or playback progress. Source apps determine the language of recommendation content;
-English interface selection does not translate their artwork. App names, logos and content artwork belong to their owners.
-No account credentials, local network addresses or device identifiers appear in the shared captures.
-All five captures were refreshed for v1.1. The settings image shows the actual v1.1 version label;
-the shortcuts image includes the weather-data attribution. Captures were copied byte for byte without edits.
-The clock-only views were taken with the layout temporarily set to Clock only and weather information on; the
-recommendations view was kept only after checking that its Recommended tab was selected. The owner's combined layout,
-weather setting and English app language were restored afterwards; Android locale, HOME resolver and screensaver
-component were unchanged.
-
-These captures establish the deployed Android TV interface on this device. They do not establish LG/Samsung,
-every Google TV firmware, or fresh renamed-package setup compatibility. See [testing scope](../INSTALL.md#compatibility).
-
-## Illustrations
-
-`hero.svg` is the original PureTV title banner restored from the preceding repository version.
-`remote.svg` is the navigation diagram. Both are illustrations, not device screenshots.
-All documentation media stays outside APK/IPK/WGT runtime packages.
+The only edit: the weather line's city name is painted over with the surrounding background in `home-en.png`,
+`quick-settings-en.png` and `light-en.png`, so the owner's location is not published. No viewing history, account, network address or
+device identifier appears. The language, theme and layout changed for the captures were set back afterwards.
+`recommendations-en.png` was taken with a screenshot-only build (never released) whose Recommended row holds a fixed,
+illustrative selection of well-known films, with their TMDB backdrops; the app named under each title is only an
+example and does not say where the film streams. That build reads no viewing history. In normal use the row shows
+what the installed streaming apps publish. App names, logos, film titles and artwork belong to their owners.

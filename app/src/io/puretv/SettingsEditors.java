@@ -58,7 +58,7 @@ final class SettingsEditors {
     }
     private boolean wantsMode(){return alive&&activity.settingsVisible()&&activity.settingsCategory()==7
         &&(!opened()||kind.equals("home")||kind.equals("status"));}
-    private SettingsPage.Row action(String label,Runnable task){return new SettingsPage.Row(label,d->task.run(),false);}
+    private SettingsPage.Row action(String label,Runnable task){return new SettingsPage.Row(label,d->task.run());}
     private SettingsPage.Data data(String title,String hint,List<SettingsPage.Row> rows){
         SettingsPage.Data data=new SettingsPage.Data(title,tr("Back returns to this category."),"settings",rows.toArray(new SettingsPage.Row[0]));
         data.hint=hint;return data;
@@ -70,7 +70,7 @@ final class SettingsEditors {
                 List<SettingsPage.Row> profiles=new ArrayList<>();
                 for(String profile:new String[]{DeviceProfiles.BOX,DeviceProfiles.TV}){
                     SettingsPage.Row row=action(tr(DeviceProfiles.label(profile)),()->{Prefs.setDeviceMode(profile);activity.finishEditor();});
-                    row.value=profile.equals(Prefs.deviceMode())?tr("In use"):"";profiles.add(row);
+                    row.choose(profile.equals(Prefs.deviceMode()));profiles.add(row);
                 }
                 activity.showEditor(data(tr("Device mode"),tr("TV mode adds physical inputs and TV controls. Box / stick mode keeps the current layout. Theme, apps and viewing preferences are preserved. This does not switch the default launcher."),profiles),Prefs.television()?1:0);break;
             case "layout":
@@ -90,8 +90,8 @@ final class SettingsEditors {
             case "remote":renderRemote();break;
             case "home":
                 List<SettingsPage.Row> choices=new ArrayList<>();
-                choices.add(action(tr("Custom home"),()->chooseHome(HomeMode.FREE)));
-                choices.add(action(tr("Original"),()->chooseHome(HomeMode.ORIGINAL)));
+                choices.add(action(tr("PureTV home screen"),()->chooseHome(HomeMode.FREE)));
+                choices.add(action(tr("TV's original home screen"),()->chooseHome(HomeMode.ORIGINAL)));
                 activity.showEditor(data(tr("Default home screen"),modeHint(),choices),freeActive()?0:1);break;
             case "status":renderStatus();break;
             case "hidden":renderHidden();break;
@@ -110,7 +110,7 @@ final class SettingsEditors {
             SettingsPage.Row row=action(appName(pkg),()->{Prefs.setAppHidden(pkg,false);renderHidden();});
             row.value=tr("Show");rows.add(row);
         }
-        if(rows.isEmpty())rows.add(new SettingsPage.Row(tr("No hidden apps."),null,false));
+        if(rows.isEmpty())rows.add(new SettingsPage.Row(tr("No hidden apps."),null));
         activity.showEditor(data(tr("Hidden apps"),tr("OK shows the app in Other apps again. Hidden apps stay installed."),rows),lockFocus(rows));
     }
 
@@ -131,7 +131,7 @@ final class SettingsEditors {
         },"settings-inputs").start();
     }
     String startupValue(){
-        String choice=Prefs.startup();
+        String choice=FeatureRules.startup(Prefs.startup(),Prefs.television());
         if(choice.equals(FeatureRules.HOME))return tr("Home screen");
         if(choice.equals(FeatureRules.LIVE))return tr("Live TV");
         if(choice.startsWith(FeatureRules.APP)){loadAppsQuietly();return appName(choice.substring(FeatureRules.APP.length()));}
@@ -141,20 +141,20 @@ final class SettingsEditors {
     }
     private void loadAppsQuietly(){if(apps==null)loadApps();}
     private void renderStartup(){
-        List<SettingsPage.Row> rows=new ArrayList<>();String choice=Prefs.startup();int selected=0;
+        List<SettingsPage.Row> rows=new ArrayList<>();String choice=FeatureRules.startup(Prefs.startup(),Prefs.television());int selected=0;
         rows.add(startupRow(tr("Home screen"),FeatureRules.HOME,choice));
         if(Prefs.television()){
             if(live)rows.add(startupRow(tr("Live TV"),FeatureRules.LIVE,choice));
             if(inputs!=null)for(HomeApps.Item input:inputs)rows.add(startupRow(input.label,FeatureRules.INPUT+input.key,choice));
         }
-        if(apps==null)rows.add(new SettingsPage.Row(tr("Checking…"),null,false));
+        if(apps==null)rows.add(new SettingsPage.Row(tr("Checking…"),null));
         else for(String[] app:apps)if(!app[0].isEmpty())rows.add(startupRow(app[1],FeatureRules.APP+app[0],choice));
-        for(int i=0;i<rows.size();i++)if(tr("In use").equals(rows.get(i).value)){selected=i;break;}
+        for(int i=0;i<rows.size();i++)if(rows.get(i).chosen){selected=i;break;}
         activity.showEditor(data(tr("On TV start"),tr("Opens once, in the first minutes after the TV starts. Back returns to the home screen."),rows),selected);
     }
     private SettingsPage.Row startupRow(String label,String value,String choice){
         SettingsPage.Row row=action(label,()->{Prefs.setStartup(value);StartupLaunch.markCurrentStart(context);activity.finishEditor();});
-        row.value=value.equals(choice)?tr("In use"):"";return row;
+        row.choose(value.equals(choice));return row;
     }
 
     // MARK: - App lock
@@ -169,11 +169,11 @@ final class SettingsEditors {
         SettingsPage.Row hours=new SettingsPage.Row(tr("Locked hours"),d->{
             String[] all=FeatureRules.HOURS;int i=java.util.Arrays.asList(all).indexOf(Prefs.lockHours());
             Prefs.setLockHours(all[(i+(d==0?1:d)+all.length)%all.length]);renderLock();
-        },true);
+        });
         hours.value=AppLock.hoursLabel(Prefs.lockHours());rows.add(hours);
         rows.add(action(tr("Change PIN"),()->AppLock.choosePin(activity,this::lockChanged)));
         rows.add(action(tr("Turn off app lock"),()->{Prefs.clearLock();activity.finishEditor();}));
-        if(apps==null)rows.add(new SettingsPage.Row(tr("Checking…"),null,false));
+        if(apps==null)rows.add(new SettingsPage.Row(tr("Checking…"),null));
         else for(String[] app:apps){
             if(app[0].isEmpty())continue;final String pkg=app[0];
             SettingsPage.Row row=action(app[1],()->{Prefs.setAppLocked(pkg,!Prefs.lockedApps().contains(pkg));renderLock();});
@@ -191,11 +191,11 @@ final class SettingsEditors {
     void update(SettingsPage.Data data){
         if(kind.equals("layout")){
             String mode=Prefs.homeContentMode();String[] modes=HomeContentModes.choices(Prefs.viewingInformation());
-            for(int i=0;i<modes.length;i++)data.rows[i].value=modes[i].equals(mode)?tr("In use"):"";
+            for(int i=0;i<modes.length;i++)data.rows[i].choose(modes[i].equals(mode));
         }else if(kind.equals("home")){
             String current=mode.optString("mode",HomeMode.ORIGINAL);
-            data.rows[0].value=modeReady&&freeActive()?tr("In use"):"";
-            data.rows[1].value=modeReady&&HomeMode.ORIGINAL.equals(current)?tr("In use"):"";
+            data.rows[0].choose(modeReady&&freeActive());
+            data.rows[1].choose(modeReady&&HomeMode.ORIGINAL.equals(current));
             data.hint=modeHint();
         }else if(kind.equals("status"))updateStatus(data);
     }
@@ -226,19 +226,19 @@ final class SettingsEditors {
     }
     private void renderShelf(){
         List<SettingsPage.Row> rows=new ArrayList<>();int selected=0;
-        if(shelfCandidates==null)rows.add(new SettingsPage.Row(tr("Checking…"),null,false));
+        if(shelfCandidates==null)rows.add(new SettingsPage.Row(tr("Checking…"),null));
         else{
             List<String[]> sorted=new ArrayList<>();
             for(String pkg:shelfOrder)for(String[] app:shelfCandidates)if(pkg.equals(app[0])){sorted.add(app);break;}
             for(String[] app:shelfCandidates)if(!shelfOrder.contains(app[0]))sorted.add(app);
             for(String[] app:sorted){
                 final String pkg=app[0];
-                SettingsPage.Row row=new SettingsPage.Row(app[1],d->toggleShelf(pkg),true);
+                SettingsPage.Row row=new SettingsPage.Row(app[1],d->toggleShelf(pkg));
                 int place=shelfOrder.indexOf(pkg);
                 row.value=place<0?"—":Integer.toString(place+1);
                 if(pkg.equals(selectedShelf))selected=rows.size();rows.add(row);
             }
-            if(rows.isEmpty())rows.add(new SettingsPage.Row(tr("No apps found."),null,false));
+            if(rows.isEmpty())rows.add(new SettingsPage.Row(tr("No apps found."),null));
         }
         activity.showEditor(data(tr("Home screen apps"),tr("OK adds or removes an app. To reorder, hold OK on the home shelf and choose Move on shelf."),rows),selected);
     }
@@ -256,7 +256,7 @@ final class SettingsEditors {
             SettingsPage.Row row=action(code.equals("auto")?tr("Automatic"):Ui.languageName(code),()->{
                 if(!code.equals(Prefs.language()))Prefs.setLanguage(code);activity.finishEditor();
             });
-            if(code.equals(Prefs.language())){row.value=tr("In use");selected=rows.size();}rows.add(row);
+            if(code.equals(Prefs.language())){row.choose(true);selected=rows.size();}rows.add(row);
         }
         activity.showEditor(data(tr("Language"),tr("Choose a language. Back keeps the current setting."),rows),selected);
     }
@@ -269,7 +269,7 @@ final class SettingsEditors {
             activity.finishEditor();
         }));
         if(rows.isEmpty()){
-            SettingsPage.Row current=new SettingsPage.Row(tr("City"),null,false);current.value=Prefs.city();rows.add(current);
+            SettingsPage.Row current=new SettingsPage.Row(tr("City"),null);current.value=Prefs.city();rows.add(current);
         }
         rows.add(action(tr("Search"),this::askCity));
         activity.showEditor(data(tr("City"),cityLoading?tr("Searching…"):cityMessage.isEmpty()?tr("Choose a city or search again. Back keeps the current city."):cityMessage,rows),0);
@@ -303,7 +303,7 @@ final class SettingsEditors {
     String remoteHint(){
         return RemoteKeys.VESTEL?Ui.tr("YouTube, Prime Video e Google Play: a própria TV controla esses botões.","YouTube, Prime Video and Google Play: the TV itself controls those buttons.")
             :RemoteKeys.supported()?Ui.tr("Disney e Globoplay: a própria TV controla esses botões.","Disney and Globoplay: the TV itself controls those buttons.")
-            :Ui.tr("App buttons are managed by your TV firmware. Use Remote button test to check events delivered to PureTV.");
+            :Ui.tr("The remote's apps button opens All Apps. To give another button a job, or to see what a button sends, open Remote button test.");
     }
     private String appName(String pkg){
         if(pkg.isEmpty())return tr("Nothing");if(apps==null)return tr("Checking…");
@@ -328,12 +328,12 @@ final class SettingsEditors {
     }
     private void renderRemote(){
         List<SettingsPage.Row> rows=new ArrayList<>();int selected=0;
-        if(apps==null)rows.add(new SettingsPage.Row(tr("Checking…"),null,false));
+        if(apps==null)rows.add(new SettingsPage.Row(tr("Checking…"),null));
         else for(String[] app:apps){
             final String pkg=app[0];SettingsPage.Row row=action(app[1],()->{
                 if(!pkg.equals(Prefs.keyApp(Prefs.KEYS[remoteKey])))Prefs.setKeyApp(Prefs.KEYS[remoteKey],pkg);activity.finishEditor();
             });
-            if(pkg.equals(Prefs.keyApp(Prefs.KEYS[remoteKey]))){row.value=tr("In use");selected=rows.size();}rows.add(row);
+            if(pkg.equals(Prefs.keyApp(Prefs.KEYS[remoteKey]))){row.choose(true);selected=rows.size();}rows.add(row);
         }
         activity.showEditor(data(remoteLabels()[remoteKey],remoteHint(),rows),selected);
     }
@@ -344,7 +344,7 @@ final class SettingsEditors {
     }
     private boolean busy(){return !busyText().isEmpty()||pendingAt!=0&&SystemClock.uptimeMillis()-pendingAt<10_000;}
     private boolean freeActive(){return HomeMode.FREE.equals(mode.optString("mode"))&&!mode.optBoolean("homeReverted");}
-    String homeValue(){return !modeReady?tr("Checking…"):busy()?busyText().isEmpty()?tr("Starting…"):busyText():tr(freeActive()?"Custom home":"Original");}
+    String homeValue(){return !modeReady?tr("Checking…"):busy()?busyText().isEmpty()?tr("Starting…"):busyText():freeActive()?"PureTV":tr("TV's original home screen");}
     private String modeHint(){
         if(!modeReady)return tr("Checking…");
         String text=Ui.tr("A troca leva uns segundos e a tela pisca nas medições.","Switching takes a few seconds; the screen blinks while it measures.");
@@ -375,7 +375,7 @@ final class SettingsEditors {
     private void renderStatus(){
         List<SettingsPage.Row> rows=new ArrayList<>();
         for(String label:new String[]{"Default home screen","Home button","Free memory","Home screen memory","Recommendations","Notices","Last error"})
-            rows.add(new SettingsPage.Row(tr(label),null,false));
+            rows.add(new SettingsPage.Row(tr(label),null));
         activity.showEditor(data(tr("Status and notices"),tr("Stored measurements only. Opening this screen does not run a benchmark."),rows),0);
     }
     private void updateStatus(SettingsPage.Data data){
