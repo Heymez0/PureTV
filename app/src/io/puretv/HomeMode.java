@@ -192,7 +192,12 @@ final class HomeMode {
 
     /** Asks the main process to switch (the settings screen calls this). */
     static void request(Context c, String mode) {
-        ModeJob.schedule(c, ModeJob.APPLY, mode, 0);
+        request(c, mode, false);
+    }
+
+    /** guide: the setup guide asked, so the switch ends back in the guide instead of on the home screen. */
+    static void request(Context c, String mode, boolean guide) {
+        ModeJob.schedule(c, ModeJob.APPLY, mode, 0, guide);
     }
 
     /** Our home screen crashed 3 times in 5 minutes: give the home screen back to the TV's own (asked by :home). */
@@ -365,13 +370,13 @@ final class HomeMode {
 
     // MARK: - Switches (main process, from ModeJob)
 
-    static void applyNow(Context c, String mode) {
+    static void applyNow(Context c, String mode, boolean guide) {
         synchronized (RUN) {
-            if (FREE.equals(mode)) applyFree(c); else applyOriginal(c);
+            if (FREE.equals(mode)) applyFree(c, guide); else applyOriginal(c);
         }
     }
 
-    private static void applyFree(Context c) {
+    private static void applyFree(Context c, boolean guide) {
         JSONObject s = state(c);
         // Kalley 43G200 turns Google TV's setup app back on at every start: without its home screen the next start
         // looped at the logo, and that TV only came back with a USB reflash (CleanYourTV, examples/kalley-43g200).
@@ -430,13 +435,17 @@ final class HomeMode {
             Set<String> keptOff = new HashSet<>(stringList(state(c), "keptOff"));
             // Off now and not on our list: the person turned it off, unless an earlier install of Home screen did (its
             // list lives in the TV's settings too, since an uninstall erases our state file).
-            Set<String> ours = recorded(adb);
-            for (String pkg : packages(adb, "-d")) {
+            Set<String> ours = recorded(adb), off = packages(adb, "-d");
+            for (String pkg : off) {
                 if (targets(home, dream, true).contains(pkg) && !disabled.contains(pkg) && !ours.contains(pkg)) keptOff.add(pkg);
             }
+            // Still off from an earlier install: ours to turn back on. After a reinstall the TV's own home screen is one
+            // of them and can't be found as the current home, so without this the record below would drop it and
+            // Original would leave the TV with no home screen.
+            disabled.addAll(HomeRecord.earlier(ours, off));
             keptOff.removeAll(ours);
             JSONObject before = state(c);
-            before.put("keptOff", new JSONArray(sorted(keptOff)));
+            before.put("keptOff", new JSONArray(sorted(keptOff))).put("disabled", new JSONArray(sorted(disabled)));
             save(c, before);
             Set<String> candidates = new HashSet<>();
             for (String pkg : targets) if (present.contains(pkg) && mayTurnOff(pkg)) candidates.add(pkg);
@@ -484,7 +493,10 @@ final class HomeMode {
             busy(c, Ui.tr("Measuring performance…"));
             measureHomeTime(c, adb, FREE);
             done(c, null);
-            adb.shell("am start -a android.intent.action.MAIN -c android.intent.category.HOME");
+            // From the setup guide: back to it, so its last steps (AirPlay) still show. The measurement above opened
+            // the home screen over it.
+            if (guide) adb.shell("am start -n " + SETTINGS_ACTIVITY + " --ez " + SettingsActivity.RESUME_GUIDE + " true");
+            else adb.shell("am start -a android.intent.action.MAIN -c android.intent.category.HOME");
             ModeJob.schedule(c, ModeJob.MEMORY, FREE, 120_000);
             compile(c, 180_000);   // after the memory measurement, so it doesn't overlap it
         } catch (Exception e) {
@@ -502,6 +514,8 @@ final class HomeMode {
                 if (!Arrays.asList(DEBLOAT).contains(pkg) && !Arrays.asList(ASSISTANT).contains(pkg)) toEnable.add(pkg);
             }
             toEnable.removeAll(stringList(s, "keptOff"));
+            // An earlier install's work (our state file is gone after an uninstall): still off and on the TV's record.
+            toEnable.addAll(HomeRecord.earlier(recorded(adb), packages(adb, "-d")));
             Set<String> present = packages(adb, "");
             // The TV's home screen first and Google TV's setup app last, after the home screen is back: alone, its
             // recovery screen would take the Home button.

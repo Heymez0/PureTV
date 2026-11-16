@@ -15,6 +15,8 @@ import android.os.PersistableBundle;
 public class ModeJob extends JobService {
     static final String APPLY = "apply", VERIFY = "verify", REVERT = "revert", MEMORY = "memory", REMOTE = "remote",
             ASSISTANT = "assistant", UPDATE = "update", COMPILE = "compile", OPTIMIZE = "optimize";
+    /** The setup guide asked for the switch: it goes back to the guide (its AirPlay step), not to the home screen. */
+    static final String GUIDE = "guide";
 
     @Override public boolean onStartJob(JobParameters params) {
         PersistableBundle extras = params.getExtras();
@@ -25,7 +27,7 @@ public class ModeJob extends JobService {
             try {
                 Prefs.refreshLanguage();   // chosen in :home; this process may have read it long ago
                 switch (action) {
-                    case APPLY: HomeMode.applyNow(app, mode); break;
+                    case APPLY: HomeMode.applyNow(app, mode, extras.getBoolean(GUIDE, false)); break;
                     case VERIFY: HomeMode.verifyNow(app); break;
                     case REVERT: HomeMode.revertHomeNow(app); break;
                     case MEMORY: HomeMode.measureMemoryNow(app, mode); break;
@@ -95,11 +97,16 @@ public class ModeJob extends JobService {
 
     /** Schedules a job (one pending per action: a new request replaces the old one). */
     static void schedule(Context c, String action, String mode, long delayMs) {
+        schedule(c, action, mode, delayMs, false);
+    }
+
+    static void schedule(Context c, String action, String mode, long delayMs, boolean guide) {
         JobScheduler scheduler = c.getSystemService(JobScheduler.class);
         if (scheduler == null) return;
         PersistableBundle extras = new PersistableBundle();
         extras.putString("action", action);
         extras.putString("mode", mode == null ? "" : mode);
+        extras.putBoolean(GUIDE, guide);
         JobInfo.Builder job = new JobInfo.Builder(id(action), new ComponentName(c, ModeJob.class)).setExtras(extras);
         if (delayMs > 0) job.setMinimumLatency(delayMs);
         job.setOverrideDeadline(delayMs + 2_000);

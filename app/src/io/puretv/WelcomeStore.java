@@ -10,11 +10,13 @@ final class WelcomeStore {
     private WelcomeStore(){}
     static int status(Context c){return c.getSharedPreferences("welcome",Context.MODE_PRIVATE).getInt("status",WelcomeFlow.NEW);}
     static void status(Context c,int value){c.getSharedPreferences("welcome",Context.MODE_PRIVATE).edit().putInt("status",value).apply();}
+    /** {@link WelcomeFlow#setUp}: HOME opens PureTV and HomeMode is in PureTV mode. */
     static boolean active(Context c){
         try{
             ResolveInfo info=c.getPackageManager().resolveActivity(new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME),0);
-            return info!=null&&info.activityInfo!=null&&HomeMode.PKG.equals(info.activityInfo.packageName)
+            boolean ours=info!=null&&info.activityInfo!=null&&HomeMode.PKG.equals(info.activityInfo.packageName)
                     &&(HomeMode.PKG+".HomeActivity").equals(info.activityInfo.name);
+            return WelcomeFlow.setUp(ours,HomeMode.custom(c));
         }catch(RuntimeException ignored){return false;}
     }
     static boolean shouldShow(Context c){

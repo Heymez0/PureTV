@@ -6,7 +6,7 @@
 
 [**Download PureTV.apk**](https://github.com/Heymez0/PureTV/releases/latest/download/PureTV.apk) &nbsp;·&nbsp; [Install guide](docs/INSTALL.md) &nbsp;·&nbsp; [What's new](https://github.com/Heymez0/PureTV/releases/latest) &nbsp;·&nbsp; [Turkish guide](docs/README.tr.md)
 
-<sub>v1.4 · Android TV & Google TV (Android 9+) · LG webOS & Samsung Tizen (experimental) · 24 languages · open source</sub>
+<sub>v1.4.1 · Android TV & Google TV (Android 9+) · LG webOS & Samsung Tizen (experimental) · 24 languages · open source</sub>
 
 </div>
 

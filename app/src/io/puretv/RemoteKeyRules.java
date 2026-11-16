@@ -32,6 +32,14 @@ final class RemoteKeyRules {
         }
     }
 
+    /**
+     * Keys Android acts on before a screen sees them (Home, the apps button, Settings). In Remote button test the key
+     * service hands them to the test instead, so they can be tested too and Home doesn't leave.
+     */
+    static boolean shownInTest(int key) {
+        return key == 3 || key == KEY_ALL_APPS || key == 176;
+    }
+
     /** Only the known forms; anything else is "nothing". */
     static String action(String v) {
         if (v == null) return NONE;

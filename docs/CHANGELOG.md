@@ -1,5 +1,36 @@
 # Changelog
 
+## v1.4.1
+
+A fix release. Built, covered by the regression suite and checked on a Mi Stick (Android TV 9): two complete fresh
+installs through the welcome guide (with the viewing permission allowed and refused, the ADB prompt cancelled and then
+accepted, AirPlay installed and skipped), reinstalling over a configured TV, and Original mode restoring the factory
+home screen. The remote's Home and apps buttons inside Remote button test, and All Apps rising from the apps button,
+need a physical remote and were not checked there.
+
+- **Reinstalling no longer half-works:** after an uninstall the TV's own home screen stays off, so Home already opened
+  PureTV and the welcome guide treated setup as finished: it opened on its last page and Enable PureTV did nothing.
+  PureTV counts as set up only when its own state says so too (`WelcomeFlow.setUp`).
+- **Original mode after a reinstall:** the new install did not recognise the TV's own home screen and rewrote the
+  record of apps it had turned off without it, so Original left the TV with no home screen. Apps an earlier install
+  turned off and that are still off now stay on the record and are turned back on (`HomeRecord`).
+- **The guide keeps its last steps:** enabling PureTV measured the home screen and then opened it over the guide, so
+  the AirPlay step never showed. A switch the guide asked for now returns to it.
+- **Weather city in the guide:** without a city the weather came from the build's default coordinates. A new step
+  suggests the city in the TV's time zone, keeps the current one, and searches by name (only the name is sent).
+- **Viewing permission in the guide:** choosing a layout with viewing content now asks for Android's TV listings
+  permission; refusing it leaves the clock layout, as in Settings.
+- **AirPlay:** its rows moved to one page, Settings → Connections → AirPlay. The receiver page no longer reinstalls the
+  same or an older receiver ("already installed and up to date").
+- **Remote button test:** Home, the apps button and Settings are shown in the test instead of acting (while PureTV is
+  the default home screen; the key service lets go of them within 10 seconds if the test stops), and the way to leave
+  is shown once, in gold. All Apps opened by the apps button rises like the shortcut's.
+- **Settings:** Home screen apps and Other apps were removed from Settings → Home screen; a long press on a home
+  screen app still adds, removes and moves it, and Other apps stays in the bottom drawer. Hints now stop inside their
+  panel instead of running past it.
+- **Text:** the guide warns that the screen may switch back and forth during setup. Turkish wording was reviewed (one
+  informal voice, a wrong "Let's try again"), ADB error messages are translated, and new text is in all 24 languages.
+
 ## v1.4
 
 Built, covered by the regression suite and checked on a Mi Stick (Android TV 9) in the dark and the light theme:

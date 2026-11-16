@@ -22,6 +22,7 @@ final class WelcomeView extends View {
     /** The AirPlay page: shown on the flow's READY step, before the last page. */
     static final int AIRPLAY_STEP=7;
     static final int BOX=11,TV=12,AIRPLAY=13,LAYOUT_CLOCK=14,LAYOUT_RECENT=15,LAYOUT_COMBINED=16,AIRPLAY_NOW=17,AIRPLAY_SKIP=18;
+    static final int CITY_A=19,CITY_B=20,CITY_SEARCH=21,CITY_SKIP=22;
     static final class Button {
         final int action;final String text;final boolean enabled;
         Button(int action,String text,boolean enabled){this.action=action;this.text=text;this.enabled=enabled;}
@@ -42,12 +43,26 @@ final class WelcomeView extends View {
     static Content content(WelcomeFlow flow,boolean loaded,boolean debug,String busy,String error,boolean airplay){return content(flow,loaded,debug,busy,error,airplay,false,"",false);}
     /** `offer`: setup just finished and the receiver PureTV carries isn't installed: its own step, before the last page. */
     static Content content(WelcomeFlow flow,boolean loaded,boolean debug,String busy,String error,boolean airplay,boolean offer,String airplayStatus,boolean airplayBusy){
+        return content(flow,loaded,debug,busy,error,airplay,offer,airplayStatus,airplayBusy,new String[0][],"",false);
+    }
+    /** `cities`: up to two places to choose ({label, name, latitude, longitude}): the current city, a guess or search results. */
+    static Content content(WelcomeFlow flow,boolean loaded,boolean debug,String busy,String error,boolean airplay,boolean offer,String airplayStatus,boolean airplayBusy,
+                           String[][] cities,String cityStatus,boolean cityBusy){
         if(flow.step==WelcomeFlow.READY&&offer){
             String about=tr("Mirror an iPhone, iPad or Mac to this TV. The receiver comes inside PureTV, so nothing is downloaded. It runs only while you have AirPlay turned on.");
             return airplay?new Content(AIRPLAY_STEP,tr("Add AirPlay"),about,airplayStatus,button(AIRPLAY_NOW,"Install AirPlay",!airplayBusy),button(AIRPLAY_SKIP,"Not now",!airplayBusy))
                 :new Content(AIRPLAY_STEP,"AirPlay",about,tr("Installed"),button(AIRPLAY_SKIP,"Continue",true));
         }
         switch(flow.step){
+            case WelcomeFlow.CITY:{
+                List<Button> choices=new java.util.ArrayList<>();
+                for(int i=0;i<Math.min(2,cities.length);i++)choices.add(new Button(i==0?CITY_A:CITY_B,cities[i][0],!cityBusy));
+                choices.add(button(CITY_SEARCH,cities.length==0?"Search for my city":"Search for another city",!cityBusy));
+                if(choices.size()<3)choices.add(button(CITY_SKIP,"Skip for now",!cityBusy));
+                return new Content(flow.step,tr("Your city for the weather"),
+                    tr("PureTV shows this city's weather and turns the home screen dark at its sunset. You can change it later in Settings → Clock and weather → City."),
+                    cityBusy?tr("Searching…"):cityStatus,choices.toArray(new Button[0]));
+            }
             case WelcomeFlow.LAYOUT:return new Content(flow.step,tr("Choose your home screen"),
                 tr("You can change it later in Settings → Home screen → Home screen layout."),"",
                 button(LAYOUT_CLOCK,"Clock only",true),button(LAYOUT_RECENT,"Recently watched only",true),button(LAYOUT_COMBINED,"Recent + recommended",true));
@@ -63,11 +78,11 @@ final class WelcomeView extends View {
             case WelcomeFlow.REVIEW:return new Content(flow.step,tr(flow.failed?"Let's try again":"Make PureTV your home"),
                 flow.failed?(error.isEmpty()?tr("Setup could not finish. Check the connection and try again."):error)
                     :tr("PureTV will become your home screen and screensaver. Supported promotional components are disabled, not uninstalled. You can restore the original interface in Settings → System and about → Default home screen."),
-                tr("Your home screen changes only after you choose Enable PureTV."),
+                tr("Your home screen changes only after you choose Enable PureTV.")+" "+tr("During setup the screen may switch back and forth a few times; this is normal."),
                 button(ENABLE,flow.failed?"Try again":"Enable PureTV",loaded),
                 button(flow.failed&&networkError(error)?NETWORK:BACK,flow.failed&&networkError(error)?"Open network settings":"Connection settings",true),button(LATER,"Set up later",true));
             case WelcomeFlow.WORKING:return new Content(flow.step,tr("Setting up PureTV"),
-                tr("If the TV asks Allow USB debugging, select Always allow from this computer and confirm. Setup continues on the TV; the new home screen opens when it is ready."),
+                tr("If the TV asks Allow USB debugging, select Always allow from this computer and confirm. Setup continues on the TV; the new home screen opens when it is ready.")+" "+tr("During setup the screen may switch back and forth a few times; this is normal."),
                 busy.isEmpty()?tr("Preparing setup…"):busy,button(CHECK,"Check progress",true),button(LEAVE,"Continue in the background",true));
             case WelcomeFlow.READY:return new Content(flow.step,tr("PureTV is ready"),
                 tr("Press Home to return to your new interface. You can arrange your apps, choose viewing content and change the weather in Settings."),
@@ -108,9 +123,11 @@ final class WelcomeView extends View {
     @Override public AccessibilityNodeProvider getAccessibilityNodeProvider(){return spoken;}
     void bind(Content next){
         if(next.same(data))return;boolean changedStep=data==null||data.step!=next.step;
+        // New places in the city step (a search came back): the focus goes to the first one, not where it was.
+        boolean newPlaces=!changedStep&&next.step==WelcomeFlow.CITY&&next.buttons.length>0&&(data.buttons.length==0||!data.buttons[0].text.equals(next.buttons[0].text));
         if(changedStep||focus>=next.buttons.length||data.buttons[focus].action!=next.buttons[focus].action)armed=false;
         data=next;
-        if(changedStep)focus=0;
+        if(changedStep||newPlaces)focus=0;
         // The layout step opens on the layout in use, so OK alone keeps it.
         if(changedStep&&data.step==WelcomeFlow.LAYOUT){String mode=Prefs.homeContentMode();focus=HomeContentModes.CLOCK.equals(mode)?0:HomeContentModes.COMBINED.equals(mode)?2:1;}
         focus=Math.min(focus,data.buttons.length-1);
@@ -153,12 +170,13 @@ final class WelcomeView extends View {
         c.drawText("PureTV",240*k,205*k,brand);
         drawLines(c,heroLines,132*k,306*k);
         c.drawText(tr("Simple. Familiar. Yours."),132*k,550*k,caption);
-        String[] steps={tr("Welcome"),tr("Device mode"),tr("Home screen layout"),tr("Connection"),"AirPlay",tr("Start")};
-        int current=data.step==WelcomeFlow.INTRO?0:data.step==WelcomeFlow.DEVICE?1:data.step==WelcomeFlow.LAYOUT?2:data.step==AIRPLAY_STEP?4:data.step==WelcomeFlow.READY?5:3;
-        final float gap=198f/(steps.length-1);
+        String[] steps={tr("Welcome"),tr("Device mode"),tr("Home screen layout"),tr("City"),tr("Connection"),"AirPlay",tr("Start")};
+        int current=data.step==WelcomeFlow.INTRO?0:data.step==WelcomeFlow.DEVICE?1:data.step==WelcomeFlow.LAYOUT?2:data.step==WelcomeFlow.CITY?3
+            :data.step==AIRPLAY_STEP?5:data.step==WelcomeFlow.READY?6:4;
+        final float gap=240f/(steps.length-1);
         // The steps on one line: gold up to the current step, which carries a ring; finished steps a check.
         int gold=surface.dark?Look.GOLD:Look.GOLD_DEEP,rest=surface.dark?0xFF444247:0xFFD3CFC8;
-        fill.setColor(rest);c.drawRect(146.5f*k,700*k,149.5f*k,898*k,fill);
+        fill.setColor(rest);c.drawRect(146.5f*k,700*k,149.5f*k,940*k,fill);
         fill.setColor(gold);c.drawRect(146.5f*k,700*k,149.5f*k,(700+current*gap)*k,fill);
         for(int i=0;i<steps.length;i++){
             float y=(700+i*gap)*k;

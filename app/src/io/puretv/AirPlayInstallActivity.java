@@ -67,7 +67,7 @@ public class AirPlayInstallActivity extends Activity {
     private boolean allowedToInstall() { return getPackageManager().canRequestPackageInstalls(); }
 
     private void update() {
-        data.rows[0].value = working ? status : installed.isEmpty() ? Ui.tr("Not installed") : installed;
+        data.rows[0].value = working ? status : installed.isEmpty() ? Ui.tr("Not installed") : Ui.trf("Installed · {version}", "version", installed);
         data.rows[1].set(allowedToInstall());
         data.rows[2].value = "";
         data.hint = (status.isEmpty() || working ? "" : status + "\n\n")
@@ -78,6 +78,9 @@ public class AirPlayInstallActivity extends Activity {
 
     private void start() {
         if (working) return;
+        // Installed already: only a newer carried copy is installed (checked below); a build without one doesn't download
+        // the same receiver again (updates come with PureTV's own updates).
+        if (!installed.isEmpty() && !bundled) { status = Ui.tr("The AirPlay receiver is already installed and up to date."); page.changed(); return; }
         if (!allowedToInstall()) { status = Ui.tr("First allow installs from PureTV, then press OK again."); allowInstalls(); return; }
         working = true;
         lastPercent = -1;
@@ -103,6 +106,11 @@ public class AirPlayInstallActivity extends Activity {
                     version = AirPlayInstall.verify(app, apk);
                 }
                 final String found = version;
+                if (!newer(app, apk)) {
+                    AirPlayInstall.clean(app);
+                    main.post(() -> finished(Ui.tr("The AirPlay receiver is already installed and up to date.")));
+                    return;
+                }
                 main.post(() -> { if (alive) { status = Ui.trf("Installing {version}…", "version", found); page.changed(); } });
                 AirPlayInstall.install(app, apk);
             } catch (Exception e) {
@@ -111,6 +119,19 @@ public class AirPlayInstallActivity extends Activity {
                 main.post(() -> finished(Ui.trf("Couldn't install the receiver: {error}", "error", error)));
             }
         });
+    }
+
+    /** The checked receiver is newer than the installed one (or none is installed): only then is it installed again. */
+    @SuppressWarnings("deprecation")
+    private static boolean newer(Context c, File apk) {
+        android.content.pm.PackageManager pm = c.getPackageManager();
+        android.content.pm.PackageInfo file = pm.getPackageArchiveInfo(apk.getPath(), 0);
+        try {
+            android.content.pm.PackageInfo now = pm.getPackageInfo(AirPlayReceiver.THEMED, 0);
+            return file == null || file.getLongVersionCode() > now.getLongVersionCode();
+        } catch (android.content.pm.PackageManager.NameNotFoundException | SecurityException e) {
+            return true;
+        }
     }
 
     private void finished(String text) {

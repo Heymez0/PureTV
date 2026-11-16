@@ -76,9 +76,7 @@ public class SettingsActivity extends Activity {
         switch(category){
             case HOME:   // what is on the home screen, and which apps
                 add(rows,action("Home screen layout",()->editor("layout")),null,r->r.value=tr(HomeContentModes.label(Prefs.homeContentMode())));
-                add(rows,action("Home screen apps",()->editor("shelf")),null,null);
                 add(rows,action("Shortcuts",()->open(ShortcutSettingsActivity.class)),null,null);
-                add(rows,action("Other apps",()->{HomeActivity.requestOtherApps();finish();}),null,null);
                 add(rows,action("Hidden apps",()->AppLock.confirm(this,()->editor("hidden"))),
                     tr("Apps you hid from Other apps. OK shows an app again. Hold OK on an app in Other apps to hide it."),
                     r->r.value=Integer.toString(Prefs.hiddenApps().size()));
@@ -122,16 +120,9 @@ public class SettingsActivity extends Activity {
                 add(rows,action("Restore hidden content",()->{Prefs.restoreHiddenContent();ContinueWatching.get(this).refresh(true);}),
                     null,r->r.value=Integer.toString(Prefs.hiddenContent().size()));
                 break;
-            case CONNECTIONS:   // AirPlay first, together; then the network
-                add(rows,action("AirPlay",()->airplay.toggle()),tr("Press OK to start or stop AirPlay. Left returns to categories."),
-                    r->{r.value=airplay.value();r.toggle=airplay.switchState();});
-                add(rows,adjust("Keep AirPlay on",d->airplay.toggleAlways()),
-                    tr("On: AirPlay starts with the TV and stays on, keeping the processor awake. Off: it runs only after you turn it on and stops after 15 minutes without a sender."),
-                    r->{r.value=airplay.alwaysValue();r.toggle=airplay.alwaysState();});
-                add(rows,action("AirPlay receiver",()->open(AirPlayInstallActivity.class)),
-                    tr("Install or update the optional receiver from PureTV's release. It runs only after you turn AirPlay on."),
-                    r->r.value=receiverVersion.isEmpty()?tr("Not installed"):receiverVersion);
-                add(rows,action("AirPlay connection help",()->startActivity(new Intent(this,DeviceStatusActivity.class).putExtra("airplay_help",true))),null,null);
+            case CONNECTIONS:   // AirPlay first: everything about it is on its own page; then the network
+                add(rows,action("AirPlay",()->open(AirPlayActivity.class)),null,
+                    r->r.value=receiverVersion.isEmpty()?tr("Not installed"):airplay.value());
                 SettingsPage.Row network=info(tr("Network")),address=info("IP");network.network=true;
                 add(rows,network,null,r->{
                     NetworkStatus.Snapshot n=page.networkSnapshot();r.state=n.state;r.transport=n.transport;
@@ -194,7 +185,6 @@ public class SettingsActivity extends Activity {
         SettingsPage.Data nextData=new SettingsPage.Data(categories()[category],tr("Make yourself at home"),"settings",rows.toArray(new SettingsPage.Row[0]));
         nextData.hint=category==HOME?tr("Choose the layout, arrange the shelves, and hide or lock apps.")
             :category==CONTENT?tr("Only content shared by supported apps appears here. Hidden content stays hidden until you restore it.")
-            :category==CONNECTIONS?tr("AirPlay can start or stop here without opening the receiver. Your pairing preferences stay unchanged.")
             :category==DEVICE?tr("Available / total. Values refresh when you open this screen.")
             :category==REMOTE?tr("TV remote shortcuts work on the PureTV home screen only. Input opens sources, TV opens live TV, Menu opens quick settings. Power, volume, channels and voice stay with the system.")+"\n"+editors.remoteHint():tr("Right opens options. Back returns to categories.");
         if(category==CONNECTIONS)receiverVersion=AirPlayReceiver.themedVersion(this);
@@ -296,8 +286,11 @@ public class SettingsActivity extends Activity {
             getIntent().removeExtra("home_settings");showCategory(HOME,false);
         }
     }
+    /** Extra from HomeMode: a switch the setup guide started has finished; show the guide again (its last steps). */
+    static final String RESUME_GUIDE="resume_guide";
     private boolean routeWelcome(){
-        if(!WelcomeStore.shouldShow(this))return false;
+        boolean resume=getIntent().getBooleanExtra(RESUME_GUIDE,false);getIntent().removeExtra(RESUME_GUIDE);
+        if(!resume&&!WelcomeStore.shouldShow(this))return false;
         routingWelcome=true;WelcomeActivity.open(this);finish();return true;
     }
     @Override protected void onNewIntent(Intent i){super.onNewIntent(i);setIntent(i);routeWelcome();}

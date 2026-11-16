@@ -5,7 +5,7 @@
 ## Android TV / Google TV
 
 Use the signed [PureTV.apk download](https://github.com/Heymez0/PureTV/releases/latest/download/PureTV.apk)
-from the [latest release](https://github.com/Heymez0/PureTV/releases/latest) (v1.4). Requires Android 9+.
+from the [latest release](https://github.com/Heymez0/PureTV/releases/latest) (v1.4.1). Requires Android 9+.
 Download **PureTV.apk**; the automatic Source code ZIP contains source files for developers.
 
 **Updating:** install the new PureTV.apk over the old one, or use System and about → Updates. Settings are kept.
@@ -69,7 +69,7 @@ remote buttons; never viewing history or HOME state). In custom home mode the ba
 
 TV inputs appear only in TV mode when the device provides them. A streaming stick does not gain physical HDMI inputs
 by changing profile. Existing TV input/CEC apps handle inputs; PureTV does not replace tuner, picture or audio settings.
-The welcome guide's last page and Connections → AirPlay receiver can install the optional receiver from this repository's
+The welcome guide's last page and Connections → AirPlay → AirPlay receiver can install the optional receiver from this repository's
 latest release after checking its package and certificate; Android asks you to allow and confirm the installation.
 Manual installation and same-certificate requirements are in the [AirPlay guide](../tools/airplay/README.md).
 

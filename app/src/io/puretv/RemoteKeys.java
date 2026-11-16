@@ -55,9 +55,17 @@ final class RemoteKeys {
 
     /** Remote button test is on screen: it must see every key, the assigned ones too. */
     private static boolean testing(Context c) {
+        return testing(c, 10 * 60_000L);
+    }
+
+    /**
+     * The test touches its marker every few seconds while it is on screen. Home is taken from Android only while that
+     * is fresh: a test that crashed (its marker left behind) must never leave Home without a job for long.
+     */
+    private static boolean testing(Context c, long maxAge) {
         File f = new File(c.getFilesDir(), RemoteTestActivity.MARKER);
         long at = f.lastModified();
-        return at != 0 && Math.abs(System.currentTimeMillis() - at) < 10 * 60_000L;
+        return at != 0 && Math.abs(System.currentTimeMillis() - at) < maxAge;
     }
 
     /** Does the key's job on its first press. True if the key is ours and in use (it is then consumed). */
@@ -66,6 +74,10 @@ final class RemoteKeys {
         int source = e.getSource();
         if ((source & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD
                 || (source & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK) return false;
+        if (RemoteKeyRules.shownInTest(e.getKeyCode()) && testing(c, RemoteTestActivity.FRESH_MS)) {
+            RemoteTestActivity.forward(c, e);
+            return true;
+        }
         boolean first = e.getAction() == KeyEvent.ACTION_DOWN && e.getRepeatCount() == 0;
         String action = RemoteKeyRules.resolve(Prefs.keyMap(), e.getKeyCode());
         if (action != null) {

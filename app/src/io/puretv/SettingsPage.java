@@ -41,6 +41,8 @@ final class SettingsPage extends View implements Choreographer.FrameCallback {
         final String title,subtitle,symbol; final Row[] rows; String hint="";
         /** The line under the page's name on a standalone page; null = "Back to close". */
         String footer;
+        /** The subtitle and footer are an instruction to see at once (how to leave): drawn in the accent colour. */
+        boolean urgent;
         boolean compact; String[] categories,categorySymbols; int category; IntConsumer selectCategory;
         Data(String title,String subtitle,String symbol,Row... rows){this.title=title;this.subtitle=subtitle;this.symbol=symbol;this.rows=rows;}
     }
@@ -52,7 +54,7 @@ final class SettingsPage extends View implements Choreographer.FrameCallback {
     private final RectF row=new RectF(),arc=new RectF(),panel=new RectF(),navBox=new RectF(),mark=new RectF();
     private final Paint fill=new Paint(Paint.ANTI_ALIAS_FLAG),icon=new Paint(Paint.ANTI_ALIAS_FLAG);
     private TextPaint title,label,value,hintPaint,navText; private Paint subtitle,brand;
-    private StaticLayout hint; private String hintText="",position="",footer="";
+    private StaticLayout hint; private int hintLines; private String hintText="",position="",footer="";
     private String[] shownCategories=new String[0];
     private float k=1; private int focus,scroll,width,height; private long lastFrame;
     private boolean running,armed,scheduled,navFocus; private NetworkStatus.Watch network;
@@ -158,10 +160,14 @@ final class SettingsPage extends View implements Choreographer.FrameCallback {
         }
         String text=data.rows.length>0&&!data.rows[focus].hint.isEmpty()?data.rows[focus].hint:data.hint;
         int room=Math.max(1,Math.round((right()-left()-60)*k));
-        if(hint==null||!hintText.equals(text)||hint.getWidth()!=room){
-            hintText=text;hint=StaticLayout.Builder.obtain(text,0,text.length(),hintPaint,room)
+        // Only as many lines as fit inside the panel (it stops 36 px above the screen's edge): never text below it.
+        float listBottom=(top()+Math.min(data.rows.length,VISIBLE)*ROW_PITCH)*k;
+        float space=height-36*k-30*k-(listBottom+28*k),line=hintPaint.getFontSpacing()+7*k;
+        int lines=Math.max(1,Math.min(data.compact?3:14,(int)Math.floor((space+7*k)/line)));
+        if(hint==null||!hintText.equals(text)||hint.getWidth()!=room||hintLines!=lines){
+            hintText=text;hintLines=lines;hint=StaticLayout.Builder.obtain(text,0,text.length(),hintPaint,room)
                 .setAlignment(Layout.Alignment.ALIGN_NORMAL).setIncludePad(false).setLineSpacing(7*k,1)
-                .setMaxLines(data.compact?3:7).setEllipsize(TextUtils.TruncateAt.END).build();
+                .setMaxLines(lines).setEllipsize(TextUtils.TruncateAt.END).build();
         }
     }
     @Override public void doFrame(long nanos){
@@ -185,7 +191,9 @@ final class SettingsPage extends View implements Choreographer.FrameCallback {
             // Centred under the symbol, in the middle of the space left of the panel.
             String name=Ui.tr("Ajustes","Settings");
             c.drawText(name,cx-title.measureText(name)/2,565*k,title);
+            if(data.urgent)subtitle.setColor(accent());
             c.drawText(footer,cx-subtitle.measureText(footer)/2,612*k,subtitle);
+            subtitle.setColor(surface.dim);
         }
         if(data.categories!=null){
             float cx=(left()+50)*k,cy=170*k;
@@ -193,7 +201,9 @@ final class SettingsPage extends View implements Choreographer.FrameCallback {
             Symbols.draw(getContext(),c,symbol(data.category),cx,cy,27*k,accent());
         }
         c.drawText(data.title,titleLeft()*k,160*k,title);
+        if(data.urgent){subtitle.setColor(accent());subtitle.setFakeBoldText(true);}
         c.drawText(data.subtitle,titleLeft()*k,199*k,subtitle);
+        if(data.urgent){subtitle.setColor(surface.dim);subtitle.setFakeBoldText(false);}
         int end=Math.min(data.rows.length,scroll+VISIBLE);
         for(int i=scroll;i<end;i++){
             Row r=data.rows[i];rowBounds(i);float f=Ui.clamp(focusMotion[i].value);

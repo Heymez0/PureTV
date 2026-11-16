@@ -23,6 +23,11 @@ public class WelcomeActivity extends Activity {
     private String airplayStatus="";
     private int requests;
     private String busy="",error="";
+    /** The weather city step: up to two places to choose, what the step says, and a search in progress. */
+    private String[][] cities=new String[0][];
+    private String cityStatus="";
+    private boolean cityBusy,cityGuessed;
+    private TextDialog cityDialog;
     static void open(Activity from){from.startActivity(new Intent(from,WelcomeActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP));}
     @Override protected void onCreate(Bundle state){
         super.onCreate(state);Watchdog.install(this);Ui.applyLanguage();Ui.init(this);
@@ -34,17 +39,87 @@ public class WelcomeActivity extends Activity {
     @Override protected void onSaveInstanceState(Bundle out){out.putInt("step",flow.step);out.putBoolean("airplay_seen",airplaySeen);super.onSaveInstanceState(out);}
     @Override protected void onResume(){super.onResume();visible=true;page.resume();readState();}
     @Override protected void onPause(){visible=false;main.removeCallbacks(poll);page.pause();super.onPause();}
-    @Override protected void onDestroy(){alive=false;main.removeCallbacksAndMessages(null);io.shutdownNow();super.onDestroy();}
+    @Override protected void onDestroy(){if(cityDialog!=null)cityDialog.dismiss();alive=false;main.removeCallbacksAndMessages(null);io.shutdownNow();super.onDestroy();}
     /**
      * The AirPlay step. It comes up by itself once, when setup finishes and the carried receiver isn't installed;
      * Back from the last page shows it again (installed or not), so it is always there to find.
      */
     private boolean offerAirplay(){return flow.step==WelcomeFlow.READY&&airplayPage;}
-    private void render(){page.bind(WelcomeView.content(flow,loaded,debug,busy,error,airplayMissing,offerAirplay(),airplayStatus,airplayBusy));}
+    private void render(){
+        if(flow.step==WelcomeFlow.CITY&&!cityGuessed)guessCity();
+        page.bind(WelcomeView.content(flow,loaded,debug,busy,error,airplayMissing,offerAirplay(),airplayStatus,airplayBusy,cities,cityStatus,cityBusy));
+    }
+    /**
+     * The first choices: the city already set (if any) and the one in the TV's time zone, found with the same search as
+     * Settings → City. The search sends only the city's name.
+     */
+    private void guessCity(){
+        cityGuessed=true;
+        final java.util.List<String[]> found=new java.util.ArrayList<>();
+        if(!Prefs.city().isEmpty())found.add(new String[]{Prefs.city()+"  ✓",Prefs.city(),Prefs.latitude(),Prefs.longitude()});   // the city in use, marked
+        cities=found.toArray(new String[0][]);
+        cityStatus=found.isEmpty()?Ui.tr("Choose your city."):"";
+        final String zone=WelcomeFlow.zoneCity(java.util.TimeZone.getDefault().getID());
+        if(zone.isEmpty()||zone.equalsIgnoreCase(Prefs.city()))return;
+        cityBusy=true;
+        io.execute(()->{
+            String[] guess=null;
+            try{java.util.List<String[]> r=HomeData.findCity(zone);if(!r.isEmpty())guess=r.get(0);}
+            catch(Exception offline){AppLog.w("city guess: "+offline.getClass().getSimpleName());}
+            final String[] place=guess;
+            main.post(()->{
+                if(!alive)return;cityBusy=false;
+                if(place!=null&&(found.isEmpty()||!place[1].equalsIgnoreCase(found.get(0)[1]))){found.add(place);cityStatus=Ui.tr("Suggested from the TV's time zone.");}
+                cities=found.toArray(new String[0][]);render();
+            });
+        });
+    }
+    private void searchCity(){
+        if(cityBusy||cityDialog!=null||!visible)return;
+        TextDialog dialog=new TextDialog(this,Ui.tr("City"),Ui.tr("Type the city's name"),android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH,120,query->{
+            final String name=query.trim();if(name.isEmpty())return;
+            cityBusy=true;render();
+            io.execute(()->{
+                java.util.List<String[]> r;String message;
+                try{r=HomeData.findCity(name);message=r.isEmpty()?Ui.tr("No city with that name."):Ui.tr("Choose your city.");}
+                catch(Exception e){r=new java.util.ArrayList<>();message=Ui.tr("Could not search for a city. Try again.");}
+                final java.util.List<String[]> result=r;final String text=message;
+                main.post(()->{
+                    if(!alive)return;cityBusy=false;cityStatus=text;
+                    cities=result.subList(0,Math.min(2,result.size())).toArray(new String[0][]);render();
+                });
+            });
+        });
+        cityDialog=dialog;dialog.setOnDismissListener(d->{if(cityDialog==dialog)cityDialog=null;});dialog.show();
+    }
+    private void pickCity(int index){
+        if(flow.step!=WelcomeFlow.CITY||index>=cities.length)return;
+        String[] c=cities[index];
+        if(!c[1].equals(Prefs.city())||!c[2].equals(Prefs.latitude())||!c[3].equals(Prefs.longitude())){
+            Prefs.setCity(c[1],c[2],c[3]);HomeData.get(this).settingsChanged();
+        }
+        cityGuessed=false;   // coming back to this step lists the new city as the current one
+        flow.next();render();
+    }
+    private static final int VIEWING_REQUEST=43;
     private void layout(String value){
         if(flow.step!=WelcomeFlow.LAYOUT)return;
         if(!HomeContentModes.CLOCK.equals(value))Prefs.setViewingInformation(true);
-        Prefs.setHomeContentMode(value);flow.next();render();
+        Prefs.setHomeContentMode(value);
+        // A layout with viewing content needs Android's TV listings permission: ask now, or its tabs stay empty.
+        if(!HomeContentModes.CLOCK.equals(value)&&!ContinueWatching.permitted(this)){
+            try{requestPermissions(new String[]{ContinueWatching.PERMISSION},VIEWING_REQUEST);return;}
+            catch(RuntimeException unavailable){AppLog.w("viewing permission request: "+unavailable.getClass().getSimpleName());}
+        }
+        flow.next();render();
+    }
+    @Override public void onRequestPermissionsResult(int request,String[] permissions,int[] grants){
+        super.onRequestPermissionsResult(request,permissions,grants);
+        if(request!=VIEWING_REQUEST)return;
+        // Refused: viewing information off, as in Settings (the home screen then shows the clock layout).
+        if(!ContinueWatching.permitted(this))Prefs.setViewingInformation(false);
+        ContinueWatching.get(this).refresh(true);
+        if(flow.step==WelcomeFlow.LAYOUT){flow.next();render();}
     }
     /** Without a prompt where PureTV is already the home screen; otherwise (or if that fails) Android's own installer. */
     private void installAirplay(){
@@ -94,6 +169,10 @@ public class WelcomeActivity extends Activity {
             case WelcomeView.LAYOUT_RECENT:layout(HomeContentModes.RECENT);break;
             case WelcomeView.LAYOUT_COMBINED:layout(HomeContentModes.COMBINED);break;
             case WelcomeView.AIRPLAY_NOW:installAirplay();break;
+            case WelcomeView.CITY_A:pickCity(0);break;
+            case WelcomeView.CITY_B:pickCity(1);break;
+            case WelcomeView.CITY_SEARCH:searchCity();break;
+            case WelcomeView.CITY_SKIP:if(flow.step==WelcomeFlow.CITY){flow.next();render();}break;
             case WelcomeView.AIRPLAY_SKIP:airplayPage=false;render();break;
             case WelcomeView.DEVELOPERS:
                 if(!SettingsLinks.openDeveloperSettings(this)){
@@ -107,7 +186,7 @@ public class WelcomeActivity extends Activity {
                 if(active&&busy.isEmpty()&&error.isEmpty()){flow.browsing=false;flow.observe(SystemClock.elapsedRealtime(),true,false,"");WelcomeStore.status(this,WelcomeFlow.DONE);render();return;}
                 if(!flow.begin(SystemClock.elapsedRealtime(),active,!busy.isEmpty(),error))return;
                 WelcomeStore.status(this,WelcomeFlow.STARTED);render();
-                try{requests++;HomeMode.request(getApplicationContext(),HomeMode.FREE);readState();}
+                try{requests++;HomeMode.request(getApplicationContext(),HomeMode.FREE,true);readState();}
                 catch(RuntimeException failed){error=Ui.tr("Setup could not start. Please try again.");flow.observe(SystemClock.elapsedRealtime(),false,false,error);render();}
                 break;
             case WelcomeView.LATER:WelcomeStore.status(this,WelcomeFlow.DEFERRED);openSettings();break;

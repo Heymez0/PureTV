@@ -5,6 +5,11 @@ final class TvModeRegression {
     static void ok(boolean value){if(!value)throw new AssertionError();}
     static TvInputRules.Raw port(String id,String parent,String label,String custom,int state){return new TvInputRules.Raw(id,parent,label,custom,state);}
     public static void main(String[] args){
+        // Reinstall: the record in the TV's settings keeps what an earlier install turned off; only what is still off stays ours.
+        Set<String> rec=new HashSet<>(Arrays.asList("com.google.android.tvlauncher","com.google.android.katniss","com.xm.webcontent"));
+        Set<String> off=new HashSet<>(Arrays.asList("com.google.android.tvlauncher","com.xm.webcontent","com.mitv.tvhome.atv"));
+        ok(HomeRecord.earlier(rec,off).equals(new HashSet<>(Arrays.asList("com.google.android.tvlauncher","com.xm.webcontent"))));
+        ok(rec.size()==3&&off.size()==3&&HomeRecord.earlier(Collections.<String>emptySet(),off).isEmpty());
         for(String raw:new String[]{null,"box","stick","TV","obsolete","tv"})ok(DeviceProfiles.normalize(raw).equals("tv".equals(raw)?"tv":"box"));
         List<TvInputRules.Raw> raw=new ArrayList<>(Arrays.asList(
             port("port10",null,"HDMI 10","",2),port("port2",null,"HDMI 2","Oyun",1),port("port1",null,"HDMI 1","",2),

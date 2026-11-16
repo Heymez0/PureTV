@@ -72,14 +72,14 @@ final class Adb implements Closeable {
     static Adb connect(Context c, int approvalMs, Approval approval) throws IOException {
         // Without a key there is no grant to use, and a key made here (another process) could replace the one the main
         // process is just offering to the TV.
-        if (approvalMs < 0 && !new File(c.getFilesDir(), "adbkey").exists()) throw new IOException("the app's key isn't allowed on the TV");
+        if (approvalMs < 0 && !new File(c.getFilesDir(), "adbkey").exists()) throw new IOException(Ui.tr("the app's key isn't allowed on the TV"));
         KeyPair keys = keys(c);
         Socket s = new Socket();
         try {
             s.connect(new InetSocketAddress("127.0.0.1", 5555), 3000);
         } catch (IOException e) {
             s.close();
-            throw new IOException("debugging is off on the TV (port 5555 closed)");
+            throw new IOException(Ui.tr("debugging is off on the TV (port 5555 closed)"));
         }
         Adb adb;
         try {
@@ -97,7 +97,7 @@ final class Adb implements Closeable {
                 try {
                     m = adb.read();
                 } catch (SocketTimeoutException e) {
-                    throw new IOException(offeredKey ? "debugging permission wasn't accepted on the TV" : "the TV's ADB didn't respond");
+                    throw new IOException(offeredKey ? Ui.tr("debugging permission wasn't accepted on the TV") : Ui.tr("the TV's ADB didn't respond"));
                 }
                 if (m.command == CNXN) {
                     s.setSoTimeout(20_000);
@@ -105,20 +105,20 @@ final class Adb implements Closeable {
                     adb.maxPayload = m.arg1 >= 1024 ? Math.min(MAX_DATA, m.arg1) : 4096;
                     return adb;
                 }
-                if (m.command == STLS) throw new IOException("the TV asked for TLS (wireless debugging); use USB debugging");
+                if (m.command == STLS) throw new IOException(Ui.tr("the TV asked for TLS (wireless debugging); use USB debugging"));
                 if (m.command != AUTH || m.arg0 != AUTH_TOKEN) throw new IOException("unexpected reply from ADB");
                 if (!signed) {
                     adb.send(AUTH, AUTH_SIGNATURE, 0, sign(keys.getPrivate(), m.data));
                     signed = true;
                 } else if (!offeredKey) {
-                    if (approvalMs < 0) throw new IOException("the app's key isn't allowed on the TV");
+                    if (approvalMs < 0) throw new IOException(Ui.tr("the app's key isn't allowed on the TV"));
                     // Unknown key: send the public one; the TV shows "Allow USB debugging?".
                     adb.send(AUTH, AUTH_RSAPUBLICKEY, 0, publicKeyBlob(keys.getPublic()));
                     offeredKey = true;
                     if (approval != null) approval.waiting();
                     s.setSoTimeout(approvalMs);
                 } else {
-                    throw new IOException("the TV rejected the app's key");
+                    throw new IOException(Ui.tr("the TV rejected the app's key"));
                 }
             }
         } catch (IOException | RuntimeException e) {

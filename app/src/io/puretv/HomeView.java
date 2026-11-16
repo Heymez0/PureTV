@@ -498,8 +498,9 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
         rebindingPosters=true;
         try{updatePicks();}finally{rebindingPosters=false;}
         if (sheetOpen) closeSheet();
-        if (allAppsPending) { allAppsPending = false; openSheet(); }
         sheet.snap(sheet.target);
+        // The remote's apps button: opened after the snap, so All Apps rises with the same motion as from the shortcut.
+        if (allAppsPending) { allAppsPending = false; openSheet(); }
         motionDirty = true;
         invalidateAll();
         idle = false;

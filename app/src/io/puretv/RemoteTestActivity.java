@@ -25,6 +25,30 @@ public class RemoteTestActivity extends Activity {
     private static final int INFO = 6, ASSIGN = 6, SAVE = 7;
     /** While this file is fresh, the key service lets every key through, so an assigned button can be tested too. */
     static final String MARKER = "remote-test";
+    /** A key the key service took before Android could act on it (Home, the apps button): shown here. */
+    private static final String KEY = "io.puretv.REMOTE_TEST_KEY";
+    /** The marker is touched this often while the test is on screen; the key service trusts it for FRESH_MS only. */
+    private static final long BEAT_MS = 3_000;
+    static final long FRESH_MS = 10_000;
+    private final Runnable beat = new Runnable() {
+        @Override public void run() { touchMarker(); if (visible) main.postDelayed(this, BEAT_MS); }
+    };
+
+    /** From the key service (its own process): hands the key to the test on screen. Same app only (signature permission). */
+    static void forward(android.content.Context c, KeyEvent event) {
+        c.sendBroadcast(new android.content.Intent(KEY).setPackage(c.getPackageName()).putExtra("event", event),
+                AirPlayInstall.STATUS_PERMISSION);
+    }
+
+    private final android.content.BroadcastReceiver forwarded = new android.content.BroadcastReceiver() {
+        @Override public void onReceive(android.content.Context c, android.content.Intent intent) {
+            KeyEvent event = intent.getParcelableExtra("event");
+            if (event == null || !visible) return;
+            boolean first = event.getAction() == KeyEvent.ACTION_DOWN && event.getRepeatCount() == 0;
+            if (picking) { if (first && event.getKeyCode() == KeyEvent.KEYCODE_HOME) showTest(ASSIGN); return; }   // Home leaves the list, like Back
+            if (first) record(event);
+        }
+    };
 
     private final Handler main = new Handler(Looper.getMainLooper());
     private final Runnable exit = this::finish;
@@ -75,9 +99,11 @@ public class RemoteTestActivity extends Activity {
         rows[ASSIGN] = new SettingsPage.Row(Ui.tr("Assign this button"), d -> assign());
         rows[SAVE] = new SettingsPage.Row(Ui.tr("Save changes"), d -> save());
         SettingsPage.Data test = new SettingsPage.Data(Ui.tr("Remote button test"), Ui.tr("Hold Back for two seconds to leave."), "remote", rows);
-        test.footer = Ui.tr("Hold Back for two seconds to leave.");
-        test.hint = Ui.tr("Press any button to see what reaches PureTV. Back is shown too and does not leave; Home does. Power, Home, volume and voice may be handled by Android before the app sees them.")
-                + "\n\n" + Ui.tr("To give a button a job, press it, choose Assign this button, then Save changes. Nothing changes until you save. OK, Back and the arrows can't be reassigned. Assigned buttons work while PureTV is the default home screen.");
+        test.footer = "";   // said once, in gold under the title
+        test.urgent = true;
+        test.hint = Ui.tr("Press any button to see what reaches PureTV. Back doesn't leave here, and while PureTV is the default home screen neither does Home; the apps button is shown too. Power, volume and voice may be handled by Android before the app sees them.");
+        // How to give a button a job: shown on the two rows that do it, so the screen's own hint stays short enough to fit.
+        rows[ASSIGN].hint = rows[SAVE].hint = Ui.tr("To give a button a job, press it, choose Assign this button, then Save changes. Nothing changes until you save. OK, Back and the arrows can't be reassigned. Assigned buttons work while PureTV is the default home screen.");
         show(test, () -> {
             for (int i = 0; i < INFO; i++) data.rows[i].value = info[i];
             data.rows[ASSIGN].value = lastKey == 0 ? "—"
@@ -185,16 +211,24 @@ public class RemoteTestActivity extends Activity {
 
     private File marker() { return new File(getFilesDir(), MARKER); }
 
+    private void touchMarker() {
+        try { File f = marker(); if (!f.createNewFile()) //noinspection ResultOfMethodCallIgnored
+            f.setLastModified(System.currentTimeMillis()); } catch (java.io.IOException | RuntimeException ignored) { }
+    }
+
     @Override protected void onResume() {
         super.onResume();
         visible = true;
-        try { File f = marker(); if (!f.createNewFile()) //noinspection ResultOfMethodCallIgnored
-            f.setLastModified(System.currentTimeMillis()); } catch (java.io.IOException | RuntimeException ignored) { }
+        AirPlayInstall.listen(this, forwarded, KEY);
+        main.removeCallbacks(beat);
+        beat.run();
         page.resume();
     }
 
     @Override protected void onPause() {
         visible = false;
+        main.removeCallbacks(beat);
+        try { unregisterReceiver(forwarded); } catch (IllegalArgumentException ignored) { }
         main.removeCallbacks(exit);
         //noinspection ResultOfMethodCallIgnored
         marker().delete();
