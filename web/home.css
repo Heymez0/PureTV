@@ -97,7 +97,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   top: 52px;
   margin: 0;
   font-size: 76px;
-  font-weight: 600;
+  font-weight: 600 !important;
   letter-spacing: 0.004em;
   line-height: 1;
   white-space: nowrap;
@@ -115,13 +115,13 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   margin-right: 4px;
   border-radius: 34px;
   font-size: 30px;
-  font-weight: 500;
+  font-weight: 500 !important;
   line-height: 68px;
   color: #6E6E73;
   -webkit-transition: -webkit-transform 0.2s cubic-bezier(0.2, 0.9, 0.3, 1.2), background-color 0.17s, box-shadow 0.2s, color 0.17s;
   transition: transform 0.2s cubic-bezier(0.2, 0.9, 0.3, 1.2), background-color 0.17s, box-shadow 0.2s, color 0.17s;
 }
-.tab.on { font-weight: 600; color: #1D1D1F; }
+.tab.on { font-weight: 600 !important; color: #1D1D1F; }
 .tab.focus {
   background: #FFF;
   color: #1D1D1F;
@@ -177,7 +177,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   margin-left: -150px;
   text-align: center;
   font-size: 23px;
-  font-weight: 600;
+  font-weight: 600 !important;
   white-space: nowrap;
   opacity: 0;
   -webkit-transition: opacity 0.14s;
@@ -245,7 +245,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 31px;
-  font-weight: 600;
+  font-weight: 600 !important;
   letter-spacing: 0.012em;
   color: #1D1D1F;
   -webkit-transition: color 2s;
@@ -260,7 +260,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 25px;
-  font-weight: 500;
+  font-weight: 500 !important;
   color: #6E6E73;
 }
 .night .card .img { background-color: #2C2C2E; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.32); }
@@ -273,13 +273,13 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   left: 76px;
   top: 300px;
   font-size: 176px;
-  font-weight: 200;
+  font-weight: 200 !important;
   letter-spacing: -0.01em;
   line-height: 1;
   color: #1D1D1F;
   display: none;
 }
-#clock .date { display: block; font-size: 40px; font-weight: 500; letter-spacing: 0; margin-top: 18px; color: #6E6E73; }
+#clock .date { display: block; font-size: 40px; font-weight: 500 !important; letter-spacing: 0; margin-top: 18px; color: #6E6E73; }
 .no-picks #clock { display: block; }
 .night #clock { color: #F5F5F7; }
 .night #clock .date { color: rgba(245, 245, 247, 0.62); }
@@ -349,7 +349,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   line-height: 40px;
   text-align: center;
   font-size: 30px;
-  font-weight: 700;
+  font-weight: 700 !important;
   letter-spacing: -0.01em;
   white-space: nowrap;
   overflow: hidden;
@@ -397,7 +397,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 
 /* MARK: - Drawer: inputs and shortcuts, weather */
 
-.row-title { position: absolute; top: 494px; font-size: 25px; font-weight: 600; color: #6E6E73; white-space: nowrap; }
+.row-title { position: absolute; top: 494px; font-size: 25px; font-weight: 600 !important; color: #6E6E73; white-space: nowrap; }
 .night .row-title { color: rgba(255, 255, 255, 0.7); }
 
 .glass {
@@ -422,7 +422,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   transition: transform 0.19s cubic-bezier(0.2, 0.9, 0.3, 1.2), box-shadow 0.19s, background-color 0.14s;
 }
 .key .sym { position: absolute; left: 50%; top: 33px; width: 34px; height: 34px; margin-left: -17px; }
-.key .label { position: absolute; left: 8px; right: 8px; top: 82px; font-size: 23px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.key .label { position: absolute; left: 8px; right: 8px; top: 82px; font-size: 23px; font-weight: 500 !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .key.off { color: #8E8E93; }
 .key.focus { background: #F5F5F7; color: #1C1C1E; -webkit-transform: scale(1.07); transform: scale(1.07); box-shadow: 0 16px 34px rgba(0, 0, 0, 0.42); z-index: 2; }
 .night .key { color: rgba(255, 255, 255, 0.95); }
@@ -431,24 +431,24 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 
 .panel { position: absolute; top: 708px; height: 300px; border-radius: 30px; overflow: hidden; color: #1D1D1F; }
 .night .panel { color: #F5F5F7; }
-.panel .head { position: absolute; left: 34px; top: 30px; font-size: 25px; font-weight: 600; color: #6E6E73; white-space: nowrap; }
-.panel .side { position: absolute; right: 34px; top: 33px; font-size: 21px; font-weight: 500; color: #8E8E93; white-space: nowrap; }
+.panel .head { position: absolute; left: 34px; top: 30px; font-size: 25px; font-weight: 600 !important; color: #6E6E73; white-space: nowrap; }
+.panel .side { position: absolute; right: 34px; top: 33px; font-size: 21px; font-weight: 500 !important; color: #8E8E93; white-space: nowrap; }
 .night .panel .head { color: rgba(255, 255, 255, 0.7); }
 .night .panel .side { color: rgba(255, 255, 255, 0.6); }
 
 #weather .now { position: absolute; left: 34px; top: 82px; height: 100px; white-space: nowrap; }
 #weather .now .sym { width: 56px; height: 56px; vertical-align: 12px; margin-right: 18px; }
-#weather .now .temp { font-size: 100px; font-weight: 300; line-height: 100px; font-feature-settings: 'tnum'; }
-#weather .cond { position: absolute; left: 34px; top: 192px; font-size: 29px; font-weight: 500; white-space: nowrap; }
-#weather .range { position: absolute; left: 34px; top: 236px; font-size: 23px; font-weight: 500; color: #6E6E73; white-space: nowrap; font-feature-settings: 'tnum'; }
+#weather .now .temp { font-size: 100px; font-weight: 300 !important; line-height: 100px; font-feature-settings: 'tnum'; }
+#weather .cond { position: absolute; left: 34px; top: 192px; font-size: 29px; font-weight: 500 !important; white-space: nowrap; }
+#weather .range { position: absolute; left: 34px; top: 236px; font-size: 23px; font-weight: 500 !important; color: #6E6E73; white-space: nowrap; font-feature-settings: 'tnum'; }
 #weather .split { position: absolute; left: 391px; top: 34px; bottom: 34px; width: 2px; background: rgba(0, 0, 0, 0.1); }
 #weather .hours { position: absolute; left: 422px; right: 30px; top: 74px; height: 140px; }
 #weather .hour { position: absolute; top: 0; text-align: center; font-feature-settings: 'tnum'; }
-#weather .hour .t { font-size: 22px; font-weight: 500; color: #6E6E73; }
+#weather .hour .t { font-size: 22px; font-weight: 500 !important; color: #6E6E73; }
 #weather .hour .sym { display: block; width: 30px; height: 30px; margin: 22px auto 18px; }
-#weather .hour .d { font-size: 26px; font-weight: 500; }
+#weather .hour .d { font-size: 26px; font-weight: 500 !important; }
 #weather .hour .low { margin-left: 6px; font-size: 22px; color: #6E6E73; }
-#weather .sun { position: absolute; left: 422px; top: 236px; font-size: 23px; font-weight: 500; color: #6E6E73; white-space: nowrap; }
+#weather .sun { position: absolute; left: 422px; top: 236px; font-size: 23px; font-weight: 500 !important; color: #6E6E73; white-space: nowrap; }
 #weather .sun .sym { width: 22px; height: 22px; vertical-align: -3px; margin-right: 10px; }
 #weather .sun span { margin-right: 36px; }
 .night #weather .range, .night #weather .hour .t, .night #weather .hour .low, .night #weather .sun { color: rgba(255, 255, 255, 0.68); }
@@ -469,7 +469,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   transition: opacity 0.24s, transform 0.3s cubic-bezier(0.2, 0.9, 0.3, 1), visibility 0s 0.3s;
 }
 .sheet.open { opacity: 1; visibility: visible; pointer-events: auto; -webkit-transform: none; transform: none; -webkit-transition-delay: 0s; transition-delay: 0s; }
-.sheet h2 { position: absolute; left: 0; right: 0; top: 84px; margin: 0; text-align: center; font-size: 40px; font-weight: 600; }
+.sheet h2 { position: absolute; left: 0; right: 0; top: 84px; margin: 0; text-align: center; font-size: 40px; font-weight: 600 !important; }
 
 #apps .grid { position: absolute; left: 0; top: 0; width: 1920px; -webkit-transition: -webkit-transform 0.28s cubic-bezier(0.2, 0.9, 0.3, 1); transition: transform 0.28s cubic-bezier(0.2, 0.9, 0.3, 1); }
 .cell { position: absolute; width: 300px; height: 169px; }
@@ -487,8 +487,8 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 }
 .cell .face img { position: absolute; left: 50%; top: 50%; max-width: 70%; max-height: 60%; -webkit-transform: translate(-50%, -50%); transform: translate(-50%, -50%); }
 .cell .face img.logo { width: 64%; height: 46%; max-width: none; max-height: none; object-fit: contain; }
-.cell .face .word { position: absolute; left: 6%; right: 6%; top: 50%; margin-top: -22px; height: 44px; line-height: 44px; text-align: center; font-size: 32px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #FFF; }
-.cell .label { position: absolute; left: 0; right: 0; top: 186px; text-align: center; font-size: 24px; font-weight: 500; color: rgba(255, 255, 255, 0.6); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cell .face .word { position: absolute; left: 6%; right: 6%; top: 50%; margin-top: -22px; height: 44px; line-height: 44px; text-align: center; font-size: 32px; font-weight: 700 !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #FFF; }
+.cell .label { position: absolute; left: 0; right: 0; top: 186px; text-align: center; font-size: 24px; font-weight: 500 !important; color: rgba(255, 255, 255, 0.6); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cell.focus .face { -webkit-transform: scale(1.08); transform: scale(1.08); box-shadow: 0 16px 34px rgba(0, 0, 0, 0.55), inset 0 0 0 2px rgba(255, 255, 255, 0.4); }
 .cell.focus .label { color: #FFF; }
 
@@ -504,17 +504,17 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   background: linear-gradient(rgba(34, 36, 44, 0.96), rgba(18, 20, 26, 0.97));
   box-shadow: 0 40px 90px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.14), inset 0 0 0 1px rgba(255, 255, 255, 0.08);
 }
-.box .title { font-size: 38px; font-weight: 700; padding: 6px 18px 18px; letter-spacing: -0.01em; }
+.box .title { font-size: 38px; font-weight: 700 !important; padding: 6px 18px 18px; letter-spacing: -0.01em; }
 .box .title .sym { width: 36px; height: 36px; vertical-align: -5px; margin-right: 14px; color: rgba(255, 255, 255, 0.85); }
 .box .list { position: relative; overflow: hidden; }
 .box .rows { -webkit-transition: -webkit-transform 0.2s cubic-bezier(0.2, 0.9, 0.3, 1); transition: transform 0.2s cubic-bezier(0.2, 0.9, 0.3, 1); }
-.box .row { position: relative; height: 70px; margin-bottom: 8px; border-radius: 20px; font-size: 30px; font-weight: 600; line-height: 70px; padding: 0 24px; white-space: nowrap; -webkit-transition: background-color 0.13s; transition: background-color 0.13s; }
+.box .row { position: relative; height: 70px; margin-bottom: 8px; border-radius: 20px; font-size: 30px; font-weight: 600 !important; line-height: 70px; padding: 0 24px; white-space: nowrap; -webkit-transition: background-color 0.13s; transition: background-color 0.13s; }
 .box .row.focus { background: rgba(255, 255, 255, 0.13); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14); }
-.box .row .value { position: absolute; right: 24px; top: 0; color: rgba(255, 255, 255, 0.92); font-weight: 500; }
+.box .row .value { position: absolute; right: 24px; top: 0; color: rgba(255, 255, 255, 0.92); font-weight: 500 !important; }
 .box .row .value .chev { color: rgba(255, 255, 255, 0.35); margin: 0 10px; }
 .box .row .value .sym { width: 26px; height: 26px; vertical-align: -3px; }
 .box .row.dim { color: rgba(255, 255, 255, 0.4); }
-.box .hint { padding: 14px 18px 0; font-size: 22px; font-weight: 500; color: rgba(255, 255, 255, 0.5); }
+.box .hint { padding: 14px 18px 0; font-size: 22px; font-weight: 500 !important; color: rgba(255, 255, 255, 0.5); }
 .toggle { position: absolute; right: 24px; top: 13px; width: 78px; height: 44px; border-radius: 22px; background: #3A3D45; -webkit-transition: background-color 0.14s; transition: background-color 0.14s; }
 .toggle::after { content: ''; position: absolute; left: 4px; top: 4px; width: 36px; height: 36px; border-radius: 18px; background: #FFF; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35); -webkit-transition: -webkit-transform 0.14s; transition: transform 0.14s; }
 .toggle.on { background: #3FD69B; }
@@ -539,9 +539,9 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   box-shadow: 0 30px 70px rgba(0, 0, 0, 0.35), inset 0 1.5px 0 rgba(255, 255, 255, 0.4), inset 0 0 0 1px rgba(255, 255, 255, 0.18);
   white-space: nowrap;
 }
-#saver .clock .time { font-size: 150px; font-weight: 300; line-height: 1; letter-spacing: -0.02em; font-feature-settings: 'tnum'; }
-#saver .clock .date { margin-top: 10px; font-size: 34px; font-weight: 500; color: rgba(255, 255, 255, 0.82); }
-#saver .clock .title { margin-top: 18px; font-size: 26px; font-weight: 500; color: rgba(255, 255, 255, 0.65); }
+#saver .clock .time { font-size: 150px; font-weight: 300 !important; line-height: 1; letter-spacing: -0.02em; font-feature-settings: 'tnum'; }
+#saver .clock .date { margin-top: 10px; font-size: 34px; font-weight: 500 !important; color: rgba(255, 255, 255, 0.82); }
+#saver .clock .title { margin-top: 18px; font-size: 26px; font-weight: 500 !important; color: rgba(255, 255, 255, 0.65); }
 
 /* MARK: - Toast */
 
@@ -555,7 +555,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   padding: 18px 30px;
   border-radius: 32px;
   font-size: 26px;
-  font-weight: 500;
+  font-weight: 500 !important;
   line-height: 1.3;
   color: rgba(255, 255, 255, 0.95);
   background: rgba(17, 17, 19, 0.86);
@@ -574,10 +574,305 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 #weather-summary .sym { display: inline-block; vertical-align: -3px; margin-right: 8px; }
 #saver { background: #000000; color: #B8B8BE; }
 #saver .photo.on { opacity: 0.42; }
-#saver .clock .time { font-weight: 600; }
+#saver .clock .time { font-weight: 600 !important; }
 #saver .clock .date { color: #939399; }
 #saver .clock .title { color: #9B9BA1; }
 
 #saver .clock { padding: 0; border-radius: 0; background: none; box-shadow: none; color: #B8B8BE; }
 /* Attribution stays quiet and moves with the cached weather card. */
 .weather-credit { position: absolute; right: 30px; bottom: 10px; font-size: 15px; color: inherit; opacity: .7; }
+
+/* MARK: - The Android app's look (Look, Ambient, HomeView, SettingsPage): obsidian or paper surfaces lit by two soft
+   lights that follow the time of day, paper-white or ink text and one gold accent. Later rules win over the ones above. */
+
+/* The backdrop: a warm light at the top right and a cool one at the bottom left (Ambient), per phase and theme. */
+#sky .day, #settings, #apps, #shelfedit, #langpick { background-color: #EEECE8; }
+.phase-morning #sky .day, .phase-morning #settings, .phase-morning #apps, .phase-morning #shelfedit, .phase-morning #langpick {
+  background-image: radial-gradient(circle at 88% 4%, rgba(255, 201, 160, 0.62), rgba(255, 201, 160, 0) 62%),
+    radial-gradient(circle at 4% 100%, rgba(175, 211, 255, 0.6), rgba(175, 211, 255, 0) 64%), linear-gradient(#F7F6F3, #E6E4E0);
+}
+.phase-day #sky .day, .phase-day #settings, .phase-day #apps, .phase-day #shelfedit, .phase-day #langpick {
+  background-image: radial-gradient(circle at 88% 4%, rgba(255, 226, 166, 0.62), rgba(255, 226, 166, 0) 62%),
+    radial-gradient(circle at 4% 100%, rgba(181, 219, 245, 0.6), rgba(181, 219, 245, 0) 64%), linear-gradient(#F7F6F3, #E6E4E0);
+}
+.phase-evening #sky .day, .phase-evening #settings, .phase-evening #apps, .phase-evening #shelfedit, .phase-evening #langpick {
+  background-image: radial-gradient(circle at 88% 4%, rgba(255, 190, 156, 0.62), rgba(255, 190, 156, 0) 62%),
+    radial-gradient(circle at 4% 100%, rgba(205, 187, 245, 0.6), rgba(205, 187, 245, 0) 64%), linear-gradient(#F7F6F3, #E6E4E0);
+}
+.phase-late #sky .day, .phase-late #settings, .phase-late #apps, .phase-late #shelfedit, .phase-late #langpick {
+  background-image: radial-gradient(circle at 88% 4%, rgba(243, 217, 164, 0.55), rgba(243, 217, 164, 0) 62%),
+    radial-gradient(circle at 4% 100%, rgba(195, 203, 242, 0.58), rgba(195, 203, 242, 0) 64%), linear-gradient(#F7F6F3, #E6E4E0);
+}
+.night #settings, .night #apps, .night #shelfedit, .night #langpick, #sky .night { background-color: #0F0F12; }
+.night.phase-morning #settings, .night.phase-morning #apps, .night.phase-morning #shelfedit, .night.phase-morning #langpick, .phase-morning #sky .night {
+  background-image: radial-gradient(circle at 88% 4%, rgba(233, 162, 107, 0.26), rgba(233, 162, 107, 0) 60%),
+    radial-gradient(circle at 4% 100%, rgba(61, 107, 214, 0.22), rgba(61, 107, 214, 0) 64%), linear-gradient(#15151A, #09090B);
+}
+.night.phase-day #settings, .night.phase-day #apps, .night.phase-day #shelfedit, .night.phase-day #langpick, .phase-day #sky .night {
+  background-image: radial-gradient(circle at 88% 4%, rgba(210, 171, 85, 0.22), rgba(210, 171, 85, 0) 60%),
+    radial-gradient(circle at 4% 100%, rgba(47, 127, 184, 0.2), rgba(47, 127, 184, 0) 64%), linear-gradient(#15151A, #09090B);
+}
+.night.phase-evening #settings, .night.phase-evening #apps, .night.phase-evening #shelfedit, .night.phase-evening #langpick, .phase-evening #sky .night {
+  background-image: radial-gradient(circle at 88% 4%, rgba(224, 130, 90, 0.26), rgba(224, 130, 90, 0) 60%),
+    radial-gradient(circle at 4% 100%, rgba(106, 75, 196, 0.23), rgba(106, 75, 196, 0) 64%), linear-gradient(#15151A, #09090B);
+}
+.night.phase-late #settings, .night.phase-late #apps, .night.phase-late #shelfedit, .night.phase-late #langpick, .phase-late #sky .night {
+  background-image: radial-gradient(circle at 88% 4%, rgba(185, 138, 60, 0.2), rgba(185, 138, 60, 0) 60%),
+    radial-gradient(circle at 4% 100%, rgba(58, 70, 176, 0.23), rgba(58, 70, 176, 0) 64%), linear-gradient(#15151A, #09090B);
+}
+/* Without a title's photo the backdrop shows as it is (the veil only softens a photo). */
+.no-picks #sky .veil { opacity: 0; }
+
+/* Text: ink and a dim grey on paper, paper and a light grey on obsidian. */
+body { color: #1D1D1F; }
+.night { color: #F5F5F7; }
+
+/* MARK: Header: two glass circles and the greeting with the gold gear, at the top right (HomeView). */
+#title { display: none; }
+.round { top: 69px; }
+.pill {
+  position: absolute;
+  right: 80px;
+  top: 69px;
+  height: 68px;
+  padding: 0 8px 0 28px;
+  border-radius: 34px;
+  white-space: nowrap;
+  font-size: 27px;
+  font-weight: 500 !important;
+  line-height: 68px;
+  color: #1D1D1F;
+  background: linear-gradient(rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.56));
+  box-shadow: 0 6px 26px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.9), inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+  -webkit-transition: -webkit-transform 0.2s cubic-bezier(0.2, 0.9, 0.3, 1.2), box-shadow 0.2s;
+  transition: transform 0.2s cubic-bezier(0.2, 0.9, 0.3, 1.2), box-shadow 0.2s;
+}
+.pill .greet { display: inline-block; vertical-align: top; margin-right: 18px; }
+.pill .gear { display: inline-block; vertical-align: top; position: relative; top: 8px; width: 52px; height: 52px; border-radius: 26px; background: #D2AB55; color: #1B1710; }
+.pill .gear .sym { position: absolute; left: 12px; top: 12px; width: 28px; height: 28px; }
+.pill.focus { background: #FFF; -webkit-transform: scale(1.06); transform: scale(1.06); box-shadow: 0 14px 30px rgba(0, 0, 0, 0.24); }
+.night .pill {
+  color: #F5F5F7;
+  background: linear-gradient(rgba(40, 40, 44, 0.8), rgba(17, 17, 19, 0.62));
+  box-shadow: 0 6px 26px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.14), inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+.night .pill.focus { background: #F5F5F7; color: #1D1D1F; }
+.round .tip { top: 82px; font-size: 21px; font-weight: 600 !important; }
+.round.focus .tip { color: #1D1D1F; }
+.night .round.focus .tip { color: #F5F5F7; }
+
+/* MARK: Content tabs: plain words; the open one in ink with a gold mark under it (HomeView). */
+#tabs { left: 54px; top: 160px; }
+.tab { font-size: 30px; font-weight: 500 !important; }
+.tab.on::after { content: ''; position: absolute; left: 26px; bottom: 6px; width: 30px; height: 4px; border-radius: 2px; background: #B0822C; }
+.night .tab.on::after { background: #D2AB55; }
+.tab.focus.on::after { bottom: 8px; }
+#weather-summary { top: 180px; }
+
+/* MARK: The clock layout: a small tracked date, the time large and light, the weather on one line. */
+#clock { left: 80px; top: 284px; font-size: inherit; font-weight: inherit !important; letter-spacing: 0; color: inherit; }
+#clock .date { display: block; margin: 0; font-size: 25px; font-weight: 600 !important; letter-spacing: 0.16em; color: #5B5B62; }
+#clock .time { display: block; margin-top: 4px; font-size: 212px; font-weight: 250 !important; line-height: 1; letter-spacing: -0.02em; color: #1D1D1F; font-feature-settings: 'tnum'; }
+#clock .wline { display: block; margin-top: 30px; font-size: 28px; font-weight: 500 !important; color: #5B5B62; white-space: nowrap; }
+#clock .wline .sym { width: 34px; height: 34px; vertical-align: -7px; margin-right: 12px; color: #1D1D1F; }
+#clock .wline b { margin-right: 12px; font-weight: 600 !important; color: #1D1D1F; }
+#clock .wline .dot { margin: 0 12px; opacity: 0.6; }
+.night #clock .date, .night #clock .wline { color: #A9A9AE; }
+.night #clock .time, .night #clock .wline b, .night #clock .wline .sym { color: #F5F5F7; }
+
+/* MARK: Switches: gold when on (Look.GOLD). */
+.toggle { background: rgba(120, 120, 128, 0.32); }
+.toggle.on { background: #D2AB55; }
+
+/* MARK: Settings (SettingsPage): the categories on the left, the open one's rows on the right, on the backdrop. */
+#settings, #apps, #shelfedit, #langpick { color: #1D1D1F; }
+.night #settings, .night #apps, .night #shelfedit, .night #langpick { color: #F5F5F7; }
+#settings .nav, #settings .box, #shelfedit .box, #langpick .box {
+  position: absolute;
+  border-radius: 34px;
+  box-sizing: border-box;
+  background: linear-gradient(rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.58));
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.12), inset 0 1.5px 0 rgba(255, 255, 255, 0.95), inset 0 0 0 1px rgba(255, 255, 255, 0.55);
+}
+.night #settings .nav, .night #settings .box, .night #shelfedit .box, .night #langpick .box {
+  background: linear-gradient(rgba(38, 38, 42, 0.82), rgba(17, 17, 19, 0.7));
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4), inset 0 1.5px 0 rgba(255, 255, 255, 0.12), inset 0 0 0 1px rgba(255, 255, 255, 0.07);
+}
+#settings .nav { left: 78px; top: 98px; width: 534px; height: 922px; padding: 46px 22px; }
+#settings .nav .head { padding: 0 12px 26px; font-size: 38px; font-weight: 600 !important; }
+#settings .cat { position: relative; height: 66px; margin-bottom: 12px; padding: 0 22px 0 76px; border-radius: 18px; font-size: 27px; font-weight: 500 !important; line-height: 66px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#settings .cat .sym { position: absolute; left: 24px; top: 19px; width: 28px; height: 28px; color: #5B5B62; }
+#settings .cat.open { background: rgba(0, 0, 0, 0.06); }
+#settings .cat.open::before { content: ''; position: absolute; left: 0; top: 17px; width: 4px; height: 32px; border-radius: 2px; background: #B0822C; }
+#settings .cat.focus { background: #2A2A2E; color: #F5F5F7; }
+#settings .cat.focus .sym { color: #F5F5F7; }
+.night #settings .cat .sym { color: #A9A9AE; }
+.night #settings .cat.open { background: rgba(255, 255, 255, 0.08); }
+.night #settings .cat.open::before { background: #D2AB55; }
+.night #settings .cat.focus { background: #F5F5F7; color: #1D1D1F; }
+.night #settings .cat.focus .sym { color: #1D1D1F; }
+#settings .nav .brand { position: absolute; left: 36px; bottom: 34px; font-size: 21px; font-weight: 600 !important; letter-spacing: 0.14em; color: #5B5B62; }
+#settings .nav .brand::before { content: ''; display: inline-block; width: 8px; height: 8px; margin-right: 12px; border-radius: 4px; background: #D2AB55; vertical-align: 3px; }
+.night #settings .nav .brand { color: #A9A9AE; }
+
+#settings .box, #shelfedit .box, #langpick .box { left: 638px; top: 98px; width: 1218px; padding: 34px 36px 30px; }
+#shelfedit .box, #langpick .box { left: 351px; }
+.box .title { padding: 0 0 4px 10px; font-size: 38px; font-weight: 600 !important; letter-spacing: 0; }
+.box .title .badge { display: inline-block; position: relative; width: 60px; height: 60px; margin-right: 20px; border-radius: 30px; background: rgba(210, 171, 85, 0.24); vertical-align: middle; }
+.box .title .badge .sym { position: absolute; left: 16px; top: 16px; width: 28px; height: 28px; margin: 0; color: #B0822C; }
+.night .box .title .badge { background: rgba(210, 171, 85, 0.16); }
+.night .box .title .badge .sym { color: #D2AB55; }
+.box .title .name { vertical-align: middle; }
+.box .title .sym { color: inherit; }
+.box .sub { padding: 0 0 22px 90px; margin-top: -14px; font-size: 24px; font-weight: 400 !important; color: #5B5B62; }
+.night .box .sub { color: #A9A9AE; }
+.box .row { height: 70px; line-height: 70px; margin-bottom: 8px; border-radius: 18px; font-size: 29px; font-weight: 500 !important; padding: 0 26px; color: inherit; }
+.box .row.focus { background: #2A2A2E; color: #F5F5F7; box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18); }
+.night .box .row.focus { background: #F5F5F7; color: #1D1D1F; box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4); }
+.box .row .value { right: 26px; font-size: 26px; font-weight: 400 !important; color: #5B5B62; }
+.box .row .value .chev { color: inherit; opacity: 0.6; }
+.box .row.focus .value { color: rgba(245, 245, 247, 0.78); }
+.night .box .row .value { color: #A9A9AE; }
+.night .box .row.focus .value { color: #5B5B62; }
+.box .row .value .sym { color: #B0822C; }
+.night .box .row .value .sym { color: #D2AB55; }
+.box .row.dim { color: #8E8E93; }
+.box .hint { padding: 22px 26px 0; font-size: 23px; font-weight: 400 !important; color: #5B5B62; }
+.night .box .hint { color: #A9A9AE; }
+
+/* MARK: All Apps on the backdrop, as on Android. */
+#apps h2 { top: 80px; font-size: 40px; }
+.cell .label { color: #5B5B62; }
+.cell.focus .label { color: #1D1D1F; }
+.night .cell .label { color: #A9A9AE; }
+.night .cell.focus .label { color: #F5F5F7; }
+.cell.focus .face { box-shadow: 0 16px 34px rgba(0, 0, 0, 0.3), inset 0 0 0 2.5px rgba(255, 255, 255, 0.85); }
+
+/* No content source: the clock layout alone, as Android's Clock only. */
+.no-content #tabs, .no-content #weather-summary { display: none; }
+
+/* MARK: Quick panel (QuickSettingsActivity): a small panel under the gear, over a dimmed home screen. */
+#quick { background: rgba(0, 0, 0, 0.4); color: #1D1D1F; }
+.night #quick { color: #F5F5F7; }
+#quick .box {
+  position: absolute;
+  left: 1086px;
+  top: 156px;
+  width: 760px;
+  padding: 22px;
+  border-radius: 34px;
+  box-sizing: border-box;
+  background: linear-gradient(rgba(250, 250, 250, 0.96), rgba(238, 238, 240, 0.94));
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.3), inset 0 1.5px 0 rgba(255, 255, 255, 0.95);
+}
+.night #quick .box {
+  background: linear-gradient(rgba(42, 42, 46, 0.97), rgba(24, 24, 27, 0.96));
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.55), inset 0 1.5px 0 rgba(255, 255, 255, 0.12), inset 0 0 0 1px rgba(255, 255, 255, 0.07);
+}
+#quick .row .label { display: inline-block; }
+
+/* MARK: Screensaver (DreamView): the clock alone, centred and drifting slowly; with photos, at the top right. */
+#saver .clock { position: absolute; left: 0; right: 0; top: 330px; bottom: auto; text-align: center; color: #B8B8BE; -webkit-animation: saver-drift 600s ease-in-out infinite alternate; animation: saver-drift 600s ease-in-out infinite alternate; }
+#saver .clock .date { margin: 0; font-size: 28px; font-weight: 500 !important; letter-spacing: 0.16em; color: #939399; }
+#saver .clock .time { margin-top: 18px; font-size: 280px; font-weight: 250 !important; line-height: 1; letter-spacing: -0.035em; color: #B8B8BE; }
+#saver .clock .wline { margin-top: 34px; font-size: 30px; font-weight: 600 !important; color: #9B9BA1; white-space: nowrap; }
+#saver .clock .wline .sym { width: 34px; height: 34px; vertical-align: -6px; margin-right: 12px; color: #9B9BA1; }
+#saver .clock .wline b { margin-right: 16px; font-weight: 600 !important; }
+#saver .clock .wline span { font-weight: 400 !important; color: #78787F; }
+#saver .caption { display: none; }
+@-webkit-keyframes saver-drift { 0% { -webkit-transform: translate(-40px, -26px); } 50% { -webkit-transform: translate(40px, 10px); } 100% { -webkit-transform: translate(-10px, 26px); } }
+@keyframes saver-drift { 0% { transform: translate(-40px, -26px); } 50% { transform: translate(40px, 10px); } 100% { transform: translate(-10px, 26px); } }
+#saver.photos .clock { left: auto; right: 80px; top: 60px; text-align: right; -webkit-animation: none; animation: none; text-shadow: 0 2px 18px rgba(0, 0, 0, 0.4); }
+#saver.photos .clock .date { font-size: 26px; letter-spacing: 0.14em; }
+#saver.photos .clock .time { margin-top: 6px; font-size: 200px; }
+#saver.photos .clock .wline { display: none; }
+#saver.photos .caption { display: block; position: absolute; left: 80px; bottom: 72px; max-width: 900px; text-shadow: 0 2px 18px rgba(0, 0, 0, 0.4); }
+#saver .caption .title { font-size: 52px; font-weight: 600 !important; color: #B8B8BE; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#saver .caption .meta { margin-top: 10px; font-size: 26px; font-weight: 500 !important; color: #9B9BA1; }
+
+/* webOS adds its own font (LG Display) to text: Inter is kept everywhere, at the weights set above (as on Android). */
+#stage, #stage * { font-family: 'Inter', 'LG Smart UI', 'Helvetica Neue', Arial, sans-serif !important; font-synthesis: none; }
+
+/* MARK: Quick panel rows: a small symbol tile before each name (QuickSettingsView). */
+#quick .row.icon { padding-left: 84px; }
+#quick .row .tile { position: absolute; left: 16px; top: 13px; width: 44px; height: 44px; border-radius: 12px; background: rgba(0, 0, 0, 0.06); }
+#quick .row .tile .sym { position: absolute; left: 10px; top: 10px; width: 24px; height: 24px; color: #5B5B62; }
+.night #quick .row .tile { background: rgba(255, 255, 255, 0.08); }
+.night #quick .row .tile .sym { color: #A9A9AE; }
+#quick .row.focus .tile { background: rgba(255, 255, 255, 0.14); }
+#quick .row.focus .tile .sym { color: #F5F5F7; }
+.night #quick .row.focus .tile { background: rgba(0, 0, 0, 0.08); }
+.night #quick .row.focus .tile .sym { color: #1D1D1F; }
+
+/* MARK: The app menu (QuickActionDialog): a small panel over the dimmed home screen. */
+#actions { background: rgba(0, 0, 0, 0.4); color: #1D1D1F; }
+.night #actions { color: #F5F5F7; }
+#actions .box {
+  position: absolute;
+  left: 660px;
+  top: 470px;
+  width: 600px;
+  padding: 26px 22px 22px;
+  border-radius: 34px;
+  box-sizing: border-box;
+  background: linear-gradient(rgba(250, 250, 250, 0.96), rgba(238, 238, 240, 0.94));
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.3), inset 0 1.5px 0 rgba(255, 255, 255, 0.95);
+}
+.night #actions .box {
+  background: linear-gradient(rgba(42, 42, 46, 0.97), rgba(24, 24, 27, 0.96));
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.55), inset 0 1.5px 0 rgba(255, 255, 255, 0.12), inset 0 0 0 1px rgba(255, 255, 255, 0.07);
+}
+#actions .box .title { padding: 0 26px 16px; font-size: 32px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Move mode: the carried app wiggles, as on Android. */
+@-webkit-keyframes wiggle { 0%, 100% { -webkit-transform: scale(1.2) rotate(-2deg); } 50% { -webkit-transform: scale(1.2) rotate(2deg); } }
+@keyframes wiggle { 0%, 100% { transform: scale(1.2) rotate(-2deg); } 50% { transform: scale(1.2) rotate(2deg); } }
+.tile.moving { -webkit-animation: wiggle 0.28s ease-in-out infinite; animation: wiggle 0.28s ease-in-out infinite; }
+
+/* MARK: Settings lists (city, hidden apps, shortcuts, app lock) and the PIN pad, over the dimmed screen. */
+#picker, #pin { background: rgba(0, 0, 0, 0.5); color: #1D1D1F; }
+.night #picker, .night #pin { color: #F5F5F7; }
+#picker .box, #pin .box {
+  position: absolute;
+  border-radius: 34px;
+  box-sizing: border-box;
+  background: linear-gradient(rgba(250, 250, 250, 0.97), rgba(238, 238, 240, 0.95));
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.3), inset 0 1.5px 0 rgba(255, 255, 255, 0.95);
+}
+.night #picker .box, .night #pin .box {
+  background: linear-gradient(rgba(42, 42, 46, 0.97), rgba(24, 24, 27, 0.96));
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.55), inset 0 1.5px 0 rgba(255, 255, 255, 0.12), inset 0 0 0 1px rgba(255, 255, 255, 0.07);
+}
+#picker .box { left: 560px; top: 120px; width: 800px; padding: 30px 30px 26px; }
+#picker .box .title, #pin .box .title { padding: 0 26px 18px; font-size: 34px; font-weight: 600 !important; }
+#picker .field {
+  display: block;
+  width: 100%;
+  height: 70px;
+  margin: 0 0 14px;
+  padding: 0 26px;
+  box-sizing: border-box;
+  border: 2px solid rgba(0, 0, 0, 0.12);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #1D1D1F;
+  font-size: 29px;
+  outline: none;
+}
+#picker .field:focus { border-color: #B0822C; }
+.night #picker .field { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.14); color: #F5F5F7; }
+.night #picker .field:focus { border-color: #D2AB55; }
+#pin .box { left: 660px; top: 170px; width: 600px; padding: 34px 40px 30px; text-align: center; }
+#pin .dots { height: 40px; margin: 6px 0 26px; }
+#pin .dot { display: inline-block; width: 22px; height: 22px; margin: 0 10px; border-radius: 11px; border: 2px solid rgba(120, 120, 128, 0.6); box-sizing: border-box; }
+#pin .dot.on { background: #D2AB55; border-color: #D2AB55; }
+#pin .keys { width: 456px; margin: 0 auto; }
+#pin .key { display: inline-block; width: 136px; height: 84px; margin: 6px; border-radius: 18px; font-size: 34px; font-weight: 500 !important; line-height: 84px; background: rgba(0, 0, 0, 0.05); }
+.night #pin .key { background: rgba(255, 255, 255, 0.07); }
+#pin .key.focus { background: #2A2A2E; color: #F5F5F7; }
+.night #pin .key.focus { background: #F5F5F7; color: #1D1D1F; }
+#pin .hint { padding-top: 16px; }
+
+/* MARK: Lightweight mode: no shadows, glass gradients or animations, for slower TVs (as on Android). */
+.lite *, .lite *::before, .lite *::after { box-shadow: none !important; text-shadow: none !important; -webkit-animation: none !important; animation: none !important; -webkit-transition-duration: 0s !important; transition-duration: 0s !important; }
+.lite #sky .grad { background-image: none !important; }

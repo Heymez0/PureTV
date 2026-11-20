@@ -1,5 +1,29 @@
 # Changelog
 
+## v1.4.2
+
+The LG webOS and Samsung Tizen app now looks and works like the Android app. Android is unchanged (still v1.4.1,
+versionCode 8). Checked in LG's webOS TV 26 Simulator and a desktop browser; Samsung's emulator and real LG/Samsung
+TVs were not tried. The simulator can't list a TV's apps, so the shelf, the app menu and the lock were tried in the
+browser's stand-in.
+
+- **The Android look:** obsidian or paper surfaces, one gold accent and a backdrop lit by a warm and a cool light that
+  follow the time of day. At the top right, TV Settings and Inputs as glass circles and the greeting with the gold gear;
+  the clock layout has the small tracked date, the time large and light and the weather on one line. Without a content
+  source the content tabs are hidden, as Android's Clock only.
+- **Settings as on Android:** the categories on the left (Home screen, Appearance, Clock and weather, System and about),
+  the open one's rows on the right; switches are gold. The gear first opens a quick panel (Edit home screen, Theme,
+  Weather widget, TV Settings, All settings).
+- **New settings:** Shortcuts, Hidden apps, App lock (a 4 to 8 digit PIN for chosen apps when PureTV opens them; a
+  household lock), Screensaver (off or after 1 to 30 minutes), Lightweight mode, City (search by name; only the name is
+  sent), Clock format (automatic, 12h, 24h), Back up and Restore settings (a copy on the same TV).
+- **Holding OK on an app** opens its menu: move it along the shelf, add it to or remove it from the home screen, or hide
+  it. A held OK no longer opens an app again and again.
+- **Screensaver:** the clock alone, centred and drifting slowly; with title photos, the clock at the top right and the
+  title at the bottom left.
+- **Fonts:** webOS put its own font on text; Inter is used everywhere, at the Android app's weights.
+- **Fixes:** long shortcut names shrink to fit their tile; the header weather stays in place when the shelf is empty.
+
 ## v1.4.1
 
 A fix release. Built, covered by the regression suite and checked on a Mi Stick (Android TV 9): two complete fresh

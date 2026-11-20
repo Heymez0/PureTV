@@ -20,7 +20,9 @@ var Place = (function () {
     return {country: p[0], lat: p[1], lon: p[2], name: p[3] || name.slice(name.lastIndexOf('/') + 1).replace(/_/g, ' ')};
   }
 
-  var tz = zone(TV.zone()), set = CONFIG.latitude !== '' && CONFIG.latitude !== undefined;
+  var tz = zone(TV.zone()), set = CONFIG.latitude !== '' && CONFIG.latitude !== undefined, own = null;
+  try { own = (JSON.parse(localStorage.getItem('puretv.prefs')) || {}).place || null; } catch (e) {}
+  if (own && own.lat !== undefined && own.lon !== undefined) { set = true; CONFIG.latitude = own.lat; CONFIG.longitude = own.lon; CONFIG.city = own.name; }
   var country = (CONFIG.tmdbRegion || (tz ? tz.country : '') || 'US').toUpperCase();
   return {
     lat: set ? CONFIG.latitude : tz ? tz.lat : '40.7128',
@@ -48,6 +50,17 @@ var Prefs = (function () {
     /** The weather card's forecast: 'hours' (the next 6 hours) or 'days' (the next 5 days). */
     forecast: function () { return pick('forecast', 'hours') === 'days' ? 'days' : 'hours'; },
     shelf: function () { return pick('shelf', null); },
+    /** Settings → Home screen → Hidden apps, App lock (pin = {salt, hash}), Shortcuts. */
+    hiddenApps: function () { return (pick('hiddenApps', []) || []).slice(); },
+    lockedApps: function () { return (pick('lockedApps', []) || []).slice(); },
+    pin: function () { return pick('pin', null); },
+    shortcuts: function () { var s = pick('shortcuts', null) || {}; return {all: s.all !== false, settings: s.settings !== false, tv: s.tv !== false}; },
+    shortcut: function (k) { return this.shortcuts()[k]; },
+    /** Minutes before the screensaver starts; 0 = never. */
+    saver: function () { var m = pick('saver', 5); return typeof m === 'number' ? m : 5; },
+    lite: function () { return pick('lite', false) === true; },
+    clock: function () { var c = pick('clock', 'auto'); return c === '12' || c === '24' ? c : 'auto'; },
+    backup: function () { try { return JSON.parse(localStorage.getItem('puretv.backup')); } catch (e) { return null; } },
     /** The shelf_apps of the build that last set the shelf, so a new one wins once over the TV's choice. */
     shelfConfig: function () { return pick('shelfConfig', ''); },
     set: function (name, value) { v[name] = value; save(); this.version++; }

@@ -1,6 +1,6 @@
 # Release preparation
 
-Current product versions: **Android v1.4.1 / versionCode 8**, **webOS 1.0.0**, **Tizen 1.0.0**.
+Current product versions: **Android v1.4.1 / versionCode 8**, **webOS 1.1.0**, **Tizen 1.1.0** (PureTV v1.4.2).
 v1 was versionCode 2 (its higher code let it update the preceding preview despite the simpler version name).
 Historical commits and third-party protocol/version names are retained.
 

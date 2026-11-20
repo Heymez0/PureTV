@@ -573,6 +573,7 @@
  "{n} GB": "{n} Go",
  "{n} MB": "{n} Mo",
  "{n} h ago": "il y a {n} h",
+ "{n} min": "{n} min",
  "{n} min ago": "il y a {n} min",
  "{n} min left": "{n} min restantes",
  "{n} ms": "{n} ms",

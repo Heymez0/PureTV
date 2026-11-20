@@ -597,6 +597,7 @@
  "{n} GB": "{n} GB",
  "{n} MB": "{n} MB",
  "{n} h ago": "vor {n} Std.",
+ "{n} min": "{n} Min.",
  "{n} min ago": "vor {n} Min.",
  "{n} min left": "Noch {n} Min.",
  "{n} ms": "{n} ms",

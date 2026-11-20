@@ -573,6 +573,7 @@
  "{n} GB": "{n} GB",
  "{n} MB": "{n} MB",
  "{n} h ago": "{n}時間前",
+ "{n} min": "{n}分",
  "{n} min ago": "{n}分前",
  "{n} min left": "残り{n}分",
  "{n} ms": "{n} ms",
