@@ -13,7 +13,7 @@
 <br>
 
 <p align="center">
-  <a href="docs/media/home-en.png"><img src="docs/media/home-en.png" width="100%" alt="PureTV clock layout: a large clock, today's weather and the app shelf"></a>
+  <a href="docs/media/home-en.png"><img src="docs/media/home-en.png" width="100%" alt="PureTV clock layout: a large glass clock over a night landscape, the weather and the app shelf"></a>
 </p>
 
 PureTV replaces the busy, ad-filled home screen of Android TVs and streaming sticks with a quiet one: your apps, the
@@ -81,8 +81,8 @@ quick on a 1 GB stick, and every screen is made for the remote.
   </tr>
   <tr>
     <td width="50%" align="center" valign="top">
-      <a href="docs/media/settings-en.png"><img src="docs/media/settings-en.png" width="100%" alt="Settings: Home screen category"></a>
-      <br><sub><b>Settings</b> — eight clear categories</sub>
+      <a href="docs/media/settings-en.png"><img src="docs/media/settings-en.png" width="100%" alt="Settings: the categories, the Home screen settings and an explanation of the selected one"></a>
+      <br><sub><b>Settings</b> — every setting explained beside it</sub>
     </td>
     <td width="50%" align="center" valign="top">
       <a href="docs/media/quick-settings-en.png"><img src="docs/media/quick-settings-en.png" width="100%" alt="Quick settings with AirPlay, RAM and the sleep timer"></a>
@@ -102,11 +102,16 @@ quick on a 1 GB stick, and every screen is made for the remote.
 </table>
 
 <p align="center">
+  <a href="docs/media/background-en.png"><img src="docs/media/background-en.png" width="100%" alt="Settings choosing the background photo: a preview of the clock screen and the photos to choose from"></a>
+  <br><sub><b>Background photo</b> — a new landscape every day and at night, or the classic colours</sub>
+</p>
+
+<p align="center">
   <a href="docs/media/light-en.png"><img src="docs/media/light-en.png" width="100%" alt="The home screen in the light theme"></a>
   <br><sub><b>Light theme</b> — or Automatic, by sunrise and sunset</sub>
 </p>
 
-<sub>Real screenshots of PureTV v1.4 on a Xiaomi Mi Stick (Android TV 9), English interface. Open any image for full size. [About these captures](docs/media/README.md).</sub>
+<sub>Real screenshots of PureTV v1.4 and v1.4.2 on a Xiaomi Mi Stick (Android TV 9), English interface. Open any image for full size. [About these captures](docs/media/README.md).</sub>
 
 ## Install
 

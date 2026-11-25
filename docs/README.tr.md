@@ -42,11 +42,11 @@ kontrolü LG/Samsung sürümlerinde yoktur.
 
 ## Önizleme
 
-Görseller, PureTV v1.4'ün Mi Stick'te (Android TV 9) alınmış gerçek ekran görüntüleridir; arayüz dili İngilizcedir.
+Görseller, PureTV v1.4 ve v1.4.2'nin Mi Stick'te (Android TV 9) alınmış gerçek ekran görüntüleridir; arayüz dili İngilizcedir.
 
 ![Son izlenenler ve öneriler ana ekranı](media/recommendations-en.png)
 
-![Saatli ana ekran](media/home-en.png)
+![Saatli ana ekran: gece manzarası önünde cam saat](media/home-en.png)
 
 | Tüm uygulamalar | Kurulum rehberi |
 | --- | --- |
@@ -59,6 +59,10 @@ Görseller, PureTV v1.4'ün Mi Stick'te (Android TV 9) alınmış gerçek ekran 
 | Kısayollar ve diğer uygulamalar | Ekran koruyucu |
 | --- | --- |
 | ![Kısayollar](media/shortcuts-en.png) | ![Ekran koruyucu](media/screensaver-en.png) |
+
+Saat ekranında arkada her gün ve gün batımından sonra değişen bir manzara fotoğrafı olur; isterseniz beş fotoğraftan birini ya da klasik renkleri seçebilirsiniz.
+
+![Arka plan fotoğrafı seçimi](media/background-en.png)
 
 PureTV'nin açık ve koyu teması var; **Otomatik** seçilirse gün doğumu ve batımına göre değişir.
 

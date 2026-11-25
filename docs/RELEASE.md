@@ -10,7 +10,7 @@ Historical commits and third-party protocol/version names are retained.
 - Generated packages, signing/ADB keys, personal configuration, raw device logs and working folders stay outside the source distribution.
 - Generic builds contain no TMDB or Watchmode credential. The launcher's own code contains no native receiver engine or runtime libraries.
 - Platform icons have an editable original SVG; their checked-in PNG exports need no extra build dependency.
-- Documentation images are actual unedited English-interface Mi Stick captures. Recommendation art comes from its source app; private viewing history is omitted.
+- Documentation images are actual English-interface Mi Stick captures; the only edit hides the city name ([media notes](media/README.md)). Recommendation art comes from its source app; private viewing history is omitted.
 - Main documentation is English; the Turkish guide is a separate file.
 
 ## Verification
