@@ -36,12 +36,14 @@ public class ContinueSettingsActivity extends Activity implements ContinueWatchi
         List<SettingsPage.Row> rows=new ArrayList<>();
         SettingsPage.Row master=new SettingsPage.Row(Ui.tr("TV viewing information"),d->toggleViewing());
         master.hint=Ui.tr("When off, only the clock layout is available. App choices are kept. OK enables or disables viewing information.");
-        rows.add(master);
+        rows.add(master.icon("tv"));
         for(ContinueWatching.Source app:snapshot.sources)rows.add(new SettingsPage.Row(app.label,d->{
             Prefs.setContinueAllowed(app.pkg,!Prefs.continueSelected(app.pkg));source.refresh(true);
-        }));
+        }).icon("play"));
+        if(rows.size()>1)rows.get(1).group(Ui.tr("Apps"));
         SettingsPage.Data data=new SettingsPage.Data(Ui.tr("Content apps"),
                 Ui.tr("Recently watched and recommendations"),"tv",rows.toArray(new SettingsPage.Row[0]));
+        data.crumb=SettingsPage.crumb("Content");
         data.hint=Ui.tr("Escolha quais aplicativos aparecem no início. Só aparecem conteúdos que o aplicativo compartilha com a TV.",
                 "Choose which apps appear on Home. Only content shared by the app with the TV is shown.")+"\n\n"
                 +Ui.tr("Sem conteúdo: abra o aplicativo, assista a algo e volte ao início. Alguns aplicativos não compartilham esses dados.",

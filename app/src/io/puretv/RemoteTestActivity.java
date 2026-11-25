@@ -95,11 +95,13 @@ public class RemoteTestActivity extends Activity {
         picking = false;
         String[] names = {"Button", "Key code", "Scan code", "Input device", "Source", "Home screen action"};
         SettingsPage.Row[] rows = new SettingsPage.Row[INFO + 2];
-        for (int i = 0; i < INFO; i++) rows[i] = new SettingsPage.Row(Ui.tr(names[i]), null);
-        rows[ASSIGN] = new SettingsPage.Row(Ui.tr("Assign this button"), d -> assign());
-        rows[SAVE] = new SettingsPage.Row(Ui.tr("Save changes"), d -> save());
+        String[] symbols = {"remote", "info", "info", "gamepad", "hdmi", "home"};
+        for (int i = 0; i < INFO; i++) rows[i] = new SettingsPage.Row(Ui.tr(names[i]), null).icon(symbols[i]);
+        rows[ASSIGN] = new SettingsPage.Row(Ui.tr("Assign this button"), d -> assign()).icon("sparkles");
+        rows[SAVE] = new SettingsPage.Row(Ui.tr("Save changes"), d -> save()).icon("check");
         SettingsPage.Data test = new SettingsPage.Data(Ui.tr("Remote button test"), Ui.tr("Hold Back for two seconds to leave."), "remote", rows);
         test.footer = "";   // said once, in gold under the title
+        test.crumb = SettingsPage.crumb("Remote Buttons");
         test.urgent = true;
         test.hint = Ui.tr("Press any button to see what reaches PureTV. Back doesn't leave here, and while PureTV is the default home screen neither does Home; the apps button is shown too. Power, volume and voice may be handled by Android before the app sees them.");
         // How to give a button a job: shown on the two rows that do it, so the screen's own hint stays short enough to fit.

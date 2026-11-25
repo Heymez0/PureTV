@@ -41,6 +41,11 @@ final class Credits {
                 +"<a href=\"https://www.themoviedb.org/\">The Movie Database</a>. Catalogue artwork remains its owners' property. An optional API key is supplied by the person building the app.<br><br>"
                 +"<b>Inter</b>: The Inter Project Authors, SIL Open Font License 1.1.<br>"
                 +"<b>Material Symbols</b>: Google, Apache License 2.0. Symbols were converted to PNG for this interface.<br><br>"
+                +"<b>Background photos</b> (Wikimedia Commons featured pictures, cropped, resized and converted to WebP; shared under the same licences): "
+                +"“Crimea, Ai-Petri, low clouds” by Dmytro Balkhovitin, CC BY-SA 4.0; “Eilean Donan Castle, Scotland - Jan 2011” by Diliff, CC BY-SA 3.0; "
+                +"“Amanhecer no Hercules” by Carlos Perez Couto, CC BY-SA 3.0; “Pedra Azul Milky Way” by EduardoMSNeves, CC BY-SA 4.0; "
+                +"“2017-04 Circumpolar trails sunset at La Hague lighthouse” by Antoine Lamielle, CC BY-SA 4.0. "
+                +"<a href=\"https://creativecommons.org/licenses/by-sa/4.0/\">CC BY-SA 4.0</a>, <a href=\"https://creativecommons.org/licenses/by-sa/3.0/\">CC BY-SA 3.0</a>.<br><br>"
                 +"<b>AirPlay</b>: Optional separate GPL-3.0 receiver; it is not included in the launcher APK. Its source and notices accompany its own distribution.<br><br>"
                 +"App logos, recommendation artwork and names belong to their owners. No vendor affiliation is implied.",Html.FROM_HTML_MODE_LEGACY));
             text.setMovementMethod(LinkMovementMethod.getInstance());

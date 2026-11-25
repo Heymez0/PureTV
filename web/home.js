@@ -302,6 +302,10 @@
     }
     list = $('buttons').children;
     for (i = 0; i < list.length; i++) setClass(list[i], 'focus', st.zone === Z.TOP && st.top === 3 + i);
+    var pillFocus = st.zone === Z.TOP && st.top === 6;
+    if (hasClass($('wpill'), 'focus') !== pillFocus) { setClass($('wpill'), 'focus', pillFocus); renderWeatherPanel(); }
+    if ($('wpanel').className === 'open' && !pillFocus) renderWeatherPanel();
+    settingFoot();
     list = $('cards').children;
     for (i = 0; i < list.length; i++) setClass(list[i], 'focus', st.zone === Z.CARDS && st.card === i);
     list = $('tiles').children;
@@ -391,6 +395,7 @@
       hover(r, Z.TOP, 3 + b);
     }
     hover(pill, Z.TOP, 5);
+    if (!$('wpill').onmouseover) hover($('wpill'), Z.TOP, 6);
     buttons.appendChild(pill);   // after the circles, so the order matches the focus order
     placeButtons();
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(placeButtons);
@@ -419,6 +424,7 @@
     var list = Data.picks(TAB_KIND[st.tab]);
     var holder = $('cards');
     setClass(body, 'no-picks', !list.length);
+    renderScene();
     var same = list.length === cards.length;
     for (var i = 0; same && i < list.length; i++) same = list[i].id === cards[i].id && list[i].backdrop === cards[i].backdrop && list[i].meta === cards[i].meta;
     if (same && holder.children.length === list.length) return;
@@ -465,6 +471,98 @@
     img.src = url;
   }
 
+  // MARK: - Background photo (Settings → Appearance → Background photo), as Android's Scenes
+
+  var sceneNow = null;
+
+  /** The photo now: only in the clock layout (no picks), never with Classic colours. */
+  function sceneWanted() {
+    var now = Date.now();
+    return hasClass(body, 'no-picks') ? Scenes.pick(Prefs.scene(), Data.isNight(now), now) : null;
+  }
+
+  /** Shows or hides the photo, its front cut-out and credit, and the clock's glass and weight. */
+  function renderScene() {
+    var s = sceneWanted(), w = Prefs.clockWeight();
+    setClass(body, 'w400', w === 400);
+    setClass(body, 'w600', w === 600);
+    if (s !== sceneNow) {
+      sceneNow = s;
+      var photo = $('scenephoto'), front = $('scenefront'), time = $('clock').querySelector('.time');
+      if (s) {
+        photo.src = 'scenes/' + s.id + '.webp';
+        $('clock').style.top = (s.clockTop - 34) + 'px';
+        time.style.backgroundImage = 'url(scenes/' + s.id + '-glow.webp)';
+        // The texture covers the stage at 104%, centred: (1997 - 1920) / 2 and (1123 - 1080) / 2.
+        time.style.backgroundPosition = '-38px ' + (-s.clockTop - 22) + 'px';
+        if (s.front) {
+          front.src = 'scenes/' + s.id + '-front.webp';
+          front.style.left = s.front[0] + 'px'; front.style.top = s.front[1] + 'px';
+          front.style.width = s.front[2] + 'px'; front.style.height = s.front[3] + 'px';
+        }
+        setClass(front, 'none', !s.front);
+        $('scenecredit').textContent = s.author + ' · ' + s.licence;
+      } else {
+        photo.removeAttribute('src');
+        front.removeAttribute('src');
+        $('clock').style.top = '';
+        time.style.backgroundImage = '';
+        $('scenecredit').textContent = '';
+      }
+    }
+    setClass(body, 'scene', !!s);
+    setClass(body, 'night', Data.isNight(Date.now()) || !!s);   // the photo takes the night look's glass and ink
+    renderWeatherPill();
+  }
+
+  /** The weather pill shows only on a photo, with the weather on and known (Settings → Clock and weather). */
+  function pillShown() { return !!sceneNow && Prefs.weather() && !!Data.weather; }
+
+  function renderWeatherPill() {
+    var on = pillShown(), pill = $('wpill'), w = Data.weather;
+    setClass(body, 'weather-on', on);
+    if (!on && st.zone === Z.TOP && st.top === 6) st.top = 5;
+    pill.innerHTML = '';
+    if (!on) { renderWeatherPanel(); return; }
+    sym(Data.symbol(w.code, w.isDay), pill);
+    el('span', 't', pill, Data.degrees(w.temp));
+    el('span', 'c', pill, Data.condition(w.code, w.isDay));
+    if (Data.city) { el('span', 'sep', pill); el('span', 'c', pill, Data.city); }
+    renderWeatherPanel();
+  }
+
+  /**
+   * The next hours under the pill while it has focus. As wide as the room left of the centred clock allows, so it
+   * never covers a digit: fewer hours, and no sunset, when the room is short.
+   */
+  function renderWeatherPanel() {
+    var panel = $('wpanel'), open = pillShown() && st.zone === Z.TOP && st.top === 6, w = Data.weather;
+    setClass(panel, 'open', open);
+    panel.innerHTML = '';
+    if (!open) return;
+    var clockLeft = 960 - $('clock').querySelector('.tw').offsetWidth / 2;
+    var width = Math.max(300, Math.min(520, clockLeft - 32 - 80));
+    var n = Math.min(1 + w.hours.length, Math.floor((width - 60) / 84));
+    panel.style.width = width + 'px';
+    var hw = (width - 60) / n;
+    for (var i = 0; i < n; i++) {
+      var h = el('div', 'h' + (i === 0 ? ' now' : ''), panel), x = i === 0 ? null : w.hours[i - 1];
+      h.style.left = (30 + hw * (i + 0.5)) + 'px';
+      el('div', 'at', h, i === 0 ? tr('Now') : Data.hour(x.at));
+      sym(i === 0 ? Data.symbol(w.code, w.isDay) : Data.symbol(x.code, x.day), h);
+      el('div', 'd', h, Data.degrees(i === 0 ? w.temp : x.temp));
+    }
+    el('div', 'line', panel);
+    var foot = el('div', 'foot', panel);
+    foot.appendChild(document.createTextNode(trf('H:{max}', {max: Data.degrees(w.max)}) + '  ' + trf('L:{min}', {min: Data.degrees(w.min)})));
+    if (w.sunset) {
+      var sun = el('span', '', foot);
+      sym('sunset', sun);
+      sun.appendChild(document.createTextNode(trf('Sunset {time}', {time: Data.time(w.sunset)})));
+      if (foot.offsetWidth > width - 60) foot.removeChild(sun);
+    }
+  }
+
   function clockPattern() { return Prefs.clock() === '24' ? 'format|HH:mm' : Prefs.clock() === '12' ? 'format|h:mm a' : 'format|h:mm'; }
 
   function renderClock() {
@@ -472,7 +570,10 @@
     var date = formatDate('format|EEEE, MMMM d', d.getTime());
     try { date = date.toLocaleUpperCase(lang); } catch (e) { date = date.toUpperCase(); }
     c.querySelector('.date').textContent = date;
-    c.querySelector('.time').textContent = formatDate(clockPattern(), d.getTime());
+    var time = formatDate(clockPattern(), d.getTime());
+    var layers = ['.time', '.tshade', '.trim', '.tw'];
+    for (var i = 0; i < layers.length; i++) c.querySelector(layers[i]).textContent = time;
+    renderWeatherPill();
     var line = c.querySelector('.wline'), w = Data.weather;
     line.innerHTML = '';
     if (!Prefs.weather() || !w) return;
@@ -717,6 +818,15 @@
     var auto = tr('Automatic'), picked = pickedLanguage();
     switch (category) {
       case 0: return [
+        // Everything the home screen shows in one place: the clock screen's look and the weather first.
+        {label: tr('Background photo'), value: Scenes.label(Prefs.scene()), preview: true,
+          hint: tr('A landscape behind the clock when the home screen has nothing to watch. Automatic shows a new photo every day and a night photo after sunset. OK changes it.'),
+          step: function (d) { cycle('scene', Scenes.choices(), Prefs.scene(), d); renderScene(); }},
+        {label: tr('Clock weight'), value: Scenes.weightName(Prefs.clockWeight()), preview: true,
+          hint: tr('How bold the large clock is on a background photo. OK changes it.'),
+          step: function (d) { cycle('clockWeight', Scenes.WEIGHTS, Prefs.clockWeight(), d); renderScene(); }},
+        {label: tr('Weather widget'), toggle: Prefs.weather(),
+          step: function () { Prefs.set('weather', !Prefs.weather()); renderPanels(); renderHeaderWeather(); renderWeatherPill(); }},
         {label: tr('Shelf'), value: '›', step: function (d) { if (d >= 0) openShelfEdit(); }},
         {label: tr('Shortcuts'), value: '›', step: function (d) { if (d >= 0) openShortcuts(); }},
         {label: tr('Hidden apps'), value: String(hiddenIds().length), opens: true, step: function (d) { if (d >= 0) openHidden(); }},
@@ -734,8 +844,6 @@
         {label: tr('City'), value: Data.city || '—', opens: true, step: function (d) { if (d >= 0) openCity(); }},
         {label: tr('Clock format'), value: Prefs.clock() === 'auto' ? auto : Prefs.clock() + 'h',
           step: function (d) { cycle('clock', ['auto', '12', '24'], Prefs.clock(), d); renderClock(); }},
-        {label: tr('Weather widget'), toggle: Prefs.weather(),
-          step: function () { Prefs.set('weather', !Prefs.weather()); renderPanels(); renderHeaderWeather(); }},
         {label: tr('Forecast'), value: Prefs.forecast() === 'days' ? tr('Next days') : tr('Next hours'),
           step: function (d) { cycle('forecast', ['hours', 'days'], Prefs.forecast(), d); renderPanels(); }},
         {label: tr('Temperature'), value: unit === 'C' ? '°C' : unit === 'F' ? '°F' : tr('unit|Automatic'),
@@ -790,8 +898,56 @@
       }
       hover(row, Z.SETTINGS, i);
     }
-    el('div', 'hint', box, tr('Right opens options. Back returns to categories.'));
+    el('div', 'hint', box);
     updateFocus();
+  }
+
+  var footShown = null;
+
+  /** Under the rows: the focused row's explanation (or the general one) and, for the look, a picture of the home screen. */
+  function settingFoot() {
+    var hint = document.querySelector('#settings .hint');
+    if (!hint) return;
+    var r = st.zone === Z.SETTINGS && !st.nav ? rowsNow[st.row] : null;
+    var key = r ? r.label + '|' + r.value : '';
+    if (key === footShown && hint.firstChild) return;
+    footShown = key;
+    hint.innerHTML = '';
+    if (r && r.preview) homePreview(el('div', 'preview', hint));
+    hint.appendChild(document.createTextNode(r && r.hint ? r.hint : tr('Right opens options. Back returns to categories.')));
+  }
+
+  /**
+   * A small picture of the home screen with the chosen background and clock weight: the photo (or the classic
+   * colours), the clock at its place, and the shelf and buttons as plain shapes. An illustration only.
+   */
+  function homePreview(box) {
+    var now = Date.now(), dark = Data.isNight(now), s = Scenes.pick(Prefs.scene(), dark, now), u = 0.2;
+    var onPhoto = !!s, ink = onPhoto || dark ? '255,255,255' : '29,29,31';
+    if (onPhoto) { var img = el('img', 'bg', box); img.src = 'scenes/' + s.id + '.webp'; }
+    else el('div', 'bg ' + (dark ? 'dark' : 'light'), box);
+    function part(l, t, r, b, radius, color) {
+      var p = el('i', '', box);
+      p.style.left = l * u + 'px'; p.style.top = t * u + 'px'; p.style.width = (r - l) * u + 'px'; p.style.height = (b - t) * u + 'px';
+      p.style.borderRadius = radius * u + 'px'; p.style.background = color;
+    }
+    part(128, 820, 1792, 1012, 64, 'rgba(' + (onPhoto || dark ? '255,255,255' : '0,0,0') + ',0.16)');
+    for (var i = 0; i < 6; i++) part(170 + i * 272, 858, 170 + i * 272 + 224, 976, 22, 'rgba(' + ink + ',0.34)');
+    part(1432, 69, 1500, 137, 34, 'rgba(' + ink + ',0.24)');
+    part(1518, 69, 1586, 137, 34, 'rgba(' + ink + ',0.24)');
+    part(1604, 69, 1840, 137, 34, 'rgba(' + ink + ',0.24)');
+    part(1778, 75, 1834, 131, 28, '#D2AB55');
+    if (onPhoto && Prefs.weather()) part(80, 69, 470, 137, 34, 'rgba(' + ink + ',0.24)');
+    var t = el('div', 'pt' + (onPhoto ? '' : ' left'), box, formatDate(clockPattern(), now));
+    t.style.setProperty('font-weight', String(Prefs.clockWeight()), 'important');
+    if (onPhoto) {
+      part(840, s.clockTop - 34, 1080, s.clockTop - 14, 8, 'rgba(255,255,255,0.7)');
+      t.style.top = (s.clockTop * u) + 'px';
+    } else {
+      part(84, 292, 430, 316, 6, 'rgba(' + ink + ',0.34)');
+      t.style.left = 76 * u + 'px'; t.style.width = 'auto'; t.style.top = (536 - 236 * 0.97) * u + 'px';
+      t.style.color = 'rgb(' + ink + ')';
+    }
   }
 
   // MARK: - A list sheet for the settings' lists (city, hidden apps, shortcuts, app lock), on the backdrop
@@ -1133,7 +1289,7 @@
       {label: tr('Theme'), sym: 'sparkles', value: theme === 'light' ? tr('Light') : theme === 'dark' ? tr('Dark') : tr('Automatic'),
         step: function (d) { cycle('theme', ['auto', 'light', 'dark'], theme, d); checkNight(); }},
       {label: tr('Weather widget'), sym: 'partly_cloudy_day', toggle: Prefs.weather(),
-        step: function () { Prefs.set('weather', !Prefs.weather()); renderPanels(); renderHeaderWeather(); }},
+        step: function () { Prefs.set('weather', !Prefs.weather()); renderPanels(); renderHeaderWeather(); renderWeatherPill(); }},
       {label: tr('TV Settings'), sym: 'tv_settings', value: '›', step: function (d) { if (d >= 0) tvSettings(); }},
       {label: tr('All settings'), sym: 'settings', value: '›', step: function (d) { if (d >= 0) openSettings(); }}
     ];
@@ -1335,7 +1491,7 @@
   function activate() {
     switch (st.zone) {
       case Z.TOP:
-        if (st.top < 3) return;
+        if (st.top < 3 || st.top === 6) return;   // a tab is chosen by focus; the weather pill only opens its hours
         if (st.top === 3) tvSettings();
         else if (st.top === 4) { st.zone = Z.SHELF; openDrawer(); st.drawer = 0; updateFocus(); }
         else openQuick();
@@ -1404,7 +1560,12 @@
         break;
       case Z.TOP:
         if (dx) {
-          st.top = Math.max(firstTop(), Math.min(5, st.top + dx));
+          // Left to right: the weather pill (on a photo), the tabs, then the buttons.
+          var order = [];
+          if (pillShown()) order.push(6);
+          for (var o = firstTop(); o <= 5; o++) order.push(o);
+          var at = order.indexOf(st.top);
+          st.top = order[Math.max(0, Math.min(order.length - 1, (at < 0 ? order.length - 1 : at) + dx))];
           if (st.top < 3) selectTab(st.top);   // as on Apple TV: focusing a tab selects it
         } else if (dy > 0) {
           if (cards.length) { st.zone = Z.CARDS; st.card = Math.min(cards.length - 1, st.top < 3 ? 0 : cards.length - 1); }
@@ -1512,6 +1673,8 @@
     var phase = h >= 5 && h < 11 ? 'morning' : h >= 11 && h < 17 ? 'day' : h >= 17 && h < 21 ? 'evening' : 'late';
     var names = ['morning', 'day', 'evening', 'late'];
     for (var i = 0; i < names.length; i++) setClass(body, 'phase-' + names[i], names[i] === phase);
+    renderScene();   // Automatic: the day's photo, or a night photo after sunset
+    night = night || !!sceneNow;
     setClass(body, 'night', night);
     if (night === lastNight) return;
     lastNight = night;

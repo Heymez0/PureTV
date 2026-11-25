@@ -6,6 +6,8 @@ final class WelcomeFlow {
     static final int DEVICE=5,LAYOUT=6;
     /** The weather city (8: WelcomeView uses 7 for its AirPlay page). */
     static final int CITY=8;
+    /** The background behind the clock: landscape photos or the classic colours (after the layout). */
+    static final int LOOK=9;
     static final int NEW=0,STARTED=1,DEFERRED=2,DONE=3;
     int step=INTRO;
     boolean waiting,sawBusy,failed;
@@ -33,13 +35,14 @@ final class WelcomeFlow {
         if(status==DONE||status==DEFERRED)return false;
         return status==STARTED?!active||busy:!active&&!legacy;
     }
-    void restore(int saved){step=saved==DEVICE||saved==LAYOUT||saved==CITY||saved>=INTRO&&saved<=REVIEW?saved:INTRO;}
-    void next(){if(step==INTRO)step=DEVICE;else if(step==DEVICE)step=LAYOUT;else if(step==LAYOUT)step=CITY;else if(step==CITY)step=CONNECT;else if(step==CONNECT)step=REVIEW;failed=false;}
+    void restore(int saved){step=saved==DEVICE||saved==LAYOUT||saved==LOOK||saved==CITY||saved>=INTRO&&saved<=REVIEW?saved:INTRO;}
+    void next(){if(step==INTRO)step=DEVICE;else if(step==DEVICE)step=LAYOUT;else if(step==LAYOUT)step=LOOK;else if(step==LOOK)step=CITY;else if(step==CITY)step=CONNECT;else if(step==CONNECT)step=REVIEW;failed=false;}
     boolean back(){
         if(step==READY){step=REVIEW;browsing=true;failed=false;return true;}
         if(step==DEVICE){step=INTRO;failed=false;return true;}
         if(step==LAYOUT){step=DEVICE;failed=false;return true;}
-        if(step==CITY){step=LAYOUT;failed=false;return true;}
+        if(step==LOOK){step=LAYOUT;failed=false;return true;}
+        if(step==CITY){step=LOOK;failed=false;return true;}
         if(step==CONNECT){step=CITY;failed=false;return true;}
         if(step==REVIEW){step=CONNECT;failed=false;return true;}return false;
     }

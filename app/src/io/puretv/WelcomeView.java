@@ -16,13 +16,13 @@ import android.view.accessibility.AccessibilityNodeProvider;
 import java.util.List;
 import java.util.function.IntConsumer;
 
-/** Static native welcome surface: no images, backdrop decoding, animation loop or network work. */
+/** Static native welcome surface: no backdrop decoding, animation loop or network work; the background step shows two small cached previews. */
 final class WelcomeView extends View {
     static final int NEXT=1,LATER=2,DEVELOPERS=3,ENABLE=4,HOME=5,SETTINGS=6,BACK=7,CHECK=8,LEAVE=9,NETWORK=10;
     /** The AirPlay page: shown on the flow's READY step, before the last page. */
     static final int AIRPLAY_STEP=7;
     static final int BOX=11,TV=12,AIRPLAY=13,LAYOUT_CLOCK=14,LAYOUT_RECENT=15,LAYOUT_COMBINED=16,AIRPLAY_NOW=17,AIRPLAY_SKIP=18;
-    static final int CITY_A=19,CITY_B=20,CITY_SEARCH=21,CITY_SKIP=22;
+    static final int CITY_A=19,CITY_B=20,CITY_SEARCH=21,CITY_SKIP=22,LOOK_PHOTOS=23,LOOK_CLASSIC=24;
     static final class Button {
         final int action;final String text;final boolean enabled;
         Button(int action,String text,boolean enabled){this.action=action;this.text=text;this.enabled=enabled;}
@@ -63,6 +63,9 @@ final class WelcomeView extends View {
                     tr("PureTV shows this city's weather and turns the home screen dark at its sunset. You can change it later in Settings → Clock and weather → City."),
                     cityBusy?tr("Searching…"):cityStatus,choices.toArray(new Button[0]));
             }
+            case WelcomeFlow.LOOK:return new Content(flow.step,tr("Choose your background"),
+                tr("You can change it later in Settings → Home screen → Background photo."),"",
+                button(LOOK_PHOTOS,"Landscape photos",true),button(LOOK_CLASSIC,"Classic colours",true));
             case WelcomeFlow.LAYOUT:return new Content(flow.step,tr("Choose your home screen"),
                 tr("You can change it later in Settings → Home screen → Home screen layout."),"",
                 button(LAYOUT_CLOCK,"Clock only",true),button(LAYOUT_RECENT,"Recently watched only",true),button(LAYOUT_COMBINED,"Recent + recommended",true));
@@ -101,7 +104,14 @@ final class WelcomeView extends View {
     private final Paint fill=new Paint(Paint.ANTI_ALIAS_FLAG),line=new Paint(Paint.ANTI_ALIAS_FLAG);
     private TextPaint brand,hero,caption,title,body,status,label,small;
     private StaticLayout heroLines,bodyLines,statusLines;
-    private final StaticLayout[] layoutLines=new StaticLayout[3];private final RectF mini=new RectF(),part=new RectF();private TextPaint miniClock;
+    private final StaticLayout[] layoutLines=new StaticLayout[3];
+    /** The background step's two previews: today's landscape and the classic colours, decoded when the step opens. */
+    private android.graphics.Bitmap lookPhoto,lookClassic;private int lookTop=112;
+    private void prepareLook(){
+        long now=System.currentTimeMillis();boolean night=HomeData.get(getContext()).isNight(now);
+        Scenes.Scene s=Scenes.pick(Scenes.AUTO,night,now);lookPhoto=s==null?null:Scenes.cachedThumb(getContext(),s);lookTop=s==null?112:s.clockTop;
+        lookClassic=Ambient.get(night||"dark".equals(Prefs.theme()),Ambient.phase(now));
+    }private final RectF mini=new RectF(),part=new RectF();private TextPaint miniClock;
     private Content data;private int focus,width,height;private float k=1;private boolean armed,running;
     private final android.graphics.drawable.Drawable mark;
     WelcomeView(Context c,IntConsumer action,Runnable back){
@@ -130,6 +140,7 @@ final class WelcomeView extends View {
         if(changedStep||newPlaces)focus=0;
         // The layout step opens on the layout in use, so OK alone keeps it.
         if(changedStep&&data.step==WelcomeFlow.LAYOUT){String mode=Prefs.homeContentMode();focus=HomeContentModes.CLOCK.equals(mode)?0:HomeContentModes.COMBINED.equals(mode)?2:1;}
+        if(changedStep&&data.step==WelcomeFlow.LOOK){focus=Scenes.CLASSIC.equals(Prefs.scene())?1:0;prepareLook();}
         focus=Math.min(focus,data.buttons.length-1);
         if(!data.buttons[focus].enabled)for(int i=0;i<data.buttons.length;i++)if(data.buttons[i].enabled){focus=i;break;}
         setContentDescription(data.title+". "+data.body+" "+data.status);rebuild();invalidate();if(running)spoken.readAgain();
@@ -154,10 +165,15 @@ final class WelcomeView extends View {
         brand.setColor(surface.ink);hero.setColor(surface.ink);caption.setColor(surface.dim);title.setColor(surface.ink);
         body.setColor(surface.dim);status.setColor(surface.ink);small.setColor(surface.dim);
         heroLines=lines(tr("A calmer home.\nMade for your TV."),hero,(int)(650*k),3);
-        bodyLines=lines(data.body,body,(int)(818*k),7);statusLines=lines(data.status,status,(int)(818*k),3);
+        // With a preview (from 388) the explanation keeps to two lines above it.
+        bodyLines=lines(data.body,body,(int)(818*k),data.step==WelcomeFlow.LAYOUT||data.step==WelcomeFlow.LOOK?2:7);statusLines=lines(data.status,status,(int)(818*k),3);
         String[] layouts={"Show the clock without reading viewing content.","Show viewing progress shared by your selected apps. Recommendations stay off.",
             "Show Recently watched and Recommended tabs. Recommendations are read only in this layout."};
-        for(int i=0;i<3;i++)layoutLines[i]=data.step==WelcomeFlow.LAYOUT?lines(tr(layouts[i]),body,(int)(338*k),7):null;
+        String[] looks={"A new landscape every day, and a night photo after sunset, behind a large clock.","Soft colours that follow the time of day, as before.",""};
+        // Beside the 252-tall preview: only the lines that fit next to it, never into the buttons below.
+        int side=Math.max(1,(int)(252*k/(body.getFontSpacing()+5*k)));
+        for(int i=0;i<3;i++)layoutLines[i]=data.step==WelcomeFlow.LAYOUT?lines(tr(layouts[i]),body,(int)(338*k),side)
+            :data.step==WelcomeFlow.LOOK&&i<2?lines(tr(looks[i]),body,(int)(338*k),side):null;
         if(miniClock==null)miniClock=new TextPaint(Ui.numbers(Ui.light,10,surface.ink));miniClock.setLetterSpacing(-.035f);
     }
     private void drawLines(Canvas c,StaticLayout text,float x,float y){if(text!=null){c.save();c.translate(x,y);text.draw(c);c.restore();}}
@@ -170,9 +186,9 @@ final class WelcomeView extends View {
         c.drawText("PureTV",240*k,205*k,brand);
         drawLines(c,heroLines,132*k,306*k);
         c.drawText(tr("Simple. Familiar. Yours."),132*k,550*k,caption);
-        String[] steps={tr("Welcome"),tr("Device mode"),tr("Home screen layout"),tr("City"),tr("Connection"),"AirPlay",tr("Start")};
-        int current=data.step==WelcomeFlow.INTRO?0:data.step==WelcomeFlow.DEVICE?1:data.step==WelcomeFlow.LAYOUT?2:data.step==WelcomeFlow.CITY?3
-            :data.step==AIRPLAY_STEP?5:data.step==WelcomeFlow.READY?6:4;
+        String[] steps={tr("Welcome"),tr("Device mode"),tr("Home screen layout"),tr("Background"),tr("City"),tr("Connection"),"AirPlay",tr("Start")};
+        int current=data.step==WelcomeFlow.INTRO?0:data.step==WelcomeFlow.DEVICE?1:data.step==WelcomeFlow.LAYOUT?2:data.step==WelcomeFlow.LOOK?3
+            :data.step==WelcomeFlow.CITY?4:data.step==AIRPLAY_STEP?6:data.step==WelcomeFlow.READY?7:5;
         final float gap=240f/(steps.length-1);
         // The steps on one line: gold up to the current step, which carries a ring; finished steps a check.
         int gold=surface.dark?Look.GOLD:Look.GOLD_DEEP,rest=surface.dark?0xFF444247:0xFFD3CFC8;
@@ -189,6 +205,11 @@ final class WelcomeView extends View {
         c.drawText(TextUtils.ellipsize(data.title,title,818*k,TextUtils.TruncateAt.END).toString(),936*k,252*k,title);
         drawLines(c,bodyLines,936*k,292*k);
         if(data.step==WelcomeFlow.LAYOUT){drawPreview(c,Math.max(0,Math.min(2,focus)));drawLines(c,layoutLines[Math.max(0,Math.min(2,focus))],1416*k,396*k);}
+        else if(data.step==WelcomeFlow.LOOK){
+            int f=Math.max(0,Math.min(1,focus));mini.set(936*k,388*k,1384*k,640*k);
+            ScenePreview.draw(getContext(),c,mini,f==0?lookPhoto:null,lookClassic,lookTop,Prefs.clockWeight(),surface.dark,Ui.clock(System.currentTimeMillis()));
+            drawLines(c,layoutLines[f],1416*k,396*k);
+        }
         else drawLines(c,statusLines,936*k,550*k);
         for(int i=0;i<data.buttons.length;i++){
             Button b=data.buttons[i];RectF r=rows[i];boolean on=i==focus&&b.enabled;

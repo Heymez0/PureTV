@@ -29,7 +29,8 @@ public class AirPlayActivity extends Activity {
         SettingsPage.Row help = new SettingsPage.Row(Ui.tr("AirPlay connection help"),
                 direction -> startActivity(new Intent(this, DeviceStatusActivity.class).putExtra("airplay_help", true)));
         data = new SettingsPage.Data("AirPlay", Ui.tr("Espelhe seu dispositivo Apple", "Mirror your Apple device"), "tv",
-                on, always, receiver, help);
+                on.icon("tv"), always.icon("power"), receiver.icon("restore"), help.icon("guide"));
+        data.crumb = SettingsPage.crumb("Connections");
         page = new SettingsPage(this, data, this::update);
         setContentView(page);
     }

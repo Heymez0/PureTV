@@ -62,10 +62,11 @@ public class UpdateActivity extends Activity {
         Ui.init(this);
         try { current = getPackageManager().getPackageInfo(getPackageName(), 0).versionName; } catch (Exception ignored) { }
         data = new SettingsPage.Data(Ui.tr("Updates"), Ui.tr("From PureTV's GitHub releases"), "settings",
-                new SettingsPage.Row(Ui.tr("Check for updates"), d -> check()),
-                new SettingsPage.Row(Ui.tr("Install update"), d -> install()),
-                new SettingsPage.Row(Ui.tr("Automatic updates"), d -> cycleMode()),
-                new SettingsPage.Row(Ui.tr("Allow installs from PureTV"), d -> allowInstalls()));
+                new SettingsPage.Row(Ui.tr("Check for updates"), d -> check()).icon("sync"),
+                new SettingsPage.Row(Ui.tr("Install update"), d -> install()).icon("restore"),
+                new SettingsPage.Row(Ui.tr("Automatic updates"), d -> cycleMode()).icon("bell"),
+                new SettingsPage.Row(Ui.tr("Allow installs from PureTV"), d -> allowInstalls()).icon("lock"));
+        data.crumb = SettingsPage.crumb("System and about");
         page = new SettingsPage(this, data, this::update);
         setContentView(page);
         AirPlayInstall.listen(this, result, STATUS);

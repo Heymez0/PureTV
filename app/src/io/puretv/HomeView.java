@@ -267,6 +267,21 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
     private long clockMinute = -1;
     private boolean okDown, backDown;
 
+    // The landscape behind the clock (Scenes): loaded off the main thread, drawn only from these prepared bitmaps.
+    private Scenes.Loaded sceneNow;
+    private String sceneWanted = "";
+    private boolean sceneLoading;
+    private String sceneFailed = "";
+    private int sceneWeight = -1;
+    private Paint sceneTime, sceneDate, sceneRim, sceneCredit, scenePill, scenePillDim;
+    private final Paint sceneGlass = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Matrix sceneMatrix = new Matrix();
+    private android.graphics.BitmapShader sceneShader;
+    private Bitmap sceneShaderSource;
+    private final RectF sceneFront = new RectF(), weatherPanel = new RectF();
+    private String pillTemp = "", pillCondition = "", pillCity = "", pillSymbol = "";
+    private float pillTextX, pillConditionX, pillDividerX, pillCityX;
+
     private Paint rowTitle, drawerLabel, cardTitle, cardText, cardDim, cardDimRight, bigTemp, hourPaint, hourTemp, hourRain;
     /** The chance of rain under an hour: a calm blue that reads on the light and the dark card. */
     private static final int RAIN_LIGHT = 0xFF1F6FB8, RAIN_DARK = 0xFF7DB8F0;
@@ -533,7 +548,7 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
         pause();destroyed=true;catalogLoads.invalidate();
         if(packagesRegistered){getContext().getApplicationContext().unregisterReceiver(packageReceiver);packagesRegistered=false;}
         handler.removeCallbacksAndMessages(null);weatherSnapshot.clear();shadows.trim();scene.trimImages();
-        crispLogos.clear();imageShaders.clear();bgFrom=bgTo=null;
+        crispLogos.clear();imageShaders.clear();bgFrom=bgTo=null;sceneNow=null;sceneShader=null;sceneShaderSource=null;
         filteredSnapshot=null;filteredRecent=filteredRecommendations=java.util.Collections.emptyList();cards.clear();
         preparedRecent=preparedRecommendations=null;
         click.release();
@@ -602,6 +617,7 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
         updatePalette();
         checkNight(true);
         layoutHeaderInfo();
+        layoutWeatherPill();
         heroDirty = statusDirty = drawerDirty = true;
         platter.invalidate();
     }
@@ -676,6 +692,7 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
         layoutDrawer();
         layoutLight();
         updatePicks();
+        prepareScene();
         motionDirty = true;
         wake();
     }
@@ -701,6 +718,18 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
         headerGreeting = Ui.text(Ui.medium, 26 * k, L_INK);
         headerRim.setStyle(Paint.Style.STROKE);
         headerRim.setStrokeWidth(1.5f * k);
+        // The landscape clock: the date small, upper case and tracked; the time in Inter at the chosen weight.
+        sceneDate = Ui.text(Ui.semibold, 25 * k, 0xF2FFFFFF);
+        sceneDate.setLetterSpacing(0.16f);
+        sceneDate.setTextAlign(Paint.Align.CENTER);
+        sceneDate.setShadowLayer(12 * k, 0, 2 * k, 0x99000000);
+        sceneWeight = -1;
+        sceneClockPaints();
+        sceneCredit = Ui.text(Ui.medium, 16 * k, 0xD9FFFFFF);
+        sceneCredit.setTextAlign(Paint.Align.RIGHT);
+        sceneCredit.setShadowLayer(5 * k, 0, k, 0xB3000000);
+        scenePill = Ui.numbers(Ui.semibold, 27 * k, 0xFFFFFFFF);
+        scenePillDim = Ui.text(Ui.medium, 25 * k, 0xEBFFFFFF);
 
         rowTitle = Ui.text(Ui.semibold, 25 * k, 0xB3FFFFFF);
         drawerLabel = Ui.text(Ui.medium, 23 * k, 0xEBFFFFFF);
@@ -878,6 +907,87 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
         Shaders.sky(scene.palette, System.currentTimeMillis(), wx.sunrise, wx.sunset);
         scene.applyPalette();
         prepareAmbient();
+        prepareScene();
+    }
+
+    /** The clock's paints for the weight chosen in Settings (made again only when it changes). */
+    private void sceneClockPaints() {
+        int weight = Prefs.clockWeight();
+        if (weight == sceneWeight && sceneTime != null) return;
+        sceneWeight = weight;
+        sceneTime = Ui.numbers(Ui.display(weight), 300 * k, 0xFFFFFFFF);
+        sceneTime.setLetterSpacing(-0.025f);
+        sceneTime.setFilterBitmap(true);   // the glass texture is small: smooth it, never blocky
+        sceneTime.setTextAlign(Paint.Align.CENTER);
+        sceneRim = Ui.numbers(Ui.display(weight), 300 * k, 0xB3FFFFFF);
+        sceneRim.setLetterSpacing(-0.025f);
+        sceneRim.setTextAlign(Paint.Align.CENTER);
+    }
+
+    /**
+     * Which landscape should be behind the clock now (Settings → Appearance → Background photo; Automatic changes it each
+     * day, and after sunset), and loads it in the background when it changes. Classic colours: none (Ambient).
+     */
+    private void prepareScene() {
+        if (lTab == null || destroyed) return;
+        long now = System.currentTimeMillis();
+        Scenes.Scene want = Scenes.pick(Prefs.scene(), data.isNight(now), now);
+        if (want == null) { sceneWanted = ""; dropScene(); return; }
+        sceneWanted = want.id;
+        if (sceneLoading || (sceneNow != null && sceneNow.scene.id.equals(want.id)) || want.id.equals(sceneFailed)) return;
+        sceneLoading = true;
+        final Context c = getContext().getApplicationContext();
+        final int width = w;
+        LOADER.execute(() -> {
+            Scenes.Loaded loaded = null;
+            try { loaded = Scenes.load(c, want, width); }
+            catch (java.io.IOException | RuntimeException | OutOfMemoryError e) { AppLog.w("landscape " + want.id + ": " + e.getClass().getSimpleName()); }
+            final Scenes.Loaded done = loaded;
+            handler.post(() -> {
+                sceneLoading = false;
+                if (destroyed) return;
+                if (done == null) sceneFailed = want.id;
+                else if (want.id.equals(sceneWanted)) showScene(done);
+                prepareScene();   // the choice may have changed while this one loaded
+            });
+        });
+    }
+
+    private void showScene(Scenes.Loaded loaded) {
+        sceneNow = loaded;
+        sceneShader = null;
+        sceneShaderSource = null;
+        sceneChanged();
+    }
+
+    private void dropScene() {
+        if (sceneNow == null) return;
+        sceneNow = null;
+        sceneShader = null;
+        sceneShaderSource = null;
+        sceneChanged();
+    }
+
+    /** A landscape came or went: the glass reads it, and everything on it takes the night look's colours. */
+    private void sceneChanged() {
+        neutralKey = -1;
+        if (bgTo == null && bgFadeAt == 0) neutralGlass();
+        heroDirty = statusDirty = tilesDirty = drawerDirty = gridDirty = true;
+        layoutWeatherPill();
+        sky.invalidate();
+        platter.invalidate();
+        invalidateAll();
+        wake();
+    }
+
+    /** A landscape is on screen: the clock layout, with a photo loaded. */
+    private boolean sceneOn() {
+        return sceneNow != null && clockShown();
+    }
+
+    /** The weather pill at the top left of the landscape clock (with the weather on). */
+    private boolean weatherPill() {
+        return sceneOn() && weatherOn && !Double.isNaN(data.weather.temp);
     }
 
     /**
@@ -944,6 +1054,12 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
      */
     private void neutralGlass() {
         if(!scene.imageEffects()){nightPair=false;return;}
+        if (sceneNow != null && sceneNow.glass.lightGlass != null) {
+            scene.setFrost(frostOf(sceneNow.glass));
+            scene.setGlassImage(glassOf(sceneNow.glass));
+            nightPair = false;
+            return;
+        }
         boolean darkSide = night >= 0.5f;
         int key = Math.max(0, ambientPhase) * 2 + (darkSide ? 1 : 0);
         if (key != neutralKey) {
@@ -1021,7 +1137,7 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
 
     /** How dark it is: 0 = day, 1 = night (in between during the transition). */
     private float dark() {
-        return night;
+        return sceneOn() ? 1 : night;
     }
 
     /** The day color or the night color, depending on the night value (blended during the transition). */
@@ -1636,6 +1752,10 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
         }
     }
 
+    private float sunWidth(String label) {
+        return Symbols.width(getContext(), "sunset", 22 * k) + 10 * k + cardDim.measureText(label);
+    }
+
     private float sunItem(Canvas c, String symbol, String label, float x, float base) {
         float size = 22 * k, sw = Symbols.width(getContext(), symbol, size);
         Symbols.draw(getContext(), c, symbol, x + sw / 2, base - Ui.halfCap(cardDim), size, tone(L_DIM, 0xB3FFFFFF));
@@ -1980,6 +2100,7 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
         filteredRecent=filteredRecommendations=java.util.Collections.emptyList();
         preparedRecent=preparedRecommendations=null;preparedTab=-1;
         ambientDay=ambientNight=null;ambientPhase=-1;neutralKey=-1;Ambient.trim();
+        sceneNow=null;sceneWanted="";sceneFailed="";sceneShader=null;sceneShaderSource=null;
         bgFrom=bgTo=null;bgFadeAt=0;
         scene.trimImages();HomeApps.trimCaches();recs.trimHidden();
         continuing.setVisible(java.util.Collections.emptyList());continuing.trim();
@@ -2180,6 +2301,7 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
             it = drawerItems.get(drawerIndex);
             r = drawerRects[drawerIndex];
         } else if (zone == Z_TOP) {
+            if (topIndex == HomeTabs.WEATHER) return;   // the forecast is already open under it
             if (topIndex < TOP_ACTION) {
                 selectTab(topIndex);
                 return;
@@ -2755,6 +2877,7 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
                 return label(others, i) + ", " + (i + 1) + Ui.tr(" de ", " of ") + others.size();
             case Z_TOP:
                 if (i >= TOP_ACTION) return label(lightButtons, i - TOP_ACTION);
+                if (i == HomeTabs.WEATHER) return weatherText();
                 return tabs()[i];
             case Z_CARDS: return i < cards.size() ? cards.get(i).title+", "+cards.get(i).meta : "";
             case Z_SHELF:
@@ -2885,7 +3008,7 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
                 if (i >= TOP_COUNT || !visibleTop(i)) return;
                 if (drawerOpen) closeDrawer();
                 topIndex = i;
-                if (i < TOP_ACTION) selectTab(i);
+                if (HomeTabs.isTab(i)) selectTab(i);
                 break;
             case Z_CARDS:
                 if (i >= cardCount()) return;
@@ -2951,6 +3074,7 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
         float pad = 26 * k, tabTop = L_TABBAR_TOP * k, tabBottom = (L_TABBAR_TOP + L_TABBAR_H) * k;
         float x = MARGIN * k - pad;
         for (int i = 0; i < TOP_ACTION; i++) {
+            if (i == HomeTabs.WEATHER) continue;
             if (!visibleTop(i)) { topRects[i].setEmpty(); continue; }
             float tw = Math.max(lTabOn.measureText(tabs()[i]), lTab.measureText(tabs()[i]));
             topRects[i].set(x, tabTop, x + tw + 2 * pad, tabBottom);
@@ -2968,6 +3092,7 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
             fitPaint.set(lCardMeta);card.shownMeta=card.meta==null?"":TextUtils.ellipsize(card.meta,fitPaint,width,TextUtils.TruncateAt.END).toString();
         }
         layoutHeaderInfo();
+        layoutWeatherPill();
         heroDirty = statusDirty = true;
     }
 
@@ -2986,10 +3111,10 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
     /** The three cards of the current tab (Explore, Movies, Shows) and the background taken from the first one. */
     private int firstTab() { return 0; }
     private boolean recentTopVisible() { return continueOn && (recsOn || !emptyContinue()); }
-    private boolean visibleTop(int index) { return HomeTabs.visible(index,recentTopVisible(),recsOn); }
+    private boolean visibleTop(int index) { return HomeTabs.visible(index,recentTopVisible(),recsOn,weatherPill()); }
     private int firstTop() { return HomeTabs.first(recentTopVisible(),recsOn); }
     private int nextTop(int from, int direction) {
-        return HomeTabs.next(from,direction,recentTopVisible(),recsOn);
+        return HomeTabs.next(from,direction,recentTopVisible(),recsOn,weatherPill());
     }
     private boolean emptyContinue() { return continueOn && tab == 0 && cards.isEmpty(); }
     private int cardCount() { return Math.min(3,cards.size()); }
@@ -3068,15 +3193,22 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
         float e = bgFadeAt == 0 ? 1 : fadeEase(bgFadeAt, up);
         boolean fading = bgFadeAt != 0;
         // Drawer open: the background lightens (by day) or darkens (at night), as a filter on the drawing itself.
-        android.graphics.ColorFilter v = veil(tone(0.32f, 0.42f) * Ui.clamp(drawer.value), blend(0xFFFFFFFF, 0xFF000000, night));
+        android.graphics.ColorFilter v = veil(tone(0.32f, 0.42f) * Ui.clamp(drawer.value), blend(0xFFFFFFFF, 0xFF000000, dark()));
         imagePaint.setColorFilter(v);
         if (bgTo == null || (fading && bgFrom == null)) {
-            if (night < 0.999f) drawImage(c, ambientDay, 1);
-            if (night > 0.001f) drawImage(c, ambientNight, night);
+            if (sceneNow != null) {
+                drawImage(c, sceneNow.photo, 1);
+            } else {
+                if (night < 0.999f) drawImage(c, ambientDay, 1);
+                if (night > 0.001f) drawImage(c, ambientNight, night);
+            }
         }
         if (fading && bgFrom != null) drawLightImage(c, bgFrom, bgTo == null ? 1 - e : 1);
         if (bgTo != null) drawLightImage(c, bgTo, fading ? e : 1);
         imagePaint.setColorFilter(null);
+        // CC BY-SA: the photographer and the licence, small, under the shelf.
+        if (sceneNow != null && bgTo == null && sceneCredit != null && drawer.value < 0.02f)
+            c.drawText(sceneNow.scene.credit(), CONTENT_R * k, 1062 * k, sceneCredit);
     }
 
     private void drawLightImage(Canvas c, Backdrop b, float alpha) {
@@ -3097,10 +3229,10 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
         // from one tab to the next opens the new one at once, while its own focus is still growing from zero, and the
         // mark flashed under it. It is also gone before the pill is bright enough for gold to show on it.
         float onTabs = 0;
-        for (int i = 0; i < TOP_ACTION; i++) onTabs = Math.max(onTabs, Ui.clamp(topFocus[i].value));
+        for (int i = 0; i < TOP_ACTION; i++) if (HomeTabs.isTab(i)) onTabs = Math.max(onTabs, Ui.clamp(topFocus[i].value));
         float mark = Ui.clamp(1 - 2.5f * onTabs);
         for (int i = 0; i < TOP_ACTION; i++) {
-            if (!visibleTop(i)) continue;
+            if (!visibleTop(i) || !HomeTabs.isTab(i)) continue;
             RectF r = topRects[i];
             if (i == tab && focus > 0.01f) {
                 float s = 1 + 0.05f * focus;
@@ -3158,6 +3290,7 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
     }
 
     private void drawClock(Canvas c) {
+        if (sceneNow != null) { drawSceneClock(c); return; }
         float x = MARGIN * k;
         c.drawText(dateLabel, x - Ui.leftBearing(lDate, dateLabel), L_DATE_BASE * k, lDate);
         c.drawText(clockText, x - Ui.leftBearing(lClock, clockText), L_CLOCK_BASE * k, lClock);
@@ -3193,6 +3326,139 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
             c.drawText(part, x, base, lWeather);
             x += lWeather.measureText(part) + 14 * k;
         }
+    }
+
+    /**
+     * The landscape clock: the date small above, the time large in the middle, its digits glass (the photo, blurred and
+     * lifted, read through them), and on two photos the rocks drawn over it. The weather moves to the pill at the top
+     * left; when that pill has the focus, the next hours open under it.
+     */
+    private void drawSceneClock(Canvas c) {
+        Scenes.Loaded s = sceneNow;
+        sceneClockPaints();
+        float cx = 960 * k, top = s.scene.clockTop * k, base = top + 259 * k;
+        c.drawText(dateLabel, cx, top - 12 * k, sceneDate);
+        // The glass: the blurred photo stretched over the screen (a little magnified, as a lens), clipped to the digits.
+        if (sceneShaderSource != s.glow) {
+            sceneShaderSource = s.glow;
+            sceneShader = new android.graphics.BitmapShader(s.glow, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
+        }
+        float lens = 1.04f;
+        sceneMatrix.setScale(w * lens / s.glow.getWidth(), h * lens / s.glow.getHeight());
+        sceneMatrix.postTranslate(-w * (lens - 1) / 2, -h * (lens - 1) / 2);
+        sceneShader.setLocalMatrix(sceneMatrix);
+        // A lit edge above and a faint shade below give the glass its thickness, without a blur over 300 px of text.
+        sceneRim.setColor(0x33000000);
+        c.drawText(clockText, cx, base + 3 * k, sceneRim);
+        sceneRim.setColor(0xB3FFFFFF);
+        c.drawText(clockText, cx, base - 1.5f * k, sceneRim);
+        if (Prefs.lightweight()) {
+            sceneTime.setShader(null);
+            sceneTime.setColor(0xF2FFFFFF);
+        } else {
+            sceneTime.setShader(sceneShader);
+            sceneTime.setColor(0xFFFFFFFF);
+        }
+        c.drawText(clockText, cx, base, sceneTime);
+        if (s.front != null) {
+            sceneFront.set(s.scene.fx * k, s.scene.fy * k, (s.scene.fx + s.scene.fw) * k, (s.scene.fy + s.scene.fh) * k);
+            c.drawBitmap(s.front, null, sceneFront, bitmapPaint);
+        }
+        float open = HomeTabs.WEATHER < topFocus.length ? Ui.clamp(topFocus[HomeTabs.WEATHER].value) : 0;
+        if (open > 0.01f && weatherPill()) drawWeatherPanel(c, open);
+    }
+
+    /** The pill's text, measured when the weather, language or settings change. */
+    private void layoutWeatherPill() {
+        RectF r = topRects[HomeTabs.WEATHER];
+        if (scenePill == null || !weatherPill()) {
+            r.setEmpty();
+            // The pill went (weather off, Classic colours, cards came): the focus can't stay on it.
+            if (zone == Z_TOP && topIndex == HomeTabs.WEATHER) { topIndex = firstTop(); retarget(false); }
+            return;
+        }
+        HomeData.Weather wx = data.weather;
+        pillSymbol = Symbols.weather(wx.code, wx.isDay);
+        pillTemp = HomeData.degrees(wx.temp);
+        pillCondition = HomeData.condition(wx.code, wx.isDay);
+        fitPaint.set(scenePillDim);
+        pillCity = TextUtils.ellipsize(Prefs.city(), fitPaint, 300 * k, TextUtils.TruncateAt.END).toString();
+        float x = MARGIN * k, cy = L_BUTTON_CY * k, b = L_BUTTON * k;
+        pillTextX = x + (24 + 34 + 14) * k;
+        pillConditionX = pillTextX + scenePill.measureText(pillTemp) + 14 * k;
+        float end = pillConditionX + scenePillDim.measureText(pillCondition);
+        if (!pillCity.isEmpty()) {
+            pillDividerX = end + 18 * k;
+            pillCityX = pillDividerX + 18 * k;
+            end = pillCityX + scenePillDim.measureText(pillCity);
+        }
+        r.set(x, cy - b / 2, end + 30 * k, cy + b / 2);
+    }
+
+    private void drawWeatherPill(Canvas c) {
+        RectF r = topRects[HomeTabs.WEATHER];
+        if (r.isEmpty()) layoutWeatherPill();   // the clock layout just came back: only text measuring
+        if (r.isEmpty()) return;
+        float f = Ui.clamp(topFocus[HomeTabs.WEATHER].value), scale = 1 + 0.06f * f;
+        float hw = r.width() * scale / 2, hh = r.height() * scale / 2;
+        cell.set(r.centerX() - hw, r.centerY() - hh, r.centerX() + hw, r.centerY() + hh);
+        drawHeaderSurface(c, cell, hh);
+        if (f > 0.01f) {
+            fill.setShader(null);
+            fill.setColor(Ui.alpha(WHITE, f));
+            c.drawRoundRect(cell, hh, hh, fill);
+        }
+        int ink = blend(WHITE, L_INK, f);
+        c.save();
+        c.scale(scale, scale, r.centerX(), r.centerY());
+        float cy = r.centerY();
+        Symbols.draw(getContext(), c, pillSymbol, r.left + (24 + 17) * k, cy, 32 * k, ink);
+        scenePill.setColor(ink);
+        c.drawText(pillTemp, pillTextX, cy + Ui.halfCap(scenePill), scenePill);
+        scenePillDim.setColor(Ui.alpha(ink, 0.92f));
+        c.drawText(pillCondition, pillConditionX, cy + Ui.halfCap(scenePillDim), scenePillDim);
+        if (!pillCity.isEmpty()) {
+            fill.setShader(null);
+            fill.setColor(Ui.alpha(ink, 0.4f));
+            c.drawRect(pillDividerX - 0.75f * k, cy - 13 * k, pillDividerX + 0.75f * k, cy + 13 * k, fill);
+            c.drawText(pillCity, pillCityX, cy + Ui.halfCap(scenePillDim), scenePillDim);
+        }
+        c.restore();
+    }
+
+    /** Under the focused pill: the next hours, the high and low, sunset and the chance of rain, on glass. */
+    private void drawWeatherPanel(Canvas c, float open) {
+        refreshDrawerText();
+        HomeData.Weather wx = textWeather;
+        // As wide as the room left of the big clock allows (it is centred and its width follows the time and weight),
+        // so the panel never covers a digit: fewer hours, and no sunset, when the room is short.
+        float left = MARGIN * k, top = (L_BUTTON_CY + L_BUTTON / 2 + 18) * k, height = 236 * k;
+        float clockLeft = getWidth() / 2f - (sceneTime == null ? 0 : sceneTime.measureText(clockText) / 2);
+        float width = Math.max(300 * k, Math.min(520 * k, clockLeft - 32 * k - left));
+        int hours = Math.min(Math.min(5, wx.hours.size()), (int) ((width - 60 * k) / (84 * k)));
+        if (hours <= 0) return;
+        weatherPanel.set(left, top - 10 * k * (1 - open), left + width, top + height - 10 * k * (1 - open));
+        int a = Math.round(255 * open);
+        // A layer only while it fades in or out; fully open, it draws straight onto the canvas.
+        int saved = a < 255 ? c.saveLayerAlpha(weatherPanel.left - 40 * k, weatherPanel.top - 40 * k, weatherPanel.right + 40 * k, weatherPanel.bottom + 60 * k, a) : c.save();
+        drawHeaderSurface(c, weatherPanel, 34 * k);
+        float hx = weatherPanel.left + 30 * k, hw = (weatherPanel.width() - 60 * k) / hours;
+        for (int i = 0; i < hours; i++) {
+            float hc = hx + hw * (i + 0.5f);
+            c.drawText(i == 0 ? Ui.tr("Now") : hourText[i], hc, weatherPanel.top + 50 * k, hourPaint);
+            Symbols.draw(getContext(), c, Symbols.weather(wx.hourCode.get(i), wx.hourDay.get(i)), hc, weatherPanel.top + 92 * k, 30 * k, 0xF2FFFFFF);
+            hourTemp.setColor(i == 0 ? Look.GOLD : 0xF2FFFFFF);
+            c.drawText(i == 0 ? nowTemp : hourTempText[i], hc, weatherPanel.top + 140 * k, hourTemp);
+            hourTemp.setColor(0xF2FFFFFF);
+        }
+        fill.setShader(null);
+        fill.setColor(0x33FFFFFF);
+        c.drawRect(weatherPanel.left + 30 * k, weatherPanel.top + 168 * k, weatherPanel.right - 30 * k, weatherPanel.top + 169.5f * k, fill);
+        float base = weatherPanel.top + 210 * k, x = weatherPanel.left + 30 * k;
+        c.drawText(highLow, x, base, cardDim);
+        x += cardDim.measureText(highLow) + 30 * k;
+        if (wx.sunset != 0 && x + sunWidth(sunsetText) <= weatherPanel.right - 30 * k) sunItem(c, "sunset", sunsetText, x, base);
+        c.restoreToCount(saved);
     }
 
     /**
@@ -3294,6 +3560,7 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
         applyTone();
         fill.setShader(null);
         float cy = L_BUTTON_CY * k;
+        if (weatherPill()) drawWeatherPill(c);
         // With the clock layout on screen the time and date are already there, large: no second copy here.
         if (!clockShown()) {
             drawHeaderSurface(c, headerInfo, 34 * k);
@@ -3383,7 +3650,7 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
                     int next = nextTop(topIndex, dx);
                     if (next == topIndex) return true;
                     topIndex = next;
-                    if (topIndex < TOP_ACTION) selectTab(topIndex);   // focusing a tab selects it
+                    if (HomeTabs.isTab(topIndex)) selectTab(topIndex);   // focusing a tab selects it
                 } else if (dy > 0) {
                     if (cardCount()==0) {
                         zone = Z_SHELF;

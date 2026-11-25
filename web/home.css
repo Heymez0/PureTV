@@ -876,3 +876,75 @@ body { color: #1D1D1F; }
 /* MARK: Lightweight mode: no shadows, glass gradients or animations, for slower TVs (as on Android). */
 .lite *, .lite *::before, .lite *::after { box-shadow: none !important; text-shadow: none !important; -webkit-animation: none !important; animation: none !important; -webkit-transition-duration: 0s !important; transition-duration: 0s !important; }
 .lite #sky .grad { background-image: none !important; }
+
+/* MARK: Background photo (Settings → Appearance → Background photo): with nothing to watch, a landscape behind a large
+   glass clock, as on Android. The home screen takes the night look over it; the weather is a pill at the top left. */
+#scenephoto, #scenefront, #wpill, #wpanel, #scenecredit, #clock .tshade, #clock .trim, #clock .tw { display: none; }
+.scene #scenephoto { display: block; position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; }
+.scene #sky .grad, .scene #sky canvas, .scene #sky .veil { display: none; }
+.scene #weather-summary, .scene #clock .wline { display: none; }
+.scene #clock { left: 0; width: 1920px; height: 340px; text-align: center; }
+.scene #clock .date {
+  position: absolute; left: 0; top: 0; width: 1920px; margin: 0; font-size: 25px; line-height: 1;
+  font-weight: 600 !important; letter-spacing: 0.16em; color: rgba(255, 255, 255, 0.95); text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
+}
+.scene #clock .time, .scene #clock .tshade, .scene #clock .trim, .scene #clock .tw {
+  position: absolute; left: 0; width: 1920px; margin: 0; font-size: 300px; line-height: 300px; height: 300px; white-space: nowrap;
+  font-weight: 300 !important; letter-spacing: -0.025em; font-feature-settings: 'tnum';
+}
+.scene.w400 #clock .time, .scene.w400 #clock .tshade, .scene.w400 #clock .trim, .scene.w400 #clock .tw { font-weight: 400 !important; }
+.scene.w600 #clock .time, .scene.w600 #clock .tshade, .scene.w600 #clock .trim, .scene.w600 #clock .tw { font-weight: 600 !important; }
+.scene #clock .time { display: block; top: 34px; color: rgba(255, 255, 255, 0.95); }
+.scene #clock .tshade { display: block; top: 37px; color: rgba(0, 0, 0, 0.22); }
+.scene #clock .trim { display: block; top: 32.5px; color: rgba(255, 255, 255, 0.7); }
+/* Measures the time's width (the weather panel stays clear of it). */
+.scene #clock .tw { display: block; visibility: hidden; left: 0; width: auto; top: 34px; }
+/* The glass: the digits filled with a soft, lifted copy of the photo behind them (made from it, see web/scenes). */
+@supports (-webkit-background-clip: text) {
+  .scene #clock .time { -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; background-repeat: no-repeat; background-size: 1997px 1123px; }
+}
+.lite.scene #clock .time { background: none !important; -webkit-text-fill-color: rgba(255, 255, 255, 0.95); }
+.lite.scene #clock .tshade, .lite.scene #clock .trim { display: none; }
+.scene #scenefront { display: block; position: absolute; }
+.scene #scenefront.none { display: none; }
+#scenecredit { position: absolute; right: 80px; top: 1046px; font-size: 16px; font-weight: 500 !important; line-height: 20px; color: rgba(255, 255, 255, 0.85); text-shadow: 0 1px 5px rgba(0, 0, 0, 0.7); white-space: nowrap; }
+.scene #scenecredit { display: block; }
+.drawer-open #scenecredit { opacity: 0; }
+
+/* The weather pill (as the recommendations' header pill) and, while it has focus, the next hours under it. */
+.scene.weather-on #wpill {
+  display: block; position: absolute; left: 80px; top: 69px; height: 68px; padding: 0 30px 0 24px; border: 0; border-radius: 34px;
+  font-family: inherit; font-size: 27px; font-weight: 600 !important; line-height: 68px; white-space: nowrap; color: #FFF;
+  max-width: 620px; overflow: hidden; text-overflow: ellipsis; box-sizing: border-box;   /* clear of the centred date */
+  background: rgba(18, 18, 22, 0.34); box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, 0.16), inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+  -webkit-transition: -webkit-transform 0.2s, background-color 0.2s; transition: transform 0.2s, background-color 0.2s;
+}
+#wpill .sym { width: 36px; height: 36px; vertical-align: -8px; margin-right: 12px; }
+#wpill .t { margin-right: 14px; }
+#wpill .sep { display: inline-block; width: 2px; height: 30px; margin: 0 18px; vertical-align: -6px; background: currentColor; opacity: 0.35; }
+#wpill .c { font-weight: 500 !important; }
+.scene.weather-on #wpill.focus { background: #FFF; color: #1D1D1F; -webkit-transform: scale(1.04); transform: scale(1.04); box-shadow: 0 14px 30px rgba(0, 0, 0, 0.28); }
+.scene.weather-on #wpanel.open {
+  display: block; position: absolute; left: 80px; top: 155px; height: 236px; box-sizing: border-box; overflow: hidden;
+  border-radius: 34px; color: #FFF; background: linear-gradient(rgba(38, 38, 42, 0.62), rgba(17, 17, 19, 0.5));
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.3), inset 0 1.5px 0 rgba(255, 255, 255, 0.14), inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+#wpanel .h { position: absolute; top: 28px; width: 84px; margin-left: -42px; text-align: center; }
+#wpanel .h .at { font-size: 22px; font-weight: 500 !important; color: rgba(255, 255, 255, 0.82); }
+#wpanel .h .sym { display: block; width: 32px; height: 32px; margin: 12px auto 8px; }
+#wpanel .h .d { font-size: 27px; font-weight: 600 !important; }
+#wpanel .h.now .d { color: #D2AB55; }
+#wpanel .line { position: absolute; left: 30px; right: 30px; top: 168px; height: 1.5px; background: rgba(255, 255, 255, 0.2); }
+#wpanel .foot { position: absolute; left: 30px; top: 186px; font-size: 22px; font-weight: 500 !important; color: rgba(255, 255, 255, 0.72); white-space: nowrap; }
+#wpanel .foot .sym { width: 22px; height: 22px; vertical-align: -4px; margin: 0 10px 0 30px; }
+
+/* Settings: a focused row's own explanation and, for the look, a small picture of the home screen beside it. */
+.box .hint .preview { float: right; position: relative; width: 384px; height: 216px; margin: 0 0 0 34px; border-radius: 14px; overflow: hidden; box-shadow: inset 0 0 0 1.5px rgba(0, 0, 0, 0.12); }
+.night .box .hint .preview { box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.2); }
+.preview .bg { position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
+.preview .bg.light { background: #E9E7E2; }
+.preview .bg.dark { background: #1C1C1E; }
+.preview img.bg { display: block; }
+.preview i { position: absolute; display: block; }
+.preview .pt { position: absolute; left: 0; width: 384px; text-align: center; font-size: 60px; line-height: 60px; letter-spacing: -0.025em; color: rgba(255, 255, 255, 0.95); white-space: nowrap; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.25); font-feature-settings: 'tnum'; }
+.preview .pt.left { text-align: left; font-size: 47px; letter-spacing: -0.035em; text-shadow: none; }

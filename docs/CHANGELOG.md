@@ -2,10 +2,36 @@
 
 ## v1.4.2
 
-The LG webOS and Samsung Tizen app now looks and works like the Android app. Android is unchanged (still v1.4.1,
-versionCode 8). Checked in LG's webOS TV 26 Simulator and a desktop browser; Samsung's emulator and real LG/Samsung
-TVs were not tried. The simulator can't list a TV's apps, so the shelf, the app menu and the lock were tried in the
-browser's stand-in.
+Background photos behind the clock, a redesigned Settings on Android, and the LG webOS and Samsung Tizen app brought to
+the Android app's look. Android is v1.4.2 (versionCode 9); webOS and Tizen are 1.1.0.
+
+Android was built, covered by the regression suite and checked on an Android TV (television mode) in Turkish; the light
+theme of the new settings was not checked. The web app was checked in LG's webOS TV 26 Simulator and a desktop
+browser; Samsung's emulator and real LG/Samsung TVs were not tried, and neither were the background photos on a real
+TV. The simulator can't list a TV's apps, so the shelf, the app menu and the lock were tried in the browser's
+stand-in.
+
+### Android
+
+- **Background photos behind the clock:** in the clock layout (nothing to watch) a landscape sits behind a large glass
+  clock. Automatic shows a new photo every day and a night photo after sunset; five photos can also be picked, or the
+  classic colours kept. The photos are Wikimedia Commons featured pictures under CC BY-SA, and the photographer and
+  licence are shown under the shelf ([NOTICE](licenses/NOTICE.md)). They ship inside the app (about 1.7 MB) and are
+  decoded off the main thread.
+- **Clock weight:** thin, regular or bold digits for the large clock.
+- **Weather pill:** with a photo and the weather on, a pill at the top left; OK opens the next hours, high and low,
+  sunset and the chance of rain.
+- **Setup guide:** a new Background step after the home screen layout, with today's photo and the classic colours side
+  by side.
+- **Settings, redesigned:** a category rail on the left, the open category's rows in the middle and a detail pane on the
+  right explaining the focused row, with its choices or a live preview (photo, clock weight). Every row has an icon,
+  rows are grouped under headings, settings that only matter in another layout are dimmed with a short note, and the
+  sub-pages (Updates, AirPlay, TV inputs, Device status, Remote button test, Shortcuts, Content apps) share the same
+  look with a "Settings › …" path at the top. The home screen's settings are gathered under Home screen.
+- **Leaving Settings with Home** now starts it again at the first category; Back from a page Settings opened still
+  returns to the same row.
+
+### LG webOS and Samsung Tizen
 
 - **The Android look:** obsidian or paper surfaces, one gold accent and a backdrop lit by a warm and a cool light that
   follow the time of day. At the top right, TV Settings and Inputs as glass circles and the greeting with the gold gear;
@@ -23,6 +49,8 @@ browser's stand-in.
   title at the bottom left.
 - **Fonts:** webOS put its own font on text; Inter is used everywhere, at the Android app's weights.
 - **Fixes:** long shortcut names shrink to fit their tile; the header weather stays in place when the shelf is empty.
+- **Background photos as on Android** (with a small blurred copy filling the clock's digits), clock weight and the
+  weather pill, under Settings → Home screen.
 
 ## v1.4.1
 

@@ -17,10 +17,10 @@ public class DisplaySettingsActivity extends Activity {
         network.network = true;
         data = new SettingsPage.Data(Ui.tr("Tela e rede", "Display & Network"),
                 Ui.tr("Conexão, hora e aparência", "Connection, clock and appearance"), "settings",
-                network, new SettingsPage.Row("IP", null),
-                new SettingsPage.Row(Ui.tr("Formato da hora", "Clock format"), direction -> changeClock(direction)),
+                network, new SettingsPage.Row("IP", null).icon("info"),
+                new SettingsPage.Row(Ui.tr("Formato da hora", "Clock format"), direction -> changeClock(direction)).icon("clock"),
                 new SettingsPage.Row(Ui.tr("Modo leve", "Lightweight mode"),
-                        direction -> Prefs.setLightweight(!Prefs.lightweight())));
+                        direction -> Prefs.setLightweight(!Prefs.lightweight())).icon("bolt"));
         data.hint = Ui.tr("OK ou as setas mudam o valor.", "OK or the arrows change the value.") + "\n\n"
                 + Ui.tr("O modo leve reduz os efeitos e as animações. Desligado mantém o visual original.",
                 "Lightweight mode reduces effects and animation. Off keeps the original appearance.") + "\n\n"

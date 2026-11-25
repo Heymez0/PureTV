@@ -6,7 +6,7 @@
 
 [**Download PureTV.apk**](https://github.com/Heymez0/PureTV/releases/latest/download/PureTV.apk) &nbsp;·&nbsp; [Install guide](docs/INSTALL.md) &nbsp;·&nbsp; [What's new](https://github.com/Heymez0/PureTV/releases/latest) &nbsp;·&nbsp; [Turkish guide](docs/README.tr.md)
 
-<sub>v1.4.1 · Android TV & Google TV (Android 9+) · LG webOS & Samsung Tizen (experimental) · 24 languages · open source</sub>
+<sub>v1.4.2 · Android TV & Google TV (Android 9+) · LG webOS & Samsung Tizen (experimental) · 24 languages · open source</sub>
 
 </div>
 
@@ -50,8 +50,8 @@ quick on a 1 GB stick, and every screen is made for the remote.
   <tr>
     <td width="50%" valign="top">
       <h4>✨ Quietly beautiful</h4>
-      Dark obsidian or light, one gold accent, a backdrop that follows the time of day, and a matching screensaver
-      with your own photos if you like.
+      Dark obsidian or light, one gold accent, and a landscape photo behind a glass clock that changes every day and
+      after sunset (or the classic colours). A matching screensaver shows your own photos if you like.
     </td>
     <td width="50%" valign="top">
       <h4>⚙️ In control, without the clutter</h4>

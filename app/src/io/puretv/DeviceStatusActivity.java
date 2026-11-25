@@ -31,20 +31,21 @@ public class DeviceStatusActivity extends Activity {
         if (help) {
             data = new SettingsPage.Data(Ui.tr("Ajuda de conexão AirPlay", "AirPlay connection help"),
                     Ui.tr("Conecte e espelhe", "Connect and mirror"), "network",
-                    network, new SettingsPage.Row(Ui.tr("Receptor", "Receiver"), null),
-                    new SettingsPage.Row(Ui.tr("Abrir receptor AirPlay", "Open AirPlay Receiver"), direction -> openReceiver()),
-                    new SettingsPage.Row(Ui.tr("Ajustes de Wi-Fi", "Wi-Fi settings"), direction -> openNetwork()));
+                    network, new SettingsPage.Row(Ui.tr("Receptor", "Receiver"), null).icon("tv"),
+                    new SettingsPage.Row(Ui.tr("Abrir receptor AirPlay", "Open AirPlay Receiver"), direction -> openReceiver()).icon("play"),
+                    new SettingsPage.Row(Ui.tr("Ajustes de Wi-Fi", "Wi-Fi settings"), direction -> openNetwork()).icon("wifi_settings"));
+            data.crumb = SettingsPage.crumb("Connections", "AirPlay");
         } else {
             data = new SettingsPage.Data(Ui.tr("Estado do dispositivo", "Device status"),
                     Ui.tr("Rede, memória e armazenamento", "Network, memory and storage"), "network",
-                    network, new SettingsPage.Row("IP", null),
-                    new SettingsPage.Row(Ui.tr("Armazenamento", "Storage"), null),
-                    new SettingsPage.Row("RAM", null),
-                    new SettingsPage.Row(Ui.tr("Receptor AirPlay", "AirPlay receiver"), null),
-                    new SettingsPage.Row(Ui.tr("Ajuda de conexão AirPlay", "AirPlay connection help"), direction -> show(true)),
+                    network, new SettingsPage.Row("IP", null).icon("info"),
+                    new SettingsPage.Row(Ui.tr("Armazenamento", "Storage"), null).icon("storage"),
+                    new SettingsPage.Row("RAM", null).icon("memory"),
+                    new SettingsPage.Row(Ui.tr("Receptor AirPlay", "AirPlay receiver"), null).icon("tv"),
+                    new SettingsPage.Row(Ui.tr("Ajuda de conexão AirPlay", "AirPlay connection help"), direction -> show(true)).icon("guide"),
                     new SettingsPage.Row(Ui.tr("Tela e rede", "Display & Network"),
-                            direction -> startActivity(new Intent(this, DisplaySettingsActivity.class))),
-                    new SettingsPage.Row(Ui.tr("Ajustes de Wi-Fi", "Wi-Fi settings"), direction -> openNetwork()));
+                            direction -> startActivity(new Intent(this, DisplaySettingsActivity.class))).icon("screen"),
+                    new SettingsPage.Row(Ui.tr("Ajustes de Wi-Fi", "Wi-Fi settings"), direction -> openNetwork()).icon("wifi_settings"));
         }
         page = new SettingsPage(this, data, this::update);
         setContentView(page);

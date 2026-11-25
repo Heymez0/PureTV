@@ -30,6 +30,16 @@ public class SettingsActivity extends Activity {
     private final List<Runnable> values=new ArrayList<>();
     private int screensaverRow;
     private String freeStatus="";
+    /** What the background and clock-weight previews show, prepared when a value changes (never while drawing). */
+    private android.graphics.Bitmap previewPhoto,previewClassic,classicArt;private int previewTop=112;
+    private void preparePreview(){
+        long now=System.currentTimeMillis();boolean night=HomeData.get(this).isNight(now);
+        Scenes.Scene s=Scenes.pick(Prefs.scene(),night,now);
+        previewPhoto=s==null?null:Scenes.cachedThumb(this,s);previewTop=s==null?112:s.clockTop;
+        classicArt=Ambient.get(night||"dark".equals(Prefs.theme()),Ambient.phase(now));
+        previewClassic=s==null?classicArt:null;
+    }
+    private static String weightName(int weight){if(weight>=600)return Ui.tr("Bold");if(weight>=400)return Ui.tr("Regular");return Ui.tr("Thin");}
     private String[] categories() {return new String[]{
         tr("Home screen"),tr("Appearance"),tr("Clock and weather"),tr("Content"),
         tr("Connections"),tr("Device and performance"),tr("Remote Buttons"),tr("System and about")};}
@@ -46,6 +56,9 @@ public class SettingsActivity extends Activity {
         editors=new SettingsEditors(this);
         if(state!=null){int[] saved=state.getIntArray("positions");if(saved!=null&&saved.length==positions.length)System.arraycopy(saved,0,positions,0,positions.length);}
         languageGeneration=Ui.generation;showCategory(category);
+        // The background choices show every photo: their small copies are decoded here, off the main thread.
+        final android.content.Context app=getApplicationContext();
+        new Thread(()->{for(Scenes.Scene s:Scenes.ALL)Scenes.cachedThumb(app,s);runOnUiThread(()->{if(page!=null&&!isFinishing())page.changed();});},"settings-thumbs").start();
         if(state!=null)editors.restore(state);
     }
     @Override protected void onSaveInstanceState(Bundle out){
@@ -65,6 +78,57 @@ public class SettingsActivity extends Activity {
         if(value!=null)values.add(()->value.accept(row));
         rows.add(row);return row;
     }
+    /**
+     * A clock-screen setting: with another layout it shows only while there is nothing to watch, so the row is dimmed
+     * and its hint says how to see it always.
+     */
+    /** How many there are, as a row's value: nothing at all when there are none. */
+    private static String count(int n){return n==0?"":Integer.toString(n);}
+    private void clockOnly(SettingsPage.Row r,String hint){
+        r.muted=!HomeContentModes.CLOCK.equals(Prefs.homeContentMode());
+        r.note=r.muted?tr("Only on the clock screen"):null;
+        r.hint=r.muted?hint+" "+tr("To see it always, set Home screen layout to Clock only."):hint;
+    }
+    /**
+     * A row whose answers open in the detail pane (SettingsPage.Choice): `answers` builds them when the row is drawn
+     * again, `current` says which one is in use and `pick` applies one.
+     */
+    private SettingsPage.Row choice(String name,java.util.function.Supplier<SettingsPage.Choice[]> answers,java.util.function.IntSupplier current,java.util.function.IntConsumer pick){
+        SettingsPage.Row r=new SettingsPage.Row(tr(name),d->{});
+        r.pick=i->{pick.accept(i);};
+        values.add(()->{r.choices=answers.get();r.current=Math.max(0,current.getAsInt());});
+        return r;
+    }
+    /** Automatic, each photo and Classic colours, each with a small picture of the home screen it gives. */
+    private SettingsPage.Choice[] sceneChoices(){
+        String[] all=Scenes.choices();SettingsPage.Choice[] out=new SettingsPage.Choice[all.length];
+        long now=System.currentTimeMillis();boolean night=HomeData.get(this).isNight(now);
+        for(int i=0;i<all.length;i++){
+            final Scenes.Scene s=Scenes.pick(all[i],night,now);
+            out[i]=new SettingsPage.Choice(Scenes.label(all[i]),s==null?"":s.author,(c,box,dark)->ScenePreview.draw(this,c,box,
+                s==null?null:Scenes.peekThumb(s),s==null?classicArt:null,s==null?112:s.clockTop,Prefs.clockWeight(),dark,Ui.clock(System.currentTimeMillis())));
+        }
+        return out;
+    }
+    /** The three clock weights, each drawn on today's background. */
+    private SettingsPage.Choice[] weightChoices(){
+        SettingsPage.Choice[] out=new SettingsPage.Choice[Scenes.WEIGHTS.length];
+        for(int i=0;i<out.length;i++){
+            final int weight=Scenes.WEIGHTS[i];
+            out[i]=new SettingsPage.Choice(weightName(weight),"",(c,box,dark)->ScenePreview.draw(this,c,box,previewPhoto,previewClassic,previewTop,
+                weight,dark,Ui.clock(System.currentTimeMillis())));
+        }
+        return out;
+    }
+    private SettingsPage.Choice[] themeChoices(){return new SettingsPage.Choice[]{
+        new SettingsPage.Choice(tr("Automatic"),tr("Light by day, dark after sunset"),null),
+        new SettingsPage.Choice(tr("Light"),"",null),new SettingsPage.Choice(tr("Dark"),"",null)};}
+    private SettingsPage.Choice[] clockChoices(){return new SettingsPage.Choice[]{
+        new SettingsPage.Choice(tr("Automatic"),tr("Follows the TV"),null),
+        new SettingsPage.Choice("12h","1:45 PM",null),new SettingsPage.Choice("24h","13:45",null)};}
+    private SettingsPage.Choice[] unitChoices(){return new SettingsPage.Choice[]{
+        new SettingsPage.Choice(tr("Automatic"),tr("From your region"),null),
+        new SettingsPage.Choice("°C",tr("Celsius"),null),new SettingsPage.Choice("°F",tr("Fahrenheit"),null)};}
     private void editor(String section){positions[category]=page.focusedIndex();editors.open(section);}
     private void remotePicker(int key){positions[category]=page.focusedIndex();editors.openRemote(key);}
     private void open(Class<? extends Activity> target){startActivity(new Intent(this,target));}
@@ -74,119 +138,161 @@ public class SettingsActivity extends Activity {
         editors.close();
         category=next;List<SettingsPage.Row> rows=new ArrayList<>();values.clear();
         switch(category){
-            case HOME:   // what is on the home screen, and which apps
-                add(rows,action("Home screen layout",()->editor("layout")),null,r->r.value=tr(HomeContentModes.label(Prefs.homeContentMode())));
-                add(rows,action("Shortcuts",()->open(ShortcutSettingsActivity.class)),null,null);
+            case HOME:   // everything the home screen shows, in one place: the layout, then the clock screen, then the apps
+                add(rows,action("Home screen layout",()->editor("layout")),
+                    tr("What the home screen shows: the clock alone, what you were watching, or that with recommendations."),
+                    r->r.value=tr(HomeContentModes.label(Prefs.homeContentMode()))).icon("layout").group(tr("Layout"));
+                SettingsPage.Row photo=add(rows,choice("Background photo",this::sceneChoices,()->java.util.Arrays.asList(Scenes.choices()).indexOf(Prefs.scene()),
+                        i->{Prefs.setScene(Scenes.choices()[i]);preparePreview();}),null,
+                    r->{r.value=Scenes.label(Prefs.scene());clockOnly(r,tr("A landscape behind the clock when the home screen has nothing to watch. Automatic shows a new photo every day and a night photo after sunset. OK changes it."));preparePreview();});
+                photo.icon("photo").group(tr("Clock screen"));
+                add(rows,choice("Clock weight",this::weightChoices,()->{int[] all=Scenes.WEIGHTS;for(int j=0;j<all.length;j++)if(all[j]==Prefs.clockWeight())return j;return 0;},
+                        i->Prefs.setClockWeight(Scenes.WEIGHTS[i])),null,
+                    r->{r.value=weightName(Prefs.clockWeight());clockOnly(r,tr("How bold the large clock is on a background photo. OK changes it."));preparePreview();}).icon("weight");
+                add(rows,adjust("Weather information",d->Prefs.setWeather(!Prefs.weather())),
+                    tr("The weather on the home screen: the temperature at the top and, on the clock screen, a weather button at the top left (a line under the clock with Classic colours). The forecast below the shortcuts is Detailed weather."),
+                    r->r.set(Prefs.weather())).icon("partly_cloudy_day").group(tr("Weather"));
+                add(rows,action("Detailed weather",()->Prefs.setDetailedWeather(!Prefs.detailedWeather())),
+                    tr("Show or hide the forecast below shortcuts."),r->r.set(Prefs.detailedWeather())).icon("cloud");
+                add(rows,action("Shortcuts",()->open(ShortcutSettingsActivity.class)),
+                    tr("The buttons under the app shelf, such as All apps and AirPlay: choose which ones show."),null).icon("apps").group(tr("Apps"));
                 add(rows,action("Hidden apps",()->AppLock.confirm(this,()->editor("hidden"))),
                     tr("Apps you hid from Other apps. OK shows an app again. Hold OK on an app in Other apps to hide it."),
-                    r->r.value=Integer.toString(Prefs.hiddenApps().size()));
+                    r->r.value=count(Prefs.hiddenApps().size())).icon("hidden");
                 add(rows,action("App lock",()->AppLock.confirm(this,()->editor("lock"))),
                     tr("A PIN for chosen apps when they are opened from PureTV, always or in the evening. A simple household lock: apps opened another way (TV Settings, the remote's app buttons) are not locked."),
-                    r->r.set(Prefs.lockSet()));
+                    r->r.set(Prefs.lockSet())).icon("lock");
                 add(rows,action("On TV start",()->editor("startup")),
                     tr("Open an app, Live TV or an input when the TV starts, instead of the home screen. Only right after a start; Back returns to the home screen."),
-                    r->r.value=editors.startupValue());
-                if(Prefs.television())add(rows,action("TV inputs",()->open(TvInputsActivity.class)),null,null);
+                    r->r.value=editors.startupValue()).icon("power").group(tr("Start-up"));
+                if(Prefs.television())add(rows,action("TV inputs",()->open(TvInputsActivity.class)),
+                    tr("The TV's inputs, such as HDMI, and its picture, sound and channel controls. OK opens one."),null).icon("hdmi");
                 break;
             case LOOK:   // how it looks and sounds, the screensaver included
-                add(rows,adjust("Theme",d->{String[] modes={"auto","light","dark"};int i=java.util.Arrays.asList(modes).indexOf(Prefs.theme());Prefs.setTheme(modes[(i+d+3)%3]);}),
-                    null,r->r.value=tr(Prefs.theme().equals("auto")?"Automatic":Prefs.theme().equals("dark")?"Dark":"Light"));
+                add(rows,choice("Theme",this::themeChoices,()->java.util.Arrays.asList("auto","light","dark").indexOf(Prefs.theme()),
+                        i->Prefs.setTheme(new String[]{"auto","light","dark"}[i])),
+                    tr("Automatic is light by day and dark after sunset in your city; Light and Dark always stay the same. OK changes it."),
+                    r->r.value=tr(Prefs.theme().equals("auto")?"Automatic":Prefs.theme().equals("dark")?"Dark":"Light")).icon("palette").group(tr("Look"));
                 add(rows,adjust("Background from content",d->Prefs.setContentBackground(!Prefs.contentBackground())),
                     tr("In the recent and recommended layouts the background takes its colours from the first card. Off keeps the theme's plain background."),
-                    r->r.set(Prefs.contentBackground()));
-                add(rows,adjust("Sounds",d->Prefs.setSounds(!Prefs.sounds())),null,r->r.set(Prefs.sounds()));
+                    r->r.set(Prefs.contentBackground())).icon("sparkles");
+                add(rows,adjust("Sounds",d->Prefs.setSounds(!Prefs.sounds())),
+                    tr("Soft clicks as you move and choose on PureTV's screens."),r->r.set(Prefs.sounds())).icon("speaker").group(tr("Sound"));
                 screensaverRow=rows.size();
                 add(rows,action("Screensaver",this::showPreview),
-                    tr("OK shows the screensaver now. When it starts and when the TV turns off are set in TV Settings."),r->r.value=tr("Preview"));
+                    tr("OK shows the screensaver now. When it starts and when the TV turns off are set in TV Settings."),r->r.value=tr("Preview")).icon("bedtime").group(tr("Screensaver"));
                 add(rows,adjust("Screensaver photos",d->togglePhotos()),
                     tr("Your photos on this TV and its USB drives behind the screensaver clock (landscape photos, shuffled). They stay on the TV. Android asks for access to photos the first time."),
-                    r->r.set(Prefs.screensaverPhotos()&&LocalPhotos.permitted(this)));
+                    r->r.set(Prefs.screensaverPhotos()&&LocalPhotos.permitted(this))).icon("photo");
                 break;
-            case CLOCK:  // the clock and everything about the weather
-                add(rows,adjust("Clock format",d->{String[] modes={"auto","12","24"};int i=java.util.Arrays.asList(modes).indexOf(Prefs.clockFormat());Prefs.setClockFormat(modes[(i+d+3)%3]);}),
-                    null,r->r.value=Prefs.clockFormat().equals("auto")?tr("Automatic"):Prefs.clockFormat()+"h");
-                add(rows,adjust("Weather information",d->Prefs.setWeather(!Prefs.weather())),
-                    tr("The temperature beside the clock at the top, and a small weather line under the clock on the clock layout. The forecast below the shortcuts is Detailed weather."),
-                    r->r.set(Prefs.weather()));
-                add(rows,action("Detailed weather",()->Prefs.setDetailedWeather(!Prefs.detailedWeather())),
-                    tr("Show or hide the forecast below shortcuts."),r->r.set(Prefs.detailedWeather()));
-                add(rows,action("City",()->editor("city")),null,r->r.value=Prefs.city());
-                add(rows,adjust("Temperature",d->{String[] units={"auto","C","F"};int i=java.util.Arrays.asList(units).indexOf(Prefs.temperature());Prefs.setTemperature(units[(i+d+3)%3]);}),
-                    null,r->r.value=Prefs.temperature().equals("auto")?tr("Automatic"):"°"+Prefs.temperature());
-                add(rows,action("Refresh weather",()->{HomeData h=HomeData.get(this);h.settingsChanged();h.refreshIfStale();}),null,null);
+            case CLOCK:  // the clock and where the weather comes from
+                add(rows,choice("Clock format",this::clockChoices,()->java.util.Arrays.asList("auto","12","24").indexOf(Prefs.clockFormat()),
+                        i->Prefs.setClockFormat(new String[]{"auto","12","24"}[i])),
+                    tr("12 or 24 hours. Automatic follows the TV's setting. OK changes it."),
+                    r->r.value=Prefs.clockFormat().equals("auto")?tr("Automatic"):Prefs.clockFormat()+"h").icon("clock").group(tr("Clock"));
+                add(rows,action("City",()->editor("city")),
+                    tr("The city of the weather. It also sets when the home screen turns dark at sunset."),r->r.value=Prefs.city()).icon("pin").group(tr("Weather"));
+                add(rows,choice("Temperature",this::unitChoices,()->java.util.Arrays.asList("auto","C","F").indexOf(Prefs.temperature()),
+                        i->Prefs.setTemperature(new String[]{"auto","C","F"}[i])),
+                    tr("Celsius or Fahrenheit. Automatic follows your region. OK changes it."),
+                    r->r.value=Prefs.temperature().equals("auto")?tr("Automatic"):"°"+Prefs.temperature()).icon("thermo");
+                add(rows,action("Refresh weather",()->{HomeData h=HomeData.get(this);h.settingsChanged();h.refreshIfStale();}),
+                    tr("Gets the weather now instead of at the next update, every 30 minutes."),null).icon("sync");
                 break;
             case CONTENT:
-                add(rows,action("Content apps",()->open(ContinueSettingsActivity.class)),null,null);
+                add(rows,action("Content apps",()->open(ContinueSettingsActivity.class)),
+                    tr("Which apps may show what you were watching and their recommendations on the home screen."),null).icon("apps");
                 add(rows,action("Restore hidden content",()->{Prefs.restoreHiddenContent();ContinueWatching.get(this).refresh(true);}),
-                    null,r->r.value=Integer.toString(Prefs.hiddenContent().size()));
+                    tr("Shows again everything you hid from Recently watched and Recommended."),
+                    r->r.value=count(Prefs.hiddenContent().size())).icon("hidden");
                 break;
             case CONNECTIONS:   // AirPlay first: everything about it is on its own page; then the network
-                add(rows,action("AirPlay",()->open(AirPlayActivity.class)),null,
-                    r->r.value=receiverVersion.isEmpty()?tr("Not installed"):airplay.value());
+                add(rows,action("AirPlay",()->open(AirPlayActivity.class)),
+                    tr("Mirror an iPhone, iPad or Mac on this TV. OK opens AirPlay's page: turn it on, install or update the receiver."),
+                    r->r.value=receiverVersion.isEmpty()?tr("Not installed"):airplay.value()).icon("tv").group(tr("AirPlay"));
                 SettingsPage.Row network=info(tr("Network")),address=info("IP");network.network=true;
+                network.hint=tr("This TV's connection: Wi-Fi or cable, and whether it reaches the internet.");
+                address.hint=tr("This TV's address on your home network.");
                 add(rows,network,null,r->{
                     NetworkStatus.Snapshot n=page.networkSnapshot();r.state=n.state;r.transport=n.transport;
-                    r.value=NetworkStatus.label(n);r.color=NetworkStatus.color(n);address.value=n.addresses.isEmpty()?"—":n.addresses;});
-                add(rows,address,null,null);
-                add(rows,action("Wi-Fi settings",()->SettingsLinks.open(this,Settings.ACTION_WIFI_SETTINGS)),null,null);
-                add(rows,action("Bluetooth",()->SettingsLinks.openBluetooth(this)),null,null);
+                    r.value=NetworkStatus.label(n);r.color=NetworkStatus.color(n);address.value=n.addresses.isEmpty()?"—":n.addresses;}).group(tr("Network"));
+                add(rows,address,null,null).icon("info");
+                add(rows,action("Wi-Fi settings",()->SettingsLinks.open(this,Settings.ACTION_WIFI_SETTINGS)),
+                    tr("Opens the TV's Wi-Fi settings to choose or change the network."),null).icon("wifi_settings");
+                add(rows,action("Bluetooth",()->SettingsLinks.openBluetooth(this)),
+                    tr("Opens the TV's Bluetooth settings to pair headphones, speakers or game controllers."),null).icon("bluetooth");
                 break;
             case DEVICE:   // what this device is, then its memory
                 add(rows,action("Device mode",()->editor("device")),
                     tr("TV box / stick for a device plugged into a TV. Television when PureTV runs on the TV itself; it adds the TV's inputs and remote shortcuts."),
-                    r->r.value=tr(DeviceProfiles.label(Prefs.deviceMode())));
+                    r->r.value=tr(DeviceProfiles.label(Prefs.deviceMode()))).icon("screen").group(tr("Device"));
                 add(rows,adjust("Lightweight mode",d->Prefs.setLightweight(!Prefs.lightweight())),
-                    tr("For slower TVs: no shadows or glass effects, and screensaver photos stay still. Uses less memory and processor."),r->r.set(Prefs.lightweight()));
+                    tr("For slower TVs: no shadows or glass effects, and screensaver photos stay still. Uses less memory and processor."),r->r.set(Prefs.lightweight())).icon("bolt");
                 add(rows,adjust("Voice assistant",d->{if(Prefs.setAssistantOff(!Prefs.assistantOff()))HomeMode.assistant(getApplicationContext());}),
                     tr("Off turns Google Assistant off and frees its memory (needs PureTV as the default home screen). The remote's microphone button then stops working; choosing Original as the default home screen turns it back on."),
-                    r->r.set(!Prefs.assistantOff()));
-                add(rows,info("RAM"),null,r->r.value=ResourceStatus.value(this,resources.ramAvailable,resources.ramTotal));
-                add(rows,info(tr("Storage")),null,r->r.value=ResourceStatus.value(this,resources.storageAvailable,resources.storageTotal));
+                    r->r.set(!Prefs.assistantOff())).icon("mic");
+                add(rows,info("RAM"),tr("Available / total. Values refresh when you open this screen."),
+                    r->r.value=ResourceStatus.value(this,resources.ramAvailable,resources.ramTotal)).icon("memory").group(tr("Memory"));
+                add(rows,info(tr("Storage")),tr("Available / total. Values refresh when you open this screen."),
+                    r->r.value=ResourceStatus.value(this,resources.storageAvailable,resources.storageTotal)).icon("storage");
                 add(rows,action("Free up memory",this::freeMemory),   // "Free memory" is the status metric's name
                     tr("Closes apps waiting in the background. The app on screen and AirPlay keep running; closed apps start again when you open them."),
-                    r->r.value=freeStatus);
+                    r->r.value=freeStatus).icon("sparkles");
                 add(rows,adjust("Automatic memory cleanup",d->Prefs.setAutoFreeMemory(!Prefs.autoFreeMemory())),
                     tr("When less than 15% of memory is left, returning to the home screen frees it, at most every 15 minutes. The app you just left starts again from the beginning."),
-                    r->r.set(Prefs.autoFreeMemory()));
+                    r->r.set(Prefs.autoFreeMemory())).icon("sync");
                 add(rows,adjust("Optimise apps during the screensaver",d->Prefs.setOptimizeApps(!Prefs.optimizeApps())),
                     tr("Ten minutes into the screensaver, PureTV prepares the apps you installed to open and run faster, as Android itself would but rarely gets to on a TV. Pressing a key stops it. Needs PureTV as the default home screen."),
-                    r->r.set(Prefs.optimizeApps()));
+                    r->r.set(Prefs.optimizeApps())).icon("bedtime");
                 break;
             case REMOTE:
                 if(RemoteKeys.supported()){
                     String[] buttons=editors.remoteLabels();
-                    for(int i=0;i<buttons.length;i++){final int key=i;rows.add(new SettingsPage.Row(buttons[i],d->remotePicker(key)));}
+                    for(int i=0;i<buttons.length;i++){
+                        final int key=i;SettingsPage.Row b=new SettingsPage.Row(buttons[i],d->remotePicker(key)).icon("remote");
+                        if(i==0)b.group(tr("Buttons"));rows.add(b);
+                    }
                     values.add(()->editors.updateRemote(data));   // the leading rows, one per remote button
                 }
-                if(Prefs.television())add(rows,action("TV remote shortcuts",()->Prefs.setTvRemote(!Prefs.tvRemote())),null,r->r.set(Prefs.tvRemote()));
-                add(rows,action("Remote button test",()->open(RemoteTestActivity.class)),null,null);
+                if(Prefs.television())add(rows,action("TV remote shortcuts",()->Prefs.setTvRemote(!Prefs.tvRemote())),
+                    tr("On the PureTV home screen: Input opens sources, TV opens live TV, Menu opens quick settings."),r->r.set(Prefs.tvRemote())).icon("tv").group(tr("Remote"));
+                SettingsPage.Row test=add(rows,action("Remote button test",()->open(RemoteTestActivity.class)),
+                    tr("Press any button to see what reaches PureTV, and give a button a job."),null).icon("gamepad");
+                if(!Prefs.television()&&rows.size()>1)test.group(tr("Remote"));   // no heading over a lone row
                 break;
             default:   // SYSTEM: what you change first, what you do now and then, what you only read last
                 add(rows,action("Default home screen",()->AppLock.confirm(this,()->editor("home"))),
                     tr("Which home screen the TV opens. To go back to the TV's own home screen, choose TV's original home screen here; PureTV stays installed and you can return to it the same way. Several PureTV features need PureTV as the home screen and say so."),
-                    r->r.value=editors.homeValue());
-                add(rows,action("Language",()->editor("language")),null,
-                    r->r.value=Prefs.language().equals("auto")?tr("Automatic"):Ui.languageName(Prefs.language()));
-                add(rows,action("TV Settings",()->SettingsLinks.open(this,Settings.ACTION_SETTINGS)),null,null);
+                    r->r.value=editors.homeValue()).icon("home").group(tr("General"));
+                add(rows,action("Language",()->editor("language")),tr("PureTV's language. Automatic follows the TV."),
+                    r->r.value=Prefs.language().equals("auto")?tr("Automatic"):Ui.languageName(Prefs.language())).icon("globe");
+                add(rows,action("TV Settings",()->SettingsLinks.open(this,Settings.ACTION_SETTINGS)),
+                    tr("Opens the TV's own settings: picture, sound, network and more."),null).icon("tv_settings");
                 add(rows,action("Updates",()->open(UpdateActivity.class)),
                     tr("Check PureTV's GitHub release, install a newer version, and choose daily notices or automatic installs."),
-                    r->{String mode=Prefs.updateMode();r.value=tr(InstallRules.AUTO.equals(mode)?"Install automatically":InstallRules.OFF.equals(mode)?"Off":"Notify");});
+                    r->{String mode=Prefs.updateMode();r.value=tr(InstallRules.AUTO.equals(mode)?"Install automatically":InstallRules.OFF.equals(mode)?"Off":"Notify");}).icon("sync");
                 add(rows,action("Back up settings",()->backup(false)),
                     tr("Saves layout, shelves, shortcuts, content sources, city, theme and remote buttons. Viewing history and hidden content are not included. When PureTV is the default home screen, a copy also goes to Download/PureTV-settings.json."),
-                    r->r.value=!backupStatus.isEmpty()?backupStatus:backupSaved==0?tr("Not saved yet"):date(backupSaved));
+                    r->r.value=!backupStatus.isEmpty()?backupStatus:backupSaved==0?tr("Not saved yet"):date(backupSaved)).icon("backup").group(tr("Backup"));
                 add(rows,action("Restore settings",()->backup(true)),tr("Replaces these settings with the backup. A newer copy in Download is used first."),
-                    r->r.value=!restoreStatus.isEmpty()?restoreStatus:backupSaved==0?tr("No backup"):"");
-                add(rows,action("Setup guide",()->WelcomeActivity.open(this)),null,null);
+                    r->r.value=!restoreStatus.isEmpty()?restoreStatus:backupSaved==0?tr("No backup"):"").icon("restore");
+                add(rows,action("Setup guide",()->WelcomeActivity.open(this)),
+                    tr("Goes through the first steps again: device, layout, background, city and AirPlay."),null).icon("guide").group(tr("Help"));
                 add(rows,action("Status and notices",()->editor("status")),
-                    tr("What PureTV measured the last time the home screen was switched, and its recent notices. Useful when something doesn't work."),null);
-                add(rows,info(tr("Version")),null,r->r.value=appVersion);
-                add(rows,action("Licences",()->Credits.show(this)),null,null);
+                    tr("What PureTV measured the last time the home screen was switched, and its recent notices. Useful when something doesn't work."),null).icon("bell");
+                add(rows,info(tr("Version")),tr("The PureTV version on this TV."),r->r.value=appVersion).icon("info").group(tr("About"));
+                add(rows,action("Licences",()->Credits.show(this)),
+                    tr("Credits and the licences of the font, symbols, photos and other parts PureTV uses."),null).icon("document");
         }
-        SettingsPage.Data nextData=new SettingsPage.Data(categories()[category],tr("Make yourself at home"),"settings",rows.toArray(new SettingsPage.Row[0]));
-        nextData.hint=category==HOME?tr("Choose the layout, arrange the shelves, and hide or lock apps.")
+        SettingsPage.Data nextData=new SettingsPage.Data(categories()[category],"","settings",rows.toArray(new SettingsPage.Row[0]));
+        nextData.hint=category==HOME?tr("Everything on the home screen: its layout, the clock screen's photo and weather, shortcuts, and which apps are hidden or locked.")
+            :category==LOOK?tr("The theme, the interface sounds and the screensaver.")
+            :category==CLOCK?tr("How the time is shown and the city of the weather.")
             :category==CONTENT?tr("Only content shared by supported apps appears here. Hidden content stays hidden until you restore it.")
-            :category==DEVICE?tr("Available / total. Values refresh when you open this screen.")
-            :category==REMOTE?tr("TV remote shortcuts work on the PureTV home screen only. Input opens sources, TV opens live TV, Menu opens quick settings. Power, volume, channels and voice stay with the system.")+"\n"+editors.remoteHint():tr("Right opens options. Back returns to categories.");
+            :category==CONNECTIONS?tr("AirPlay, this TV's network, Wi-Fi and Bluetooth.")
+            :category==DEVICE?tr("What this device is, how light PureTV runs, and its memory.")
+            :category==REMOTE?tr("TV remote shortcuts work on the PureTV home screen only. Input opens sources, TV opens live TV, Menu opens quick settings. Power, volume, channels and voice stay with the system.")+"\n"+editors.remoteHint()
+            :tr("The default home screen, language, updates, backups and help.");
         if(category==CONNECTIONS)receiverVersion=AirPlayReceiver.themedVersion(this);
         if(category==SYSTEM)backupSaved=SettingsBackup.savedAt(this);
         installPage(nextData,positions[category],navigation);
@@ -224,6 +330,7 @@ public class SettingsActivity extends Activity {
     private void installPage(SettingsPage.Data next,int selected,boolean navigation){
         if(page!=null)page.pause();
         data=next;data.categories=categories();data.categorySymbols=CATEGORY_SYMBOLS;data.category=category;
+        if(editors.opened()){data.crumb=tr("Settings")+" › "+categories()[category];data.footer=categories()[category];}
         data.selectCategory=n->{if(n!=category||editors.opened())showCategory(n);};
         page=new SettingsPage(this,data,this::update);page.select(selected);page.navigationFocus(navigation);
         setContentView(page);if(resumed&&preview==null)page.resume();
@@ -293,7 +400,20 @@ public class SettingsActivity extends Activity {
         if(!resume&&!WelcomeStore.shouldShow(this))return false;
         routingWelcome=true;WelcomeActivity.open(this);finish();return true;
     }
-    @Override protected void onNewIntent(Intent i){super.onNewIntent(i);setIntent(i);routeWelcome();}
+    @Override protected void onNewIntent(Intent i){super.onNewIntent(i);setIntent(i);if(!routeWelcome()&&page!=null)startOver();}
+    /*
+     * Settings opens at its start every time it is opened again, as a TV's own settings do: the Home key (or any other way
+     * out the user chose) leaves it, and the next visit starts at the first category with nothing open. Pages this
+     * screen opens itself (Updates, AirPlay, TV Settings…) are not a way out, so they come back to where they were.
+     */
+    private boolean launching,leaving;
+    @Override public void startActivityForResult(Intent intent,int code,Bundle options){launching=true;super.startActivityForResult(intent,code,options);}
+    @Override protected void onUserLeaveHint(){if(!launching)leaving=true;super.onUserLeaveHint();}
+    @Override protected void onStart(){super.onStart();launching=false;}
+    @Override protected void onStop(){super.onStop();if(leaving&&!isFinishing()&&page!=null){leaving=false;startOver();}}
+    private void startOver(){
+        closePreview(false);showCategory(0,true);java.util.Arrays.fill(positions,0);page.select(0);
+    }
     private void showPreview(){
         if(preview!=null)return;
         positions[category]=page.focusedIndex();page.pause();airplay.pause();editors.pause();

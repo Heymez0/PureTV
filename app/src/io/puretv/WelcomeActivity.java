@@ -168,6 +168,9 @@ public class WelcomeActivity extends Activity {
             case WelcomeView.LAYOUT_CLOCK:layout(HomeContentModes.CLOCK);break;
             case WelcomeView.LAYOUT_RECENT:layout(HomeContentModes.RECENT);break;
             case WelcomeView.LAYOUT_COMBINED:layout(HomeContentModes.COMBINED);break;
+            case WelcomeView.LOOK_PHOTOS:case WelcomeView.LOOK_CLASSIC:
+                if(flow.step!=WelcomeFlow.LOOK)return;
+                Prefs.setScene(action==WelcomeView.LOOK_PHOTOS?Scenes.AUTO:Scenes.CLASSIC);flow.next();render();break;
             case WelcomeView.AIRPLAY_NOW:installAirplay();break;
             case WelcomeView.CITY_A:pickCity(0);break;
             case WelcomeView.CITY_B:pickCity(1);break;

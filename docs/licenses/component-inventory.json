@@ -1,81 +1,177 @@
 {
-  "reviewed_on": "2026-10-25",
-  "components": [
-    {
-      "name": "PureTV",
-      "license": "MIT",
-      "path": "LICENSE",
-      "source": "https://github.com/Heymez0/PureTV",
-      "sha256": "3c9c8215318bb4667c742fd4583b12136d39e65abd7da9da30b50fe2e602f57f"
-    },
-    {
-      "name": "Launcher portions",
-      "license": "MIT",
-      "path": "docs/licenses/LICENSE-launcher-MIT.txt",
-      "source": "https://github.com/simbasjungles/free-my-tv",
-      "sha256": "966ef935eb1e3929d31f862e7d04a80c88cf695d0e659992bba6fef1e13e69c3"
-    },
-    {
-      "name": "Inter",
-      "license": "OFL-1.1",
-      "path": "app/assets/fonts/OFL.txt",
-      "source": "https://github.com/rsms/inter",
-      "sha256": "262481e844521b326f5ecd053e59b98c8b2da78c8ee1bdbb6e8174305e54935a"
-    },
-    {
-      "name": "Material Symbols",
-      "license": "Apache-2.0",
-      "path": "app/assets/symbols/LICENSE-material-symbols.txt",
-      "source": "https://github.com/google/material-design-icons",
-      "sha256": "58d1e17ffe5109a7ae296caafcadfdbe6a7d176f0bc4ab01e12a689b0499d8bd"
-    },
-    {
-      "name": "Simple Icons web SVGs",
-      "license": "CC0-1.0",
-      "path": "docs/licenses/LICENSE-simple-icons-CC0.txt",
-      "source": "https://github.com/simple-icons/simple-icons",
-      "sha256": "9046848b63a5c92bff14e4accca80bd987e0623b74adf9226ce5198d312b79d5"
-    },
-    {
-      "name": "TMDB attribution mark",
-      "license": "TMDB branding terms",
-      "path": "tools/artwork/tmdb-logo.svg",
-      "source": "https://developer.themoviedb.org/docs/faq",
-      "sha256": "4698ff4b3cf7244ae04c08866c59bf86602cbe21bffe7ac72a4ddfe44552fcb9"
-    },
-    {
-      "name": "TMDB attribution raster",
-      "license": "TMDB branding terms",
-      "path": "app/assets/licenses/tmdb-logo.png",
-      "source": "https://files.readme.io/29c6fee-blue_short.svg",
-      "sha256": "f4f85579a2bca3e07ebf80628cf1ab504f122a8e37e9cccd9b28954db92ac244"
-    },
-    {
-      "name": "PureTV icon master",
-      "license": "MIT",
-      "path": "tools/artwork/puretv-icon.svg",
-      "source": "https://github.com/Heymez0/PureTV",
-      "sha256": "eaa0bbafcdc3304a4905b1974ba213fd3acfe06396967d51f7f9c8263e19e77e"
-    }
-  ],
-  "services": [
-    {
-      "name": "Open-Meteo weather / GeoNames geocoding",
-      "license": "CC-BY-4.0",
-      "source": "https://open-meteo.com/en/licence",
-      "changes": "Formatting, unit conversion and location lookup results"
-    },
-    {
-      "name": "TMDB",
-      "source": "https://developer.themoviedb.org/docs/faq",
-      "notice": "This product uses the TMDB API but is not endorsed or certified by TMDB."
-    },
-    {
-      "name": "Watchmode",
-      "source": "https://api.watchmode.com/",
-      "scope": "Optional builder-supplied API key; no credentials bundled"
-    }
-  ],
-  "separate_receiver": "tools/airplay/source-manifest.json records the optional GPL receiver and corresponding source; neither is inside the MIT launcher APK.",
-  "trademarks": "App logos and recommendation artwork belong to their owners; no affiliation or MIT relicensing is claimed."
+ "reviewed_on": "2026-10-25",
+ "components": [
+  {
+   "name": "PureTV",
+   "license": "MIT",
+   "path": "LICENSE",
+   "source": "https://github.com/Heymez0/PureTV",
+   "sha256": "3c9c8215318bb4667c742fd4583b12136d39e65abd7da9da30b50fe2e602f57f"
+  },
+  {
+   "name": "Launcher portions",
+   "license": "MIT",
+   "path": "docs/licenses/LICENSE-launcher-MIT.txt",
+   "source": "https://github.com/simbasjungles/free-my-tv",
+   "sha256": "966ef935eb1e3929d31f862e7d04a80c88cf695d0e659992bba6fef1e13e69c3"
+  },
+  {
+   "name": "Inter",
+   "license": "OFL-1.1",
+   "path": "app/assets/fonts/OFL.txt",
+   "source": "https://github.com/rsms/inter",
+   "sha256": "262481e844521b326f5ecd053e59b98c8b2da78c8ee1bdbb6e8174305e54935a"
+  },
+  {
+   "name": "Material Symbols",
+   "license": "Apache-2.0",
+   "path": "app/assets/symbols/LICENSE-material-symbols.txt",
+   "source": "https://github.com/google/material-design-icons",
+   "sha256": "58d1e17ffe5109a7ae296caafcadfdbe6a7d176f0bc4ab01e12a689b0499d8bd"
+  },
+  {
+   "name": "Simple Icons web SVGs",
+   "license": "CC0-1.0",
+   "path": "docs/licenses/LICENSE-simple-icons-CC0.txt",
+   "source": "https://github.com/simple-icons/simple-icons",
+   "sha256": "9046848b63a5c92bff14e4accca80bd987e0623b74adf9226ce5198d312b79d5"
+  },
+  {
+   "name": "TMDB attribution mark",
+   "license": "TMDB branding terms",
+   "path": "tools/artwork/tmdb-logo.svg",
+   "source": "https://developer.themoviedb.org/docs/faq",
+   "sha256": "4698ff4b3cf7244ae04c08866c59bf86602cbe21bffe7ac72a4ddfe44552fcb9"
+  },
+  {
+   "name": "TMDB attribution raster",
+   "license": "TMDB branding terms",
+   "path": "app/assets/licenses/tmdb-logo.png",
+   "source": "https://files.readme.io/29c6fee-blue_short.svg",
+   "sha256": "f4f85579a2bca3e07ebf80628cf1ab504f122a8e37e9cccd9b28954db92ac244"
+  },
+  {
+   "name": "PureTV icon master",
+   "license": "MIT",
+   "path": "tools/artwork/puretv-icon.svg",
+   "source": "https://github.com/Heymez0/PureTV",
+   "sha256": "eaa0bbafcdc3304a4905b1974ba213fd3acfe06396967d51f7f9c8263e19e77e"
+  },
+  {
+   "name": "Background photo: Crimea, Ai-Petri, low clouds",
+   "license": "CC-BY-SA-4.0",
+   "path": "app/assets/scenes/clouds.webp",
+   "source": "https://commons.wikimedia.org/wiki/File:Crimea,_Ai-Petri,_low_clouds.jpg",
+   "author": "Dmytro Balkhovitin",
+   "sha256": "2f6a4476a4d5bcd9cdff1de76d5ecc791cb1d550cf47e7bd7b6e7150d388457f"
+  },
+  {
+   "name": "Background photo: Crimea, Ai-Petri, low clouds (foreground cut-out)",
+   "license": "CC-BY-SA-4.0",
+   "path": "app/assets/scenes/clouds-front.webp",
+   "source": "https://commons.wikimedia.org/wiki/File:Crimea,_Ai-Petri,_low_clouds.jpg",
+   "author": "Dmytro Balkhovitin",
+   "sha256": "f718b76d6383aa6e477a12ead5f2556e558b3976581979ffe97bce1772b5b310"
+  },
+  {
+   "name": "Background photo: Eilean Donan Castle, Scotland - Jan 2011",
+   "license": "CC-BY-SA-3.0",
+   "path": "app/assets/scenes/castle.webp",
+   "source": "https://commons.wikimedia.org/wiki/File:Eilean_Donan_Castle,_Scotland_-_Jan_2011.jpg",
+   "author": "Diliff",
+   "sha256": "58f9f64defb78550edfbf156b565924ebd9d11a58a8ecfbc636cb56f2f4373b2"
+  },
+  {
+   "name": "Background photo: Amanhecer no Hercules --",
+   "license": "CC-BY-SA-3.0",
+   "path": "app/assets/scenes/peaks.webp",
+   "source": "https://commons.wikimedia.org/wiki/File:Amanhecer_no_Hercules_--.jpg",
+   "author": "Carlos Perez Couto",
+   "sha256": "6e5aa31ea3e5a94240ec9edaafc061df71e1c2b0fac23739607aeb133bb00553"
+  },
+  {
+   "name": "Background photo: Pedra Azul Milky Way",
+   "license": "CC-BY-SA-4.0",
+   "path": "app/assets/scenes/milkyway.webp",
+   "source": "https://commons.wikimedia.org/wiki/File:Pedra_Azul_Milky_Way.jpg",
+   "author": "EduardoMSNeves",
+   "sha256": "8d78199cfc2f82a067ab137dcfc393696bbc234c539761891db5c4be58bef22d"
+  },
+  {
+   "name": "Background photo: Pedra Azul Milky Way (foreground cut-out)",
+   "license": "CC-BY-SA-4.0",
+   "path": "app/assets/scenes/milkyway-front.webp",
+   "source": "https://commons.wikimedia.org/wiki/File:Pedra_Azul_Milky_Way.jpg",
+   "author": "EduardoMSNeves",
+   "sha256": "7c72dc8c6bf74973d108d10cc0610474a1bc207231632b812bb7a85ea41be56b"
+  },
+  {
+   "name": "Background photo: 2017-04 Circumpolar trails sunset at La Hague lighthouse",
+   "license": "CC-BY-SA-4.0",
+   "path": "app/assets/scenes/lighthouse.webp",
+   "source": "https://commons.wikimedia.org/wiki/File:2017-04_Circumpolar_trails_sunset_at_La_Hague_lighthouse.jpg",
+   "author": "Antoine Lamielle",
+   "sha256": "ace380769f80ff5c6d26446336ac667b898021d927da6e5d37a2439266014e15"
+  },
+  {
+   "name": "Background photo: Crimea, Ai-Petri, low clouds (web glass-digit texture)",
+   "license": "CC-BY-SA-4.0",
+   "path": "web/scenes/clouds-glow.webp",
+   "source": "https://commons.wikimedia.org/wiki/File:Crimea,_Ai-Petri,_low_clouds.jpg",
+   "author": "Dmytro Balkhovitin",
+   "sha256": "c40b988a801fd7a6eb22e29b2aef58503c6fba9f1015545c61bc00592a660255"
+  },
+  {
+   "name": "Background photo: Eilean Donan Castle, Scotland - Jan 2011 (web glass-digit texture)",
+   "license": "CC-BY-SA-3.0",
+   "path": "web/scenes/castle-glow.webp",
+   "source": "https://commons.wikimedia.org/wiki/File:Eilean_Donan_Castle,_Scotland_-_Jan_2011.jpg",
+   "author": "Diliff",
+   "sha256": "c4d8215a366dfbd2e2f8f17a251748124877069e4a61b43eaf448a7ad3172c34"
+  },
+  {
+   "name": "Background photo: Amanhecer no Hercules -- (web glass-digit texture)",
+   "license": "CC-BY-SA-3.0",
+   "path": "web/scenes/peaks-glow.webp",
+   "source": "https://commons.wikimedia.org/wiki/File:Amanhecer_no_Hercules_--.jpg",
+   "author": "Carlos Perez Couto",
+   "sha256": "98c72fa71b020bf5b38d1949f7cc2724f3f39ed575e8d8aa573e1318c4a87a33"
+  },
+  {
+   "name": "Background photo: Pedra Azul Milky Way (web glass-digit texture)",
+   "license": "CC-BY-SA-4.0",
+   "path": "web/scenes/milkyway-glow.webp",
+   "source": "https://commons.wikimedia.org/wiki/File:Pedra_Azul_Milky_Way.jpg",
+   "author": "EduardoMSNeves",
+   "sha256": "caf8e008511d572b9e48f002b365167a81aaa5a53babf895aba5b1b93e7d55c7"
+  },
+  {
+   "name": "Background photo: 2017-04 Circumpolar trails sunset at La Hague lighthouse (web glass-digit texture)",
+   "license": "CC-BY-SA-4.0",
+   "path": "web/scenes/lighthouse-glow.webp",
+   "source": "https://commons.wikimedia.org/wiki/File:2017-04_Circumpolar_trails_sunset_at_La_Hague_lighthouse.jpg",
+   "author": "Antoine Lamielle",
+   "sha256": "6df8e6463d2de44647ef12c1b97b7b1864c831ae36b90ad00259d059bd3da6e6"
+  }
+ ],
+ "services": [
+  {
+   "name": "Open-Meteo weather / GeoNames geocoding",
+   "license": "CC-BY-4.0",
+   "source": "https://open-meteo.com/en/licence",
+   "changes": "Formatting, unit conversion and location lookup results"
+  },
+  {
+   "name": "TMDB",
+   "source": "https://developer.themoviedb.org/docs/faq",
+   "notice": "This product uses the TMDB API but is not endorsed or certified by TMDB."
+  },
+  {
+   "name": "Watchmode",
+   "source": "https://api.watchmode.com/",
+   "scope": "Optional builder-supplied API key; no credentials bundled"
+  }
+ ],
+ "separate_receiver": "tools/airplay/source-manifest.json records the optional GPL receiver and corresponding source; neither is inside the MIT launcher APK.",
+ "trademarks": "App logos and recommendation artwork belong to their owners; no affiliation or MIT relicensing is claimed."
 }

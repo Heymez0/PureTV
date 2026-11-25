@@ -34,6 +34,8 @@ final class Symbols {
             Bitmap b = null;
             if ("network".equals(name) || "shortcut_edit".equals(name) || "memory".equals(name) || "remote".equals(name)) {
                 b = localIcon(name);
+            } else if (LINE_ICONS.contains(name)) {
+                b = lineIcon(name);
             } else try (InputStream in = c.getAssets().open("symbols/" + name + ".png")) {
                 b = BitmapFactory.decodeStream(in);
                 if (b != null) {
@@ -45,6 +47,148 @@ final class Symbols {
             CACHE.put(name, b);
             return b;
         }
+    }
+
+    /** Line icons drawn here for the settings rows (no font file needed): photo, text weight, layout, lock and so on. */
+    private static final java.util.Set<String> LINE_ICONS = new java.util.HashSet<>(java.util.Arrays.asList(
+        "photo", "weight", "layout", "lock", "power", "palette", "clock", "pin", "thermo", "bluetooth", "mic", "storage",
+        "globe", "backup", "restore", "guide", "info", "document", "bolt", "hidden", "wifi_settings", "screen"));
+
+    /**
+     * The settings icons on a 172 px canvas with the same stroke as the local ones below (11 px, round caps), so they sit
+     * with the Material Symbols around them. Drawn once into the alpha cache.
+     */
+    private static Bitmap lineIcon(String name) {
+        Bitmap image = Bitmap.createBitmap(172, 172, Bitmap.Config.ALPHA_8);
+        Canvas c = new Canvas(image);
+        Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
+        p.setColor(0xFFFFFFFF);
+        p.setStrokeWidth(11);
+        p.setStrokeCap(Paint.Cap.ROUND);
+        p.setStrokeJoin(Paint.Join.ROUND);
+        p.setStyle(Paint.Style.STROKE);
+        android.graphics.Path path = new android.graphics.Path();
+        RectF o = new RectF();
+        // Thin outlines read smaller than the filled symbols beside them, so they are drawn a little larger.
+        c.scale(1.16f, 1.16f, 86, 86);
+        p.setStrokeWidth(10.5f);
+        switch (name) {
+            case "photo":
+                c.drawRoundRect(30, 40, 142, 132, 18, 18, p);
+                path.moveTo(36, 118); path.lineTo(72, 82); path.lineTo(98, 108); path.lineTo(114, 92); path.lineTo(138, 116);
+                c.drawPath(path, p);
+                c.drawCircle(110, 68, 9, p);
+                break;
+            case "weight":   // an "A" beside a bold bar: how heavy the type is
+                path.moveTo(30, 136); path.lineTo(70, 38); path.lineTo(78, 38); path.lineTo(118, 136);
+                c.drawPath(path, p);
+                c.drawLine(48, 98, 100, 98, p);
+                p.setStrokeWidth(18); c.drawLine(142, 66, 142, 136, p);
+                break;
+            case "layout":
+                c.drawRoundRect(26, 34, 146, 138, 18, 18, p);
+                c.drawLine(26, 104, 146, 104, p);
+                p.setStyle(Paint.Style.FILL);
+                for (int i = 0; i < 3; i++) c.drawCircle(58 + i * 28, 121, 6, p);
+                break;
+            case "lock":
+                c.drawRoundRect(40, 78, 132, 142, 16, 16, p);
+                o.set(56, 30, 116, 96); c.drawArc(o, 180, 180, false, p);
+                c.drawLine(56, 63, 56, 78, p); c.drawLine(116, 63, 116, 78, p);
+                break;
+            case "power":
+                c.drawLine(86, 28, 86, 84, p);
+                o.set(36, 40, 136, 140); c.drawArc(o, -60, 300, false, p);
+                break;
+            case "palette":
+                o.set(28, 28, 144, 144); c.drawArc(o, 60, 300, false, p);
+                path.moveTo(115, 136); path.cubicTo(98, 130, 98, 112, 114, 110); path.lineTo(128, 110); path.cubicTo(138, 110, 144, 100, 144, 86);
+                c.drawPath(path, p);
+                p.setStyle(Paint.Style.FILL);
+                c.drawCircle(62, 76, 9, p); c.drawCircle(86, 56, 9, p); c.drawCircle(112, 70, 9, p); c.drawCircle(58, 106, 9, p);
+                break;
+            case "clock":
+                c.drawCircle(86, 86, 58, p);
+                path.moveTo(86, 52); path.lineTo(86, 88); path.lineTo(110, 104);
+                c.drawPath(path, p);
+                break;
+            case "pin":
+                path.moveTo(86, 146); path.cubicTo(86, 146, 36, 102, 36, 72); path.cubicTo(36, 44, 58, 24, 86, 24);
+                path.cubicTo(114, 24, 136, 44, 136, 72); path.cubicTo(136, 102, 86, 146, 86, 146);
+                c.drawPath(path, p); c.drawCircle(86, 72, 15, p);
+                break;
+            case "thermo":
+                o.set(70, 22, 102, 54); c.drawArc(o, 180, 180, false, p);
+                c.drawLine(70, 38, 70, 104, p); c.drawLine(102, 38, 102, 104, p);
+                o.set(56, 96, 116, 156); c.drawArc(o, -60, 300, false, p);
+                p.setStyle(Paint.Style.FILL); c.drawCircle(86, 126, 13, p);
+                break;
+            case "bluetooth":
+                path.moveTo(52, 58); path.lineTo(116, 114); path.lineTo(86, 142); path.lineTo(86, 30); path.lineTo(116, 58); path.lineTo(52, 114);
+                c.drawPath(path, p);
+                break;
+            case "mic":
+                c.drawRoundRect(64, 24, 108, 102, 22, 22, p);
+                o.set(42, 54, 130, 124); c.drawArc(o, 0, 180, false, p);
+                c.drawLine(86, 124, 86, 146, p);
+                break;
+            case "storage":
+                c.drawRoundRect(30, 40, 142, 78, 12, 12, p);
+                c.drawRoundRect(30, 94, 142, 132, 12, 12, p);
+                p.setStyle(Paint.Style.FILL); c.drawCircle(122, 59, 6, p); c.drawCircle(122, 113, 6, p);
+                break;
+            case "globe":
+                c.drawCircle(86, 86, 58, p);
+                c.drawLine(28, 86, 144, 86, p);
+                o.set(58, 28, 114, 144); c.drawOval(o, p);
+                break;
+            case "backup":
+            case "restore":
+                path.moveTo(50, 126); path.lineTo(40, 126); path.cubicTo(18, 126, 18, 90, 42, 88); path.cubicTo(44, 58, 86, 44, 104, 70);
+                path.cubicTo(128, 62, 150, 82, 142, 104); path.cubicTo(156, 110, 150, 126, 136, 126); path.lineTo(122, 126);
+                c.drawPath(path, p);
+                if ("backup".equals(name)) { c.drawLine(86, 140, 86, 92, p); c.drawLine(68, 110, 86, 92, p); c.drawLine(104, 110, 86, 92, p); }
+                else { c.drawLine(86, 92, 86, 140, p); c.drawLine(68, 122, 86, 140, p); c.drawLine(104, 122, 86, 140, p); }
+                break;
+            case "guide":
+                path.moveTo(86, 46); path.cubicTo(66, 32, 44, 32, 26, 40); path.lineTo(26, 132); path.cubicTo(44, 124, 66, 124, 86, 138);
+                path.cubicTo(106, 124, 128, 124, 146, 132); path.lineTo(146, 40); path.cubicTo(128, 32, 106, 32, 86, 46); path.lineTo(86, 138);
+                c.drawPath(path, p);
+                break;
+            case "info":
+                c.drawCircle(86, 86, 58, p);
+                c.drawLine(86, 80, 86, 118, p);
+                p.setStyle(Paint.Style.FILL); c.drawCircle(86, 56, 7, p);
+                break;
+            case "document":
+                path.moveTo(104, 26); path.lineTo(46, 26); path.lineTo(46, 146); path.lineTo(126, 146); path.lineTo(126, 48); path.close();
+                c.drawPath(path, p);
+                c.drawLine(66, 84, 106, 84, p); c.drawLine(66, 110, 106, 110, p);
+                break;
+            case "bolt":
+                path.moveTo(98, 22); path.lineTo(48, 96); path.lineTo(84, 96); path.lineTo(74, 150); path.lineTo(124, 76); path.lineTo(88, 76); path.close();
+                c.drawPath(path, p);
+                break;
+            case "hidden":
+                path.moveTo(22, 86); path.cubicTo(52, 36, 120, 36, 150, 86); path.cubicTo(120, 136, 52, 136, 22, 86);
+                c.drawPath(path, p); c.drawCircle(86, 86, 20, p);
+                c.drawLine(36, 136, 136, 36, p);
+                break;
+            case "wifi_settings":
+                for (int i = 0; i < 3; i++) {
+                    float r = 26 + i * 25;
+                    o.set(86 - r, 132 - r, 86 + r, 132 + r);
+                    c.drawArc(o, 225, 90, false, p);
+                }
+                p.setStyle(Paint.Style.FILL); c.drawCircle(86, 130, 8, p);
+                break;
+            default:   // "screen": a TV
+                c.drawRoundRect(22, 36, 150, 120, 16, 16, p);
+                c.drawLine(60, 144, 112, 144, p);
+                break;
+        }
+        image.setHasMipMap(true);
+        return image;
     }
 
     /** Small local vector symbols rasterized once, using the same alpha-bitmap cache as the other icons. */

@@ -65,6 +65,7 @@ final class Ui {
         if (loaded) return;
         loaded = true;
         AssetManager a = c.getAssets();
+        assets = a;
         thin = font(a, 32, 200);
         light = font(a, 32, 300);
         displayMedium = font(a, 32, 500);
@@ -72,6 +73,19 @@ final class Ui {
         regular = font(a, 14, 400);
         medium = font(a, 14, 500);
         semibold = font(a, 14, 600);
+    }
+
+    private static AssetManager assets;
+    private static final java.util.Map<Integer, Typeface> DISPLAY = new java.util.HashMap<>();
+
+    /** Inter for display sizes at any weight (the large clock's chosen weight), made once per weight. */
+    static synchronized Typeface display(int weight) {
+        Typeface t = DISPLAY.get(weight);
+        if (t == null) {
+            t = assets == null ? light : font(assets, 32, weight);
+            DISPLAY.put(weight, t);
+        }
+        return t;
     }
 
     /** Inter at an optical size (14 = text, 32 = display) and weight; the system font if the file is missing. */

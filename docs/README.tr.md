@@ -6,7 +6,7 @@
 
 [English / ana sayfa](../README.md) · [APK indir](https://github.com/Heymez0/PureTV/releases/latest/download/PureTV.apk) · [Ayrıntılı kurulum](INSTALL.md) · [Kaynak derleme](DEVELOPMENT.md)
 
-**Güncel sürüm: [PureTV v1.4.1](https://github.com/Heymez0/PureTV/releases/tag/v1.4.1)** · Android 9+
+**Güncel sürüm: [PureTV v1.4.2](https://github.com/Heymez0/PureTV/releases/tag/v1.4.2)** · Android 9+
 
 PureTV; Android TV, Google TV ve Android TV kutuları/stickleri için hafif bir ana ekrandır (başlatıcı).
 LG webOS ve Samsung Tizen için ayrı web sürümleri vardır. **Testlerin yapıldığı gerçek cihaz, Android TV 9 kullanan
@@ -21,7 +21,7 @@ içindedir.
 - **Ana ekranınızı seçin:** yalnız saat, son izlenenler ya da son izlenenler ve öneriler bir arada.
 - **Uygulamalar elinizin altında:** ayrı uygulama ve kısayol rafları, aşağıda diğer uygulamalar. OK'e basılı tutunca
   açılan menüden rafı düzenleyebilir, uygulamayı gizleyebilir, kaldırabilir ya da zorla durdurabilirsiniz.
-- **Size göre:** açık/koyu tema, içeriğe uyan (ya da düz kalan) arka plan, yağış olasılığıyla hava durumu, 12/24 saat. Siyah ekran koruyucu ya da TV'deki ve
+- **Size göre:** açık/koyu tema, saatin arkasında her gün ve gün batımından sonra değişen bir manzara fotoğrafı (ya da klasik renkler), içeriğe uyan (ya da düz kalan) arka plan, yağış olasılığıyla hava durumu, 12/24 saat. Siyah ekran koruyucu ya da TV'deki ve
   USB bellekteki kendi fotoğraflarınızla ekran koruyucu; saati ekran yanmasına karşı yavaşça kayar.
 - **Kontrol sizde:** sade hızlı ayarlar; bellek için **Boşalt** düğmesi ve **uyku zamanlayıcısı**. İsteğe bağlı hafif
   mod ve otomatik bellek boşaltma, istediğinizde RAM/depolama bilgisi, ayarları yedekleme ve geri yükleme, seçtiğiniz
@@ -70,7 +70,7 @@ PureTV'nin açık ve koyu teması var; **Otomatik** seçilirse gün doğumu ve b
 
 **[PureTV.apk indir](https://github.com/Heymez0/PureTV/releases/latest/download/PureTV.apk)** · [Sürüm sayfası](https://github.com/Heymez0/PureTV/releases/latest)
 
-Bu, Android 9 ve üzeri için imzalı v1.4.1 sürümüdür. **PureTV.apk** dosyasını indirin; GitHub'ın kendiliğinden
+Bu, Android 9 ve üzeri için imzalı v1.4.2 sürümüdür. **PureTV.apk** dosyasını indirin; GitHub'ın kendiliğinden
 eklediği "Source code" ZIP dosyaları geliştiriciler içindir.
 
 **Güncelleme:** yeni PureTV.apk'yı eskisinin üzerine kurun ya da **Sistem ve hakkında → Güncellemeler**'i kullanın; ayarlarınız korunur.

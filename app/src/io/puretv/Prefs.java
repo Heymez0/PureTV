@@ -238,6 +238,13 @@ final class Prefs {
     static boolean screensaverPhotos() { return sp().getBoolean("screensaver_photos", false); }
     static void setScreensaverPhotos(boolean on) { put("screensaver_photos", on); }
     /** Appearance → Background from content: the home background follows the first content card (on by default). */
+    /** The landscape behind the clock: Scenes.AUTO, a photo's id or Scenes.CLASSIC (the theme's colours). */
+    static String scene() { return Scenes.normalize(sp().getString("scene", Scenes.AUTO)); }
+    static void setScene(String value) { put("scene", Scenes.normalize(value)); }
+    /** The large clock's digit weight: 300, 400 or 600. */
+    static int clockWeight() { return Scenes.weight(sp().getString("clock_weight", "300")); }
+    static void setClockWeight(int value) { put("clock_weight", Integer.toString(Scenes.weight(Integer.toString(value)))); }
+
     static boolean contentBackground() { return sp().getBoolean("content_background", true); }
     static void setContentBackground(boolean on) { put("content_background", on); }
     /** Device and performance → Automatic memory cleanup (off by default). */

@@ -60,10 +60,61 @@ var Prefs = (function () {
     saver: function () { var m = pick('saver', 5); return typeof m === 'number' ? m : 5; },
     lite: function () { return pick('lite', false) === true; },
     clock: function () { var c = pick('clock', 'auto'); return c === '12' || c === '24' ? c : 'auto'; },
+    /** Settings → Appearance → Background photo: 'auto', a photo's id or 'classic' (Scenes). */
+    scene: function () { return Scenes.normalize(pick('scene', 'auto')); },
+    /** Settings → Clock and weather → Clock weight: 300, 400 or 600. */
+    clockWeight: function () { var w = pick('clockWeight', 300); return w === 400 || w === 600 ? w : 300; },
     backup: function () { try { return JSON.parse(localStorage.getItem('puretv.backup')); } catch (e) { return null; } },
     /** The shelf_apps of the build that last set the shelf, so a new one wins once over the TV's choice. */
     shelfConfig: function () { return pick('shelfConfig', ''); },
     set: function (name, value) { v[name] = value; save(); this.version++; }
+  };
+})();
+
+/**
+ * The landscape photos behind the clock (as Android's Scenes): Wikimedia Commons featured pictures under CC BY-SA,
+ * credited on screen and in the notices. Two have a "front", the rocks cut out of the photo, laid over the clock.
+ * clockTop: where the 300 px clock's box starts in the 1920×1080 stage; night: chosen after sunset in Automatic.
+ */
+var Scenes = (function () {
+  'use strict';
+  var ALL = [
+    {id: 'clouds', author: 'Dmytro Balkhovitin', licence: 'CC BY-SA 4.0', clockTop: 190, night: false, front: [360, 283, 1200, 190]},
+    {id: 'castle', author: 'Diliff', licence: 'CC BY-SA 3.0', clockTop: 112, night: false},
+    {id: 'peaks', author: 'Carlos Perez Couto', licence: 'CC BY-SA 3.0', clockTop: 112, night: false},
+    {id: 'milkyway', author: 'EduardoMSNeves', licence: 'CC BY-SA 4.0', clockTop: 280, night: true, front: [360, 459, 1200, 104]},
+    {id: 'lighthouse', author: 'Antoine Lamielle', licence: 'CC BY-SA 4.0', clockTop: 112, night: true}
+  ];
+  function byId(id) { for (var i = 0; i < ALL.length; i++) if (ALL[i].id === id) return ALL[i]; return null; }
+  return {
+    ALL: ALL,
+    WEIGHTS: [300, 400, 600],
+    byId: byId,
+    normalize: function (v) { return v === 'auto' || v === 'classic' || byId(v) ? v : 'auto'; },
+    /** The choices in Settings, in order: Automatic, each photo, Classic colours. */
+    choices: function () { var out = ['auto']; for (var i = 0; i < ALL.length; i++) out.push(ALL[i].id); out.push('classic'); return out; },
+    /** The photo for a choice now (null: the classic colours). Automatic: one day photo a day, a night photo after sunset. */
+    pick: function (choice, dark, now) {
+      choice = this.normalize(choice);
+      if (choice === 'classic') return null;
+      if (choice !== 'auto') return byId(choice);
+      var set = ALL.filter(function (s) { return s.night === !!dark; });
+      var day = Math.floor((now - new Date(now).getTimezoneOffset() * 60000) / 86400000);
+      return set[((day % set.length) + set.length) % set.length] || ALL[0];
+    },
+    /** Each name literally, so tools/translate.py finds it. */
+    label: function (choice) {
+      switch (choice) {
+        case 'auto': return tr('Automatic');
+        case 'classic': return tr('Classic colours');
+        case 'clouds': return tr('Sea of clouds');
+        case 'castle': return tr('Eilean Donan Castle');
+        case 'peaks': return tr('Misty peaks');
+        case 'milkyway': return tr('Milky Way');
+        default: return tr('Lighthouse at night');
+      }
+    },
+    weightName: function (w) { return w === 600 ? tr('Bold') : w === 400 ? tr('Regular') : tr('Thin'); }
   };
 })();
 

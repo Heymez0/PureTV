@@ -13,7 +13,7 @@ final class BackupRules {
 
     static final String[] STRINGS = {"language", "temperature", "theme", "clock_format", "device_mode", "city", "latitude",
             "longitude", "home_content_mode", "viewing_previous_mode", "shelf", "quick_shortcuts", "other_apps_order",
-            "hidden_apps", "startup"};
+            "hidden_apps", "startup", "scene", "clock_weight"};
     static final String[] BOOLEANS = {"lightweight", "tv_inputs", "inactive_inputs", "tv_remote", "sounds",
             "continue_watching", "viewing_information", "weather", "detailed_weather", "screensaver_photos", "content_background", "optimize_apps",
             "auto_free_memory"};
@@ -60,6 +60,9 @@ final class BackupRules {
             case "other_apps_order": return list(v, 200, false);
             case "hidden_apps": return String.join(",", FeatureRules.packages(v));
             case "startup": return FeatureRules.startup(v).equals(v) ? v : null;
+            // Kept free of Android classes (Scenes holds bitmaps): the same lists as Scenes.choices() and Scenes.WEIGHTS.
+            case "scene": return v.matches("auto|classic|clouds|castle|peaks|milkyway|lighthouse") ? v : null;
+            case "clock_weight": return v.matches("300|400|600") ? v : null;
             default: return null;
         }
     }

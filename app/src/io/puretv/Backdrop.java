@@ -136,6 +136,46 @@ final class Backdrop {
         return new Backdrop(gpu(out), frost, glass, null, null, null, null, null, null);
     }
 
+    /**
+     * A landscape behind the clock (Scenes): the glass and the frost read the photo itself, barely lifted by day and
+     * dimmed at night, so the shelf and the buttons show the real colours behind them.
+     */
+    static Backdrop scenery(Bitmap src) {
+        float screen = (float) W / H;
+        float[] cover = PosterCrop.region(src.getWidth(), src.getHeight(), screen, screen);
+        int[] frost = blur(pixels(scaled(src, cover, FW, FH)), FW, FH, 3, 3);
+        int[] glass = android.os.Build.VERSION.SDK_INT >= 33 ? blur(pixels(scaled(src, cover, GW, GH)), GW, GH, 2, 2) : null;
+        int[] light = whiten(frost.clone(), 0.12f);
+        int[] lightGlass = glass == null ? null : whiten(glass.clone(), 0.08f);
+        int[] night = darken(frost.clone(), 0.42f);
+        int[] nightGlass = glass == null ? null : darken(glass, 0.3f);
+        return new Backdrop(null, frost, null, null, null, light, lightGlass, night, nightGlass);
+    }
+
+    /**
+     * What fills the clock's glass digits: the photo, blurred, softened and brightened (night photos more, so the
+     * digits stay light on a dark sky). Small (240×135): it is stretched over the screen and blurred anyway.
+     */
+    static Bitmap glow(Bitmap src, boolean nightPhoto) {
+        float screen = (float) W / H;
+        int gw = 240, gh = 135;
+        int[] px = blur(pixels(scaled(src, PosterCrop.region(src.getWidth(), src.getHeight(), screen, screen), gw, gh)), gw, gh, 3, 3);
+        float scale = nightPhoto ? 1.25f : 1.5f, add = nightPhoto ? 165 : 36, keep = nightPhoto ? 0.8f : 0.62f;
+        for (int i = 0; i < px.length; i++) {
+            int p = px[i];
+            float r = (p >> 16) & 255, g = (p >> 8) & 255, b = p & 255, y = 0.2126f * r + 0.7152f * g + 0.0722f * b;
+            r = (y + (r - y) * keep) * scale + add;
+            g = (y + (g - y) * keep) * scale + add;
+            b = (y + (b - y) * keep) * scale + add + (nightPhoto ? 14 : 0);
+            px[i] = 0xFF000000 | (clamp255(r) << 16) | (clamp255(g) << 8) | clamp255(b);
+        }
+        return Bitmap.createBitmap(px, gw, gh, Bitmap.Config.ARGB_8888);
+    }
+
+    private static int clamp255(float v) {
+        return Math.max(0, Math.min(255, Math.round(v)));
+    }
+
     /** Screensaver photo, center-cropped and filtered down. The plain clock needs no frosted copy.
      * `light` receives the caption and corner luminance for the baked-in scrims. */
     static Bitmap photo(java.io.File f, int w, int h, float[] light) throws java.io.IOException {

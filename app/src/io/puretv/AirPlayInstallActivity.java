@@ -54,9 +54,10 @@ public class AirPlayInstallActivity extends Activity {
         Watchdog.install(this);
         Ui.init(this);
         data = new SettingsPage.Data(Ui.tr("AirPlay receiver"), Ui.tr("Optional: mirror an iPhone, iPad or Mac"), "tv",
-                new SettingsPage.Row(Ui.tr("Install AirPlay receiver"), direction -> start()),
-                new SettingsPage.Row(Ui.tr("Allow installs from PureTV"), direction -> allowInstalls()),
-                new SettingsPage.Row(Ui.tr("Open AirPlay receiver"), direction -> openReceiver()));
+                new SettingsPage.Row(Ui.tr("Install AirPlay receiver"), direction -> start()).icon("restore"),
+                new SettingsPage.Row(Ui.tr("Allow installs from PureTV"), direction -> allowInstalls()).icon("lock"),
+                new SettingsPage.Row(Ui.tr("Open AirPlay receiver"), direction -> openReceiver()).icon("play"));
+        data.crumb = SettingsPage.crumb("Connections", "AirPlay");
         bundled = AirPlayInstall.bundled(this);
         page = new SettingsPage(this, data, this::update);
         setContentView(page);
