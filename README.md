@@ -13,7 +13,7 @@
 <br>
 
 <p align="center">
-  <a href="docs/media/home-en.png"><img src="docs/media/home-en.png" width="100%" alt="PureTV clock layout: a large glass clock over a night landscape, the weather and the app shelf"></a>
+  <a href="docs/media/home-en.png"><img src="docs/media/home-en.png" width="100%" alt="PureTV clock layout: a large clock, today's weather and the app shelf"></a>
 </p>
 
 PureTV replaces the busy, ad-filled home screen of Android TVs and streaming sticks with a quiet one: your apps, the
@@ -71,8 +71,8 @@ quick on a 1 GB stick, and every screen is made for the remote.
 <table>
   <tr>
     <td width="50%" align="center" valign="top">
-      <a href="docs/media/all-apps-en.png"><img src="docs/media/all-apps-en.png" width="100%" alt="All Apps with home, other and hidden apps"></a>
-      <br><sub><b>All Apps</b> — everything installed, hidden apps included</sub>
+      <a href="docs/media/landscape-en.png"><img src="docs/media/landscape-en.png" width="100%" alt="The clock layout with a background photo: a glass clock over a night landscape"></a>
+      <br><sub><b>Background photos</b> — a new landscape behind the clock every day</sub>
     </td>
     <td width="50%" align="center" valign="top">
       <a href="docs/media/setup-en.png"><img src="docs/media/setup-en.png" width="100%" alt="Setup guide choosing the home screen layout with a preview"></a>

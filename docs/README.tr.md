@@ -46,11 +46,11 @@ Görseller, PureTV v1.4 ve v1.4.2'nin Mi Stick'te (Android TV 9) alınmış ger�
 
 ![Son izlenenler ve öneriler ana ekranı](media/recommendations-en.png)
 
-![Saatli ana ekran: gece manzarası önünde cam saat](media/home-en.png)
+![Saatli ana ekran](media/home-en.png)
 
-| Tüm uygulamalar | Kurulum rehberi |
+| Arka plan fotoğrafları | Kurulum rehberi |
 | --- | --- |
-| ![Tüm uygulamalar](media/all-apps-en.png) | ![Kurulum rehberi](media/setup-en.png) |
+| ![Gece manzarası önünde cam saat](media/landscape-en.png) | ![Kurulum rehberi](media/setup-en.png) |
 
 | Ayarlar | Hızlı ayarlar |
 | --- | --- |

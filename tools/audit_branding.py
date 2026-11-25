@@ -54,7 +54,7 @@ def check(root=ROOT):
         source_notice = (root / "docs/licenses/NOTICE.md").read_text(encoding="utf-8")
         packaged_notice = source_notice.replace("(../../LICENSE)", "(LICENSE)").replace("(LICENSE-launcher-MIT.txt)", "(third_party/LICENSE-launcher-MIT.txt)")
         assert packaged_notice == (root / "app/assets/licenses/NOTICE.md").read_text(encoding="utf-8")
-        assert {p.name for p in (root / "docs/media").iterdir()} == {"README.md", "remote.svg", "hero.svg", "home-en.png", "recommendations-en.png", "all-apps-en.png", "setup-en.png", "settings-en.png", "quick-settings-en.png", "shortcuts-en.png", "screensaver-en.png", "light-en.png", "background-en.png"}
+        assert {p.name for p in (root / "docs/media").iterdir()} == {"README.md", "remote.svg", "hero.svg", "home-en.png", "recommendations-en.png", "all-apps-en.png", "setup-en.png", "settings-en.png", "quick-settings-en.png", "shortcuts-en.png", "screensaver-en.png", "light-en.png", "background-en.png", "landscape-en.png"}
     except (OSError, KeyError, AssertionError, ET.ParseError) as error:
         issues.append("Identity, English-media or required-licence contract failed: " + str(error))
     return issues
